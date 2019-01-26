@@ -1,6 +1,6 @@
 # Maintain dotfiles within a bare git repository, adopted from
 # https://developer.atlassian.com/blog/2016/02/best-way-to-store-dotfiles-git-bare-repo/
-# After cloning may want 'dotfiles config --local status.showUntrackedFiles no'
+# After cloning may want 'git config --local status.showUntrackedFiles no'
 dotfiles() { /usr/bin/git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"; }
 
 # Add color to basic commands whenever possible
