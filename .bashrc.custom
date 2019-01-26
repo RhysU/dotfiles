@@ -27,6 +27,9 @@ shopt -s checkwinsize
 # match all files and zero or more directories and subdirectories.
 shopt -s globstar
 
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
 # Pager and locale settings
 export EDITOR=vim             # Default editor
 export FCEDIT="vim -X"        # X-less editor for 'fc'
@@ -34,6 +37,9 @@ export LC_ALL=en_US.UTF-8     # Default locale
 export PAPERSIZE=letter       # Default paper
 export LESS="$LESS -R -X -F"  # Default less options
 export PAGER=less             # Default pager
+
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
 # Avoid some ulimit problems
 ulimit -s unlimited
@@ -44,6 +50,11 @@ case "$-" in
     *i*) bind '"\e[A"':history-search-backward
          bind '"\e[B"':history-search-forward
 esac
+
+# enable color support of ls
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+fi
 
 # Add https://github.com/rupa/z to the current environment
 if [ -f ~/Build/z/z.sh ]; then
