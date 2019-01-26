@@ -1,0 +1,64 @@
+# Add various things to the path
+for element in      \
+    ~/miniconda/bin \
+    ~/.cabal/bin    \
+    ~/.cargo/bin    \
+    ~/.local/bin    \
+    ~/bin
+do
+    if [ -d "$element" ]; then
+        export "PATH=$element:$PATH"
+    fi
+done
+
+# History settings
+export HISTCONTROL=ignoreboth
+export HISTFILESIZE=999
+export HISTSIZE=999
+shopt -s cmdhist
+shopt -s histappend
+shopt -s histreedit
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+shopt -s globstar
+
+# Pager and locale settings
+export EDITOR=vim             # Default editor
+export FCEDIT="vim -X"        # X-less editor for 'fc'
+export LC_ALL=en_US.UTF-8     # Default locale
+export PAPERSIZE=letter       # Default paper
+export LESS="$LESS -R -X -F"  # Default less options
+export PAGER=less             # Default pager
+
+# Avoid some ulimit problems
+ulimit -s unlimited
+
+# Smarter history searching
+# http://lists.opensuse.org/opensuse-bugs/2009-10/msg10451.html
+case "$-" in
+    *i*) bind '"\e[A"':history-search-backward
+         bind '"\e[B"':history-search-forward
+esac
+
+# Add https://github.com/rupa/z to the current environment
+if [ -f ~/Build/z/z.sh ]; then
+    . ~/Build/z/z.sh
+fi
+
+# Load any custom aliases
+if [ -f ~/.aliases ]; then
+    . ~/.aliases
+fi
+
+# Customize prompt when interactive
+if [ ! -z "$PS1" ]; then
+    # Source a personal version that updates Screen window titles
+    if [ -f "${HOME}/.bashrc.prompt" ]; then
+        . "${HOME}/.bashrc.prompt"
+    fi
+fi

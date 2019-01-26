@@ -1,0 +1,113 @@
+# Configure colors, if available.
+# Modified slightly from https://gist.github.com/828432
+# Detection based on http://unix.stackexchange.com/questions/9957/
+# Fixing TeX output width based on http://tex.stackexchange.com/questions/83600/
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    prompt_color_reset='\[\e[0m\]'
+    prompt_color_git_clean='\[\e[0;37m\]'
+    prompt_color_git_staged='\[\e[0;32m\]'
+    prompt_color_git_unstaged='\[\e[0;31m\]'
+    prompt_color_error_status='\[\e[0;31m\]'
+else
+    prompt_color_reset=
+    prompt_color_git_clean=
+    prompt_color_git_staged=
+    prompt_color_git_unstaged=
+    prompt_color_error_status=
+fi
+
+# Function to assemble the Git part of the prompt.
+# Modified slightly from https://gist.github.com/828432
+prompt_git_branch ()
+{
+    GIT_DIR=`git rev-parse --git-dir 2>/dev/null`
+    if [ -z "$GIT_DIR" ]; then
+        return 0
+    fi
+    GIT_HEAD=`cat $GIT_DIR/HEAD`
+    GIT_BRANCH=${GIT_HEAD##*/}
+    if [ ${#GIT_BRANCH} -eq 40 ]; then
+        GIT_BRANCH="(no branch)"
+    fi
+    STATUS=`git status --porcelain`
+    if [ -z "$STATUS" ]; then
+        git_color="${prompt_color_git_clean}"
+    else
+        echo -e "$STATUS" | grep -q '^ [A-Z\?]'
+        if [ $? -eq 0 ]; then
+            git_color="${prompt_color_git_unstaged}"
+        else
+            git_color="${prompt_color_git_staged}"
+        fi
+    fi
+    echo "${git_color}${GIT_BRANCH}${prompt_color_reset} "
+}
+
+# Function to grab any non-root conda environment
+# Modified from prompt_git_branch just above
+prompt_conda_environment ()
+{
+    echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }"
+}
+
+# Prompts use zsh-style precmd/preexec hook per
+# http://glyf.livejournal.com/63106.html when possible
+if [ -f "${HOME}/.preexec.bash" ]; then
+
+    . "${HOME}/.preexec.bash"
+
+    precmd () {
+        # Capture the error status of the last command
+        PREV_RET_VAL=$?;
+
+        # Prepare the basic prompt including git branch information
+        PS1="[\! \u@\h $(prompt_conda_environment)$(prompt_git_branch)\W]"
+
+        # Include last error status in red if nonzero
+        if test $PREV_RET_VAL -ne 0; then
+            PS1="${PS1}${prompt_color_error_status}[${PREV_RET_VAL}]${prompt_color_reset}"
+        fi
+        PS1="${PS1}\\$ "
+
+        # Update the line output width for TeX and derivatives
+        export max_print_line=$COLUMNS
+
+        # Make GNU Screen print an informative window title
+        # See https://stackoverflow.com/questions/22694431
+        case "$TERM" in
+            screen*) preexec_screen_title "$(basename "${PWD%/*}")/${PWD##*/}"
+        esac
+    }
+
+    preexec () {
+       case "$TERM" in
+           screen*) preexec_screen_title "${1%% *}"
+       esac
+    }
+
+    preexec_install
+else
+
+    promptCommandFunc()
+    {
+        # Capture the error status of the last command
+        PREV_RET_VAL=$?;
+
+        # Prepare the basic prompt including git branch information
+        PS1="[\! \u@\h \$(prompt_git_branch)\W]"
+
+        # Include last error status in red if nonzero
+        if test $PREV_RET_VAL -ne 0; then
+            PS1="${PS1}${prompt_color_error_status}[${PREV_RET_VAL}]${prompt_color_reset}"
+        fi
+
+        # Update the line output width for TeX and derivatives
+        export max_print_line=$COLUMNS
+        PS1="${PS1}\\$ "
+    }
+    PROMPT_COMMAND=promptCommandFunc
+fi
+
+# Use a nice prompt for bash -x debugging
+PS4='(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]} - [${SHLVL},${BASH_SUBSHELL}, $?]
+'
