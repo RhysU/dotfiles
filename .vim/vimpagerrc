@@ -1,0 +1,4 @@
+" Settings for https://github.com/rkitover/vimpager
+let vimpager_disable_x11 = 1
+let vimpager_passthrough = 1
+let vimpager_tabstop = 8
