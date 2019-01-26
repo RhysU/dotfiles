@@ -1,0 +1,47 @@
+-Wall
+-Wextra
+-g -O2
+
+#include <alloca.h>
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <regex.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/types.h>
+#include <tgmath.h>
+#include <time.h>
+
+-fopenmp
+#ifdef _OPENMP
+# include <omp.h>
+#else
+# define omp_get_thread_num() 0
+#endif
+
+#include <gsl/gsl_cdf.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_poly.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_vector.h>
+pkg-config gsl
+
+#include <glib.h>
+pkg-config glib-2.0
+
+#include <sqlite3.h>
+pkg-config sqlite3
+
+-lm
