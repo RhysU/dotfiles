@@ -1,0 +1,5 @@
+#!/bin/bash -eu
+# Idea from https://stackoverflow.com/questions/32071018/scheme-formatting-tool
+die() { echo >&2 "$@"; exit 1 }
+[ "$#" -eq 1 ] || die "1 argument required, $# provided"
+vim -c ':norm gg=G' -c ':wq' "$1"

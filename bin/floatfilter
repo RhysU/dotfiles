@@ -1,0 +1,17 @@
+#!/usr/bin/awk -f
+BEGIN {
+    # Split on whitespace or commas
+    FS="[[:space:]]*,?[[:space:]]+"
+}
+{
+    for (i = 1; i <= NF; ++i) {
+        if ($i ~ /^[-+]?[[:digit:]]*\.?[[:digit:]]+([eE][-+]?[[:digit:]]+)?$/) {
+            if (i < NF) {
+                printf "%s%s", $i, OFS
+            } else {
+                printf "%s", $i
+            }
+        }
+    }
+    printf ORS
+}

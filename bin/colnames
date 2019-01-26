@@ -1,0 +1,7 @@
+#!/usr/bin/awk -f
+(NR==1) {
+    for(i=1; i<=NF; i+=1) {
+        sub(", *$", "", $i);
+        printf("%2d  %s\n", i, $i);
+    }
+}
