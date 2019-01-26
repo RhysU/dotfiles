@@ -1,0 +1,108 @@
+# Maintain dotfiles within a bare git repository, adopted from
+# https://developer.atlassian.com/blog/2016/02/best-way-to-store-dotfiles-git-bare-repo/
+# After cloning may want 'dotfiles config --local status.showUntrackedFiles no'
+dotfiles() { /usr/bin/git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"; }
+
+# Add color to basic commands whenever possible
+function egrep() { command egrep --color=auto "$@"; }
+function fgrep() { command fgrep --color=auto "$@"; }
+function grep()  { command grep  --color=auto "$@"; }
+function ls()    { command ls    --color=auto "$@"; }
+
+# "H foo" searches history for "foo" ignoring other "H anything" entries
+# Additional magic present to remove duplicate commands when nonconsecutive
+H() { history | egrep -v '^ *[[:digit:]]+ +H +' | grep "$*" | sort -rk 2 | uniq -f 1 | sort; }
+
+# I am tired of having view not colorize things
+alias view="vim -XR"
+
+# Make bc load the standard math library, use more precision, and be quiet
+alias bc="bc -lq"
+
+# Abbreviate moving up in the directory hierarchy
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+
+# A variety of alias-like functions (so they may be invoked as commands)
+benicer() { renice +5 -p $BASHPID; }
+g()       { grep "$@" ; }
+h()       { history "$@" ; }
+HR()      { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
+hr()      { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
+M()       { module "$@" ; }
+okular()  { command okular >&/dev/null "$@"; }
+o()       { octave --silent --persist "$@" ; }
+p()       { parallel "$@" ; }
+reo()     { clear ; pwd ; echo ; ls "$@"; echo ; }
+sat()     { (cd "$1" && shift && screen "$@") ; }
+sin()     { set -- $(sort <<<"$@"); while [[ $# > 0 ]]; do (cd "$1" && screen) ; shift; done; }
+smv()     { rsync -avz --remove-source-files "$@"; }
+s()       { screen "$@" ; }
+t()       { command time --verbose "$@" ; }
+tgl()     { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered $pat; }
+v()       { vim "$@" ; }
+
+# Variants of head and tail showing exactly one screenful
+Head()    { head -n $(($(tput lines) - 1)) "$@"; }
+Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }
+
+# Make-ish alias-like functions (so they may be invoked as commands)
+m()       { nice make "$@"; }
+mj()      { nice make -j${NPROC:-1} "$@"; }
+mjl()     { nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
+mjlc()    { nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
+sm()      { V=0 nice make "$@"; }
+smj()     { V=0 nice make -j${NPROC:-1} "$@"; }
+smjl()    { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
+smjlc()   { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
+
+# Recursively grep through files in parallel, e.g. chat logs.  Modified from
+# http://stackoverflow.com/questions/9066609/fastest-possible-grep
+parallelgrep() {
+   path="$1"
+   shift
+   find "$path" -type f | parallel -k -j150% -n 1000 -m grep -H "$@" {}
+}
+
+# Stop typing "ipython --pylab" all the time
+alias pylab="ipython --pylab"
+
+# Remove ANSI escape sequences from a file
+stresc () { 'sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"''"]"' "$@"; }
+
+# Create and change to a directory
+mkcd      () {                 mkdir -vp "$1" && cd    "$1"; }
+mkpushd   () {                 mkdir -vp "$1" && pushd "$1"; }
+rmmkcd    () { rm -rfv "$1" && mkdir -vp "$1" && cd    "$1"; }
+rmmkpushd () { rm -rfv "$1" && mkdir -vp "$1" && pushd "$1"; }
+
+# Idiomatic 'ssh -t hostname screen -xR'
+stsxr() { ssh -t $* 'bash -ls -c "screen -xR"'; }
+
+# Permit the OS X-like 'open' to work on Linux
+open() { xdg-open "$@"; }
+
+# Utility to add a prefix to the second and subsequent parameters
+strpre() { p=$1; shift; for s in "$@"; do echo -n "$p$s "; done }
+
+# Shortcuts for working with valgrind and/or libtool
+# Complication for valgrind invocation comes from limited .valgrindrc functionality
+alias libtoolcgdb="    libtool --mode=execute cgdb"
+alias libtoolddd="     libtool --mode=execute ddd"
+alias libtoolgdb="     libtool --mode=execute gdb"
+alias libtoolgdbtui="  libtool --mode=execute gdb -tui"
+alias libtoolvalgrind="libtool --mode=execute valgrind --db-command='gdb -tui -w %f %p' $(strpre --suppressions= $HOME/.valgrind/*.supp)"
+alias libtoolmpiexec=" libtool --mode=execute mpiexec"
+
+# Open Vim with NERDTree (possibly at some bookmark) and Tagbar
+NERD() { vim -c "NERDTree${1+FromBookmark $1}" -c "Tagbar"; }
+
+# Build C source in a very restrictive manner
+# Taken from the GNU GSL HACKING file
+makestrict () {
+    make "$@" CFLAGS="-ansi -pedantic -Werror -W -Wall -Wtraditional -Wconversion -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -fshort-enums -fno-common -Wmissing-prototypes -Wnested-externs -Dinline= -g -O4"
+}
+
+# Report maximum resident set size of a given command
+maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
