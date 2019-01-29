@@ -4,6 +4,6 @@ total_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $2 }')
 while(true); do
   current_gpu=$(/usr/bin/nvidia-smi 2>/dev/null | /usr/bin/awk '/% /{printf "%4s", $13}')
   current_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $3 }')
-  echo "[${current_gpu}]GPU ${current_mem}MB/${total_mem}MB"
+  echo "[${current_gpu}]GPU ${current_mem}/${total_mem}MB"
   sleep 1
 done

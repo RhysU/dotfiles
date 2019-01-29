@@ -28,9 +28,10 @@ defscrollback 25000
 bind '/' eval "scrollback 0" "scrollback 25000"
 hardstatus alwayslastline
 hardstatus on
-backtick 100 65536 0 hostname -f
-backtick 101 65536 0 basename $CC
-hardstatus string "%{=b}%{G}%{+r}%100`%{-r} %{b}%w %{G}%=%101` [%l] %{+r}%C%{-r}"
+backtick 100 65536 0 hostname
+backtick 101 0     0 screen-mem-usage
+backtick 102 65536 0 basename $CC
+hardstatus string "%{=b}%{G}%{+r}%100`%{-r} %{b}%w %{G}%=%101` [%l]%102` %{+r}%C%{-r}"
 msgwait 1
 multiuser on
 nonblock on
@@ -38,11 +39,6 @@ shell $SHELL
 startup_message off
 vbell_msg "Bell on %t (%n)"
 vbell off
-
-# Startup commands
-# chdir
-# screen -t local
-# select local
 
 # http://snarfed.org/space/synchronizing%20GNU%20screen%27s%20paste%20buffer%20and%20the%20X%20selection
 # set the second mark, write to the screen-exchange file, and use xsel
