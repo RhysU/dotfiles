@@ -14,10 +14,7 @@ function ls()    { command ls    --color=auto "$@"; }
 H() { history | egrep -v '^ *[[:digit:]]+ +H +' | grep "$*" | sort -rk 2 | uniq -f 1 | sort; }
 
 # I am tired of having view not colorize things
-alias view="vim -XR"
-
-# Make bc load the standard math library, use more precision, and be quiet
-alias bc="bc -lq"
+view() { vim -XR "$@"; }
 
 # Abbreviate moving up in the directory hierarchy
 alias ..="cd .."
@@ -106,3 +103,13 @@ makestrict () {
 
 # Report maximum resident set size of a given command
 maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
+
+# Sometimes one wants to convert an alias into a function for subshells
+convert_alias_to_exported_function() {
+    if alias -p | grep -q "$1"; then
+       local aliaspath="$(alias -p | grep $1 | cut -d= -f2)"
+       unalias $1                            # Unalias must be before eval...
+       eval "$1 () { $aliaspath \"\$@\"; }"  # ...otherwise name expands
+       eval "export -f $1"
+    fi
+}
