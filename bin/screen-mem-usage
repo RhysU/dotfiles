@@ -1,9 +1,18 @@
 #!/bin/sh
 renice -n 10 "$$" >/dev/null
+delay=1
 total_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $2 }')
-while(true); do
-  current_gpu=$(/usr/bin/nvidia-smi 2>/dev/null | /usr/bin/awk '/% /{printf "%4s", $13}')
-  current_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $3 }')
-  echo "[${current_gpu}]GPU ${current_mem}/${total_mem}MB"
-  sleep 1
-done
+if [ -x /usr/bin/nvidia-smi ]; then
+    while(true); do
+      current_gpu=$(/usr/bin/nvidia-smi 2>/dev/null | /usr/bin/awk '/% /{printf "%4s", $13}')
+      current_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $3 }')
+      echo "[${current_gpu}]GPU ${current_mem}/${total_mem}MB"
+      sleep $delay
+    done
+else
+    while(true); do
+      current_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $3 }')
+      echo "${current_mem}/${total_mem}MB"
+      sleep $delay
+    done
+fi
