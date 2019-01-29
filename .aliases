@@ -113,3 +113,20 @@ convert_alias_to_exported_function() {
        eval "export -f $1"
     fi
 }
+
+# Because I'm tired of typing {cat,vim} `which thing`...
+command_which() {
+    local cmd=$1
+    shift;
+    local where=$(command which -- "$@")
+    local mime=$(command file --dereference -- "$where")
+    if echo "$mime" | grep ' text ' >/dev/null 2>&1; then
+        "$cmd" "$where"
+    else
+        echo "Cowardly refusing to $cmd $where with type:\n" 1>&2
+        echo "$mime" 1>&2
+        false
+    fi
+}
+catwhich() { command_which cat "$@"; }
+vimwhich() { command_which vim "$@"; }
