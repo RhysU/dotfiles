@@ -41,7 +41,7 @@ sin()     { set -- $(sort <<<"$@"); while [[ $# > 0 ]]; do (cd "$1" && screen) ;
 smv()     { rsync -avz --remove-source-files "$@"; }
 s()       { screen "$@" ; }
 t()       { command time --verbose "$@" ; }
-tgl()     { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered $pat; }
+tgl()     { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
 v()       { vim "$@" ; }
 
 # Variants of head and tail showing exactly one screenful
