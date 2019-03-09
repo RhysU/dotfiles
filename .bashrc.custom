@@ -56,6 +56,14 @@ if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 fi
 
+# Customize prompt when interactive
+if [ ! -z "$PS1" ]; then
+    # Source a personal version that updates Screen window titles
+    if [ -f "${HOME}/.bashrc.prompt" ]; then
+        . "${HOME}/.bashrc.prompt"
+    fi
+fi
+
 # Add https://github.com/rupa/z to the current environment
 if [ -f ~/Build/z/z.sh ]; then
     . ~/Build/z/z.sh
@@ -66,10 +74,3 @@ if [ -f ~/.aliases ]; then
     . ~/.aliases
 fi
 
-# Customize prompt when interactive
-if [ ! -z "$PS1" ]; then
-    # Source a personal version that updates Screen window titles
-    if [ -f "${HOME}/.bashrc.prompt" ]; then
-        . "${HOME}/.bashrc.prompt"
-    fi
-fi
