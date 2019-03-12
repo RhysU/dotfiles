@@ -897,3 +897,8 @@ unbox
 cdr
 hashtable
 Hashtables
+concat
+NumPy
+ndarray
+R6RS
+Akku
