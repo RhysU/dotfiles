@@ -67,7 +67,7 @@ Plugin 'zxqfl/tabnine-vim'  " License purchased!
 call vundle#end()
 
 set t_Co=256
-colorscheme vividchalk " darkbone candy molokai nord vividchalk
+colorscheme hydrangea " vividchalk darkbone candy molokai nord vividchalk
 set background=dark
 highlight clear SpellBad
 highlight SpellBad term=standout term=underline ctermfg=red cterm=underline
