@@ -101,8 +101,8 @@ else
     }
 fi
 
-# Only register non-HOME directories as HOME is not interesting
 precmd_z() {
+    # Only register non-HOME directories as HOME is not interesting.
     if [ "$PWD" != "$HOME" ]; then
         z -a "$PWD"
     fi
