@@ -18,7 +18,7 @@ fi
 
 # Function to assemble the Git part of the prompt.
 # Modified slightly from https://gist.github.com/828432
-prompt_git_branch ()
+prompt_git_branch()
 {
     GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
     if [ -z "$GIT_DIR" ]; then
@@ -45,13 +45,14 @@ prompt_git_branch ()
 
 # Function to grab any non-root conda environment
 # Modified from prompt_git_branch just above
-prompt_conda_environment ()
+prompt_conda_environment()
 {
     echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }"
 }
 
 # Change the title of the xterm / screen
-preexec_title () {
+preexec_title()
+{
     case "$TERM" in
         screen*)
             echo -ne "\ek$1\e\\"
@@ -62,12 +63,8 @@ preexec_title () {
     esac
 }
 
-# Prompts use precmd/preexec hook per https://github.com/rcaloras/bash-preexec
-if [ -f "${HOME}/.preexec.bash" ]; then
-    . "${HOME}/.preexec.bash"
-fi
-
-precmd () {
+precmd_prompt()
+{
     # Capture the error status of the last command
     PREV_RET_VAL=$?;
 
@@ -88,9 +85,36 @@ precmd () {
     preexec_title "$(basename "${PWD%/*}")/${PWD##*/}"
 }
 
-preexec () {
+preexec_prompt()
+{
     preexec_title "${1%% *}"
 }
+
+# Alias to ease using https://github.com/RhysU/zc or permit it to not fail
+if test -x "${HOME}/bin/zc"; then
+    z() {
+        "$HOME/bin/zc" -d "$HOME/.zc" "$@";
+    }
+else
+    z() {
+        :
+    }
+fi
+
+# Only register non-HOME directories as HOME is not interesting
+precmd_z() {
+    if [ "$PWD" != "$HOME" ]; then
+        z -a "$PWD"
+    fi
+}
+
+# Prompts use precmd/preexec hook per https://github.com/rcaloras/bash-preexec.
+if [ -f "${HOME}/.preexec.bash" ]; then
+    . "${HOME}/.preexec.bash"
+    precmd_functions+=(precmd_prompt)
+    preexec_functions+=(precmd_prompt)
+    precmd_functions+=(precmd_z)
+fi
 
 # Use a nice prompt for bash -x debugging
 PS4='(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]} - [${SHLVL},${BASH_SUBSHELL}, $?]
