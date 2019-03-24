@@ -64,11 +64,6 @@ if [ ! -z "$PS1" ]; then
     fi
 fi
 
-# Add https://github.com/rupa/z to the current environment
-if [ -f ~/Build/z/z.sh ]; then
-    . ~/Build/z/z.sh
-fi
-
 # Load any custom aliases
 if [ -f ~/.aliases ]; then
     . ~/.aliases
