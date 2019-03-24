@@ -90,21 +90,19 @@ preexec_prompt()
     preexec_title "${1%% *}"
 }
 
-# Alias to ease using https://github.com/RhysU/zc or permit it to not fail
+# Alias to ease using https://github.com/RhysU/zc and hooks for updates
 if test -x "${HOME}/bin/zc"; then
-    z() {
-        "$HOME/bin/zc" -d "$HOME/.zc" "$@";
-    }
+    z()     { "$HOME/bin/zc" -d "$HOME/.zc"    "$@"; }
+    z_add() { "$HOME/bin/zc" -d "$HOME/.zc" -a "$@"; }
 else
-    z() {
-        :
-    }
+    z()     { echo "RhysU/zc is not installed" 1>&2; false; }
+    z_add() { :; }
 fi
 
 precmd_z() {
     # Only register non-HOME directories as HOME is not interesting.
     if [ "$PWD" != "$HOME" ]; then
-        z -a "$PWD"
+        z_add "$PWD"
     fi
 }
 
