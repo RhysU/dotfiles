@@ -110,7 +110,7 @@ precmd_z() {
 if [ -f "${HOME}/.preexec.bash" ]; then
     . "${HOME}/.preexec.bash"
     precmd_functions+=(precmd_prompt)
-    preexec_functions+=(precmd_prompt)
+    preexec_functions+=(preexec_prompt)
     precmd_functions+=(precmd_z)
 fi
 
