@@ -90,21 +90,40 @@ preexec_prompt()
     preexec_title "${1%% *}"
 }
 
-# Alias to ease using https://github.com/RhysU/zc and hooks for updates
+# Alias to ease using https://github.com/RhysU/zc
 if test -x "${HOME}/bin/zc"; then
-    z()     { "$HOME/bin/zc" -d "$HOME/.zc"    "$@"; }
-    z_add() { "$HOME/bin/zc" -d "$HOME/.zc" -a "$@"; }
+    z_raw() { "$HOME/bin/zc" -d "$HOME/.zc"       "$@"; }
+    z_add() { "$HOME/bin/zc" -d "$HOME/.zc" -a -- "$@"; }
 else
-    z()     { echo "RhysU/zc is not installed" 1>&2; false; }
+    z_raw() { echo "RhysU/zc is not installed" 1>&2; false; }
     z_add() { :; }
 fi
 
+# Run http://github.com/RhysU/zc in some mode.
+# Whenever it succeeds and only one line is output, attempt to cd there.
+# Takes advantage of knowledge that zc has a 2-line help message.
+# Nicer would be providing a more-useful -h message, but so it goes.
+z() {
+    local zout newline='
+'
+    if zout=$(z_raw "$@"); then
+        case $zout in
+          *"$newline"*) echo "$zout" ;;
+                     *) builtin cd "$zout" ;;
+        esac
+    fi
+}
+
+# On every command, record the working directory using z_add.
+# Versus https://github.com/rupa/z, updating per-command nicer for GNU Screen.
+# Also, the updates are lighter weight on account of backing zc implementation.
 precmd_z() {
-    # Only register non-HOME directories as HOME is not interesting.
+    # Only register non-HOME directories as HOME is just a 'cd' away.
     if [ "$PWD" != "$HOME" ]; then
         z_add "$PWD"
     fi
 }
+
 
 # Prompts use precmd/preexec hook per https://github.com/rcaloras/bash-preexec.
 if [ -f "${HOME}/.preexec.bash" ]; then
