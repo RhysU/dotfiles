@@ -108,8 +108,8 @@ z() {
 '
     if zout=$(z_raw "$@"); then
         case $zout in
-          *"$newline"*) echo "$zout"       ;;
-                     *) builtin cd "$zout" ;;
+          *"$newline"*) echo "$zout"          ;;
+                     *) builtin pushd "$zout" ;;
         esac
     fi
 }
