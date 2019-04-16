@@ -113,6 +113,9 @@ z() {
         esac
     fi
 }
+zf() { z -f "$@"; }  # Abbreviation
+zr() { z -r "$@"; }  # Abbreviation
+zt() { z -t "$@"; }  # Abbreviation
 
 # On every command, record the working directory using z_add.
 # Versus https://github.com/rupa/z, updating per-command nicer for GNU Screen.
