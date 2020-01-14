@@ -11,7 +11,7 @@ function ls()    { command ls    --color=auto "$@"; }
 
 # "H foo" searches history for "foo" ignoring other "H anything" entries
 # Additional magic present to remove duplicate commands when nonconsecutive
-H() { history | egrep -v '^ *[[:digit:]]+ +H +' | grep "$*" | sort -rk 2 | uniq -f 1 | sort; }
+H() { history | egrep -v '^ *[[:digit:]]+ +H +' | grep "$@" | sort -rk 2 | uniq -f 1 | sort; }
 
 # I am tired of having view not colorize things
 view() { vim -XR "$@"; }
