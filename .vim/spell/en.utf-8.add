@@ -966,3 +966,7 @@ zombified
 ZPG
 Zwiers
 PSIGDEATH
+SIGTERM
+SIGKILL
+flake8
+docstring
