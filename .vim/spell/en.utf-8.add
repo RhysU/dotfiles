@@ -970,3 +970,6 @@ SIGTERM
 SIGKILL
 flake8
 docstring
+EOFError
+SubmissionDied
+CallbackRaised
