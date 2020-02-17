@@ -973,3 +973,5 @@ docstring
 EOFError
 SubmissionDied
 CallbackRaised
+ValueError
+SimpleQueue
