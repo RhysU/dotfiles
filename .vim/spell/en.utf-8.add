@@ -1,3 +1,5 @@
+10th
+11th
 ablator
 Abramowitz
 abscissae
@@ -19,6 +21,7 @@ Akku
 Aleka
 Alessandro
 alignof
+Alik
 Allisyn
 Allreduce
 ALLTOALLV
@@ -36,6 +39,7 @@ anticorrelation
 antidiffusive
 antioch
 Antonyo
+Antreas
 API
 APS
 Arendosh
@@ -48,8 +52,10 @@ ArtSpace
 arxiv
 Aslanian
 atexit
+Atheneum
 Athletica
 attribute's
+Audain
 Auditorum
 AustinVentures
 autoconf
@@ -76,6 +82,7 @@ BalletX
 Banerjee
 baroclinic
 barotropic
+Barsoumian
 baseflow
 Baum
 Bauman
@@ -111,6 +118,8 @@ Brillante
 Brittni
 Broersen
 Broersen's
+BrokenPipeError
+BrokenPipeErrors
 Bryker
 BSMBSM
 BSMBSMs
@@ -124,6 +133,7 @@ Bytevectors
 C99
 cabletow
 Califa
+CallbackRaised
 CallbackRaisedException
 CallbackRaisedExceptions
 calorically
@@ -139,6 +149,7 @@ Cawood
 CDF
 cdr
 Cedrick
+Celena
 CEV
 CFD
 CFL
@@ -197,6 +208,7 @@ decorrelation
 defaultdict
 DeFilippo
 deflectometry
+DeFrantz
 Delwaide
 Demkowicz
 Demmel
@@ -210,6 +222,7 @@ diffusivities
 Diffusivities
 digamma
 dilatational
+Dilijan
 dilluter
 dimensionalization
 discretizations
@@ -220,6 +233,7 @@ dissipation
 Distributionally
 Dmitry
 DNS
+docstring
 doctests
 DOI
 Dolbashian
@@ -250,6 +264,7 @@ Endian
 Engquist
 enthalpy
 Enthought
+EOFError
 EqualityComparable
 Erdman
 Eryn
@@ -280,6 +295,7 @@ fibrosity
 filesystem
 Filippidis
 Finney
+flake8
 Flannery
 FLOPs
 flowfield
@@ -344,6 +360,7 @@ heightism's
 heightist
 Heuven
 Hinai
+Hindoyan
 Hiroms
 Hislop
 HOA
@@ -396,7 +413,9 @@ JChen's
 JCP
 Jerone
 jobserver
+JobserverQueue
 Johnannes
+Joselli
 judgement
 Kahan
 Kar'mel
@@ -482,6 +501,7 @@ Majda
 malloc
 malloc'd
 Malu
+Ma'moon
 Manalo
 Manasquan
 Mannella
@@ -523,6 +543,7 @@ Moriba
 Morkovin
 Morkovin's
 mortem
+Moultrie
 Mountian
 Mozilla
 MPCV
@@ -666,6 +687,7 @@ Prudencio
 Prudhomme
 pseudorank
 pseudospectral
+PSIGDEATH
 Puder
 pyrolyzation
 Quaba
@@ -705,6 +727,7 @@ RetailMeNot
 retransition
 reweight
 Reθ
+Rhoden
 Riccati
 Ridgewood
 Ringleb
@@ -762,7 +785,11 @@ Shott
 Sicklerville
 Sidman
 Sidra
+SIGKILL
+SIGTERM
 Simens
+SimpleQueue
+Sinko
 Skan
 Skan's
 Skote
@@ -821,6 +848,7 @@ submatrices
 submatrix
 submeter
 submeters
+SubmissionDied
 submodels
 substep
 substeps
@@ -842,6 +870,7 @@ Syntropy
 Syntropy's
 TACC
 TBB
+Tebbo
 techne
 Tecplot
 Temin
@@ -855,6 +884,7 @@ Terwilleger
 test-eqv
 Teten
 Teukolsky
+th
 Thang
 Tharp
 Thermochemistry
@@ -904,6 +934,7 @@ UQ
 Ussel
 Valero
 valgrind
+ValueError
 VandeStadt
 Vassilii
 velocimetry
@@ -950,6 +981,7 @@ Xueyong
 #yapuonov
 Yeming
 Yerba
+Yesley
 Yinvasa
 Yountville
 Zaida
@@ -965,35 +997,3 @@ zombification
 zombified
 ZPG
 Zwiers
-PSIGDEATH
-SIGTERM
-SIGKILL
-flake8
-docstring
-EOFError
-SubmissionDied
-CallbackRaised
-ValueError
-SimpleQueue
-Yesley
-Celena
-Sinko
-Atheneum
-Moultrie
-Rhoden
-Audain
-Joselli
-DeFrantz
-10th
-11th
-th
-Alik
-Barsoumian
-Dilijan
-Antreas
-Hindoyan
-Ma'moon
-Tebbo
-JobserverQueue
-BrokenPipeError
-BrokenPipeErrors
