@@ -15,6 +15,7 @@ Plugin 'VundleVim/Vundle.vim'
 "Plugin "arecarn/crunch"
 Plugin 'bling/vim-airline'
 Plugin 'bhurlow/vim-parinfer'
+Plugin 'bogado/file-line'
 Plugin 'ciaranm/detectindent'
 Plugin 'corntrace/bufexplorer'
 "Plugin 'elzr/vim-json'
