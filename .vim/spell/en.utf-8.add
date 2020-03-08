@@ -997,3 +997,7 @@ zombification
 zombified
 ZPG
 Zwiers
+PEP8
+CPython
+typehint
+mypy
