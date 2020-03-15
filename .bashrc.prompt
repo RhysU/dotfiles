@@ -100,22 +100,31 @@ else
 fi
 
 # Run http://github.com/RhysU/zc in some mode against fixed database.
-# Whenever it succeeds and only one line is output, attempt to cd there.
-# Takes advantage of knowledge that zc has a 2-line help message.
-# Nicer would be providing a more-useful -h message, but so it goes.
+# Whenever it succeeds and only one line is output, attempt to pushd there.
 z() {
     local zout newline='
 '
     if zout=$(z_raw "$@"); then
         case $zout in
-          *"$newline"*) echo "$zout"          ;;
-                     *) builtin pushd "$zout" ;;
+          *"$newline"*) echo "$zout"          ;;  # 2+ matches => display
+                    "") builtin pushd "$@"    ;;  # No match => use input
+                     *) builtin pushd "$zout" ;;  # One match => use match
         esac
     fi
 }
-zf() { z -f "$@"; }  # Abbreviation
-zr() { z -r "$@"; }  # Abbreviation
-zt() { z -t "$@"; }  # Abbreviation
+zf() { z -f -- "$@"; }  # Abbreviation
+zr() { z -r -- "$@"; }  # Abbreviation
+zt() { z -t -- "$@"; }  # Abbreviation
+
+# Z becomes much more useful with tab completion hooks installed.
+# Above z() must accommodate trailing slashes because of '-o filenames'.
+_z_completion() {
+    COMPREPLY=()
+    while IFS=$'\n' read -r line; do
+        COMPREPLY+=("$line")
+    done < <(z_raw -- "${COMP_WORDS[@]:1}")
+}
+complete -o filenames -F _z_completion z
 
 # On every command, record the working directory using z_add.
 # Versus https://github.com/rupa/z, updating per-command nicer for GNU Screen.
