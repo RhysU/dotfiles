@@ -1,0 +1,16 @@
+directory: /home/rhys/Dropbox/Music
+import:
+    copy: yes
+    write: yes
+    log: beetslog.txt
+art_filename: albumart
+plugins: bpd
+pluginpath: ~/beets/myplugins
+ui:
+    color: yes
+
+paths:
+    default: $genre/$albumartist/$album/$track $title
+    singleton: Singletons/$artist - $title
+    comp: $genre/$album/$track $title
+    albumtype:soundtrack: Soundtracks/$album/$track $title
