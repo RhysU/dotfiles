@@ -10,7 +10,7 @@ ui:
     color: yes
 
 paths:
-    default: $genre/$albumartist/$album/$track $title
+    default: $albumartist/$album/$track $title
     singleton: Singletons/$artist - $title
-    comp: $genre/$album/$track $title
+    comp: Compilation/$album/$track $title
     albumtype:soundtrack: Soundtracks/$album/$track $title
