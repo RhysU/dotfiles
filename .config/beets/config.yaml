@@ -4,7 +4,7 @@ import:
     write: yes
     log: beetslog.txt
 art_filename: albumart
-plugins: bpd
+plugins: bpd fetchart lyrics lastgenre web
 pluginpath: ~/beets/myplugins
 ui:
     color: yes
