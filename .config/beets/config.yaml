@@ -1,16 +1,20 @@
-directory: /home/rhys/Dropbox/Music
+library: ~/Dropbox/Music/library.db
+directory: ~/Dropbox/Music
+pluginpath: ~/beets/myplugins
+plugins: bpd chroma fetchart fromfilename lyrics lastgenre web
+
+art_filename: albumart
 import:
     copy: yes
     write: yes
     log: beetslog.txt
-art_filename: albumart
-plugins: bpd chroma fetchart fromfilename lyrics lastgenre web
-pluginpath: ~/beets/myplugins
-ui:
-    color: yes
-
+    verbose: yes
 paths:
     default: $albumartist/$album/$track $title
     singleton: Singletons/$artist - $title
     comp: Compilation/$album/$track $title
     albumtype:soundtrack: Soundtracks/$album/$track $title
+threaded: yes
+per_disc_numbering: yes
+ui:
+    color: yes
