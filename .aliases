@@ -110,6 +110,10 @@ makestrict () {
 # Report maximum resident set size of a given command
 maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
 
+# Emit on stdout how to quote stdin for bash
+# Lifted from https://news.ycombinator.com/item?id=24659282
+bashquote() { printf '%q\n' "$(cat)" ; }
+
 # Sometimes one wants to convert an alias into a function for subshells
 convert_alias_to_exported_function() {
     if alias -p | grep -q "$1"; then
