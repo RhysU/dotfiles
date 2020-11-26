@@ -23,7 +23,7 @@ alias ....="cd ../../.."
 
 # Handy for working with Conda
 sa() { test -n "$1" && source activate "$@" || conda env list; }
-sd() { source deactivate "$@"; }
+sd() { conda deactivate "$@"; }
 
 # A variety of alias-like functions (so they may be invoked as commands)
 benicer() { renice +5 -p $BASHPID; }
