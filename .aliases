@@ -83,8 +83,8 @@ rmmkpushd () { rm -rfv "$1" && mkdir -vp "$1" && pushd "$1"; }
 # Idiomatic 'ssh -t hostname screen -xR'
 stsxr() { ssh -t $* 'bash -ls -c "screen -xR"'; }
 
-# Permit the OS X-like 'open' to work on Linux
-open() { xdg-open "$@"; }
+# Permit the OS X-like 'open' to work on Linux for one or more files
+open() { for file in "$@"; do xdg-open "$file" & done; }
 
 # Utility to add a prefix to the second and subsequent parameters
 strpre() { p=$1; shift; for s in "$@"; do echo -n "$p$s "; done }
