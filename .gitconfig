@@ -35,3 +35,6 @@
     default = current
 [push]
     default = current
+[user]
+	email = Rhys.Ulerich@gmail.com
+	name = Rhys Ulerich

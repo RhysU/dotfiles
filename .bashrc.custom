@@ -1,6 +1,5 @@
 # Add various things to the path
 for element in      \
-    ~/miniconda/bin \
     ~/.cabal/bin    \
     ~/.cargo/bin    \
     ~/.local/bin    \
