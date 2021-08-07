@@ -148,7 +148,7 @@ noremap =C :set ft=cpp
 noremap =d :set bg=dark
 noremap =D :set bg=light
 noremap =e :retab
-noremap =f !}fmt -w 78
+noremap =f !}fmt -w 78 -g 75 -c
 noremap == i 
 noremap =s !}sort
 noremap =u !}sort -u
