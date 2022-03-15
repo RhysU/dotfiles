@@ -7,8 +7,8 @@
   "guuid": null,
   "semantic_status": {
     "cpp": "Enabled",
-    "python": "Enabled",
-    "html": "Enabled"
+    "html": "Enabled",
+    "python": "Enabled"
   },
   "enable_telemetry": true,
   "user_understands_that_enabling_tabnine_cloud_sends_code_to_tabnine_servers": true,
