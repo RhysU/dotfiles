@@ -6,8 +6,8 @@
   "creation_time": "2019-08-20T12:23:47.935207441Z",
   "guuid": null,
   "semantic_status": {
-    "cpp": "Enabled",
     "html": "Enabled",
+    "cpp": "Enabled",
     "python": "Enabled"
   },
   "enable_telemetry": true,
