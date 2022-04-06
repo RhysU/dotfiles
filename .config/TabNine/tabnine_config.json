@@ -6,8 +6,8 @@
   "creation_time": "2019-08-20T12:23:47.935207441Z",
   "guuid": null,
   "semantic_status": {
-    "html": "Enabled",
     "cpp": "Enabled",
+    "html": "Enabled",
     "python": "Enabled"
   },
   "enable_telemetry": true,
@@ -48,5 +48,5 @@
   "inline_suggestions_mode": false,
   "use_specialized_model_if_available": false,
   "empty_line_suggestions": false,
-  "snippets_enabled": false
+  "snippets_enabled_v2": null
 }
