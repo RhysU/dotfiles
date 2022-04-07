@@ -35,7 +35,7 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 
 # Handy for working with Conda
-sa() { test -n "$1" && source activate "$@" || conda env list; }
+sa() { test -n "$1" && conda activate "$@" || conda env list; }
 sd() { conda deactivate "$@"; }
 
 # A variety of alias-like functions (so they may be invoked as commands)
