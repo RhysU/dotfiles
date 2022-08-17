@@ -6,9 +6,9 @@
   "creation_time": "2019-08-20T12:23:47.935207441Z",
   "guuid": null,
   "semantic_status": {
-    "cpp": "Enabled",
+    "python": "Enabled",
     "html": "Enabled",
-    "python": "Enabled"
+    "cpp": "Enabled"
   },
   "enable_telemetry": true,
   "user_understands_that_enabling_tabnine_cloud_sends_code_to_tabnine_servers": true,
