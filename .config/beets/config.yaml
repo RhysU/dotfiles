@@ -1,9 +1,13 @@
-library: ~/Dropbox/Music/library.db
-directory: ~/Dropbox/Music
-pluginpath: ~/beets/myplugins
+library: /home/rhys/BeetLibrary/library.db
+directory: /home/rhys/BeetLibrary
 plugins: bpd chroma fetchart fromfilename lyrics lastgenre web
 
 art_filename: albumart
+chroma:
+    auto: yes
+ignore:
+  .
+  ..
 import:
     copy: yes
     write: yes
