@@ -12,7 +12,7 @@ import:
     copy: yes
     write: yes
     log: beetslog.txt
-    verbose: yes
+    verbose: no
 paths:
     default: $albumartist/$album/$track $title
     singleton: Singletons/$artist - $title
