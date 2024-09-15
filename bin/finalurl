@@ -1,3 +1,6 @@
 #!/bin/bash
+# Replace every line in the standard input with the URL to which it redirects
 set -euo pipefail
-curl --silent --location --head --output /dev/null --write-out '%{url_effective}' -- "$@"
+while IFS= read -r line; do
+    curl --silent --location --head --output /dev/null --write-out '%{url_effective}\n' -- "$line"
+done
