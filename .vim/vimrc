@@ -65,6 +65,8 @@ Plugin 'tpope/vim-vividchalk'
 "Plugin 'vim-scripts/DoxygenToolkit.vim'
 Plugin 'vim-scripts/VisIncr'
 "Plugin 'vimwiki/vimwiki'
+"
+" FIXME Get TabNine working again as I've purchased a license
 
 call vundle#end()
 
