@@ -1,0 +1,8 @@
+[Default Applications]
+application/pdf=org.gnome.Evince.desktop
+video/mp4=vlc.desktop
+
+[Added Associations]
+application/pdf=evince.desktop;org.gnome.Evince.desktop;
+image/heif=gimp.desktop;
+video/mp4=vlc.desktop;
