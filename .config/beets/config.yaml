@@ -1,4 +1,4 @@
-library: /home/rhys/BeetLibrary/library.db
+library: /home/rhys/BeetLibrary.db
 directory: /home/rhys/BeetLibrary
 plugins: bpd chroma duplicates fetchart fromfilename lyrics lastgenre web
 
@@ -14,6 +14,8 @@ import:
     write: yes
     log: beetslog.txt
     verbose: no
+lyrics:
+    auto: no
 paths:
     default: $albumartist/$album/$track $title
     singleton: Singletons/$artist - $title
