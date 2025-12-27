@@ -5,7 +5,6 @@ plugins: bpd chroma duplicates fetchart fromfilename lyrics lastgenre web
 art_filename: albumart
 chroma:
     auto: yes
-duplicates:
 ignore:
   .
   ..
