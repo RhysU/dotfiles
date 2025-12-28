@@ -14,7 +14,7 @@ import:
     log: beetslog.txt
     verbose: no
 lyrics:
-    auto: yes
+    auto: no
 paths:
     default: $albumartist/$album/$track $title
     singleton: Singletons/$artist - $title
