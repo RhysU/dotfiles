@@ -47,7 +47,7 @@ prompt_git_branch()
 # Modified from prompt_git_branch just above
 prompt_python_environment()
 {
-    echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }${VIRTUAL_ENV:+$(basename "$VIRTUAL_ENV") }"
+    echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }${VIRTUAL_ENV:+${VIRTUAL_ENV##*/} }"
 }
 
 # Change the title of the xterm / screen
