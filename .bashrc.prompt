@@ -43,11 +43,11 @@ prompt_git_branch()
     echo "${git_color}${GIT_BRANCH}${prompt_color_reset} "
 }
 
-# Function to grab any non-root conda environment
+# Function to grab any non-root conda environment and Python virtual environment
 # Modified from prompt_git_branch just above
-prompt_conda_environment()
+prompt_python_environment()
 {
-    echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }"
+    echo "${CONDA_DEFAULT_ENV:+$CONDA_DEFAULT_ENV }${VIRTUAL_ENV:+${VIRTUAL_ENV##*/} }"
 }
 
 # Change the title of the xterm / screen
@@ -69,7 +69,7 @@ precmd_prompt()
     PREV_RET_VAL=$?;
 
     # Prepare the basic prompt including git branch information
-    PS1="[\! \u@\h $(prompt_conda_environment)$(prompt_git_branch)\W]"
+    PS1="[\! \u@\h $(prompt_python_environment)$(prompt_git_branch)\W]"
 
     # Include last error status in red if nonzero
     if test $PREV_RET_VAL -ne 0; then
