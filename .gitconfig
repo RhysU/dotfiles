@@ -16,6 +16,9 @@
     interactive = auto
     status = auto
     ui = auto
+[commit]
+    # https://tekin.co.uk/2020/03/git-commit-verbose-mode
+    verbose = true
 [core]
     excludesfile = ~/.gitconfig.excludes
 [diff]
