@@ -30,11 +30,16 @@
 [init]
     templatedir = ~/.gitconfig.template
 [merge]
+    # Per https://jvns.ca/blog/2024/02/16/popular-git-config-options/
+    conflictstyle = diff3
     summary = true
 [pull]
     default = current
 [push]
     default = current
+[rerere]
+    # Per https://jvns.ca/blog/2024/02/16/popular-git-config-options/
+    enabled = true
 [user]
-	email = rhys.ulerich@gmail.com
-	name = Rhys Ulerich
+    email = rhys.ulerich@gmail.com
+    name = Rhys Ulerich
