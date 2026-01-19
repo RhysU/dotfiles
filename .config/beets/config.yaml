@@ -9,10 +9,13 @@ ignore:
   .
   ..
 import:
+    autotag: yes
     copy: yes
-    write: yes
+    duplicate_action: remove
+    languages: en
     log: beetslog.txt
     verbose: no
+    write: yes
 lyrics:
     auto: no
 paths:
