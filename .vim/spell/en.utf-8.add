@@ -1138,3 +1138,11 @@ fileno
 Obscura
 whitepaper
 Stationarity
+discretization
+ensembling
+hyperparameters
+apophenia
+JobserverExecutor
+ProcessPoolExecutor
+OSErrors
+ProcessLookupError
