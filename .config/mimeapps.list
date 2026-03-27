@@ -1,6 +1,7 @@
 [Default Applications]
 application/pdf=org.gnome.Evince.desktop
 video/mp4=vlc.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 
 [Added Associations]
 application/pdf=evince.desktop;org.gnome.Evince.desktop;
