@@ -1148,3 +1148,5 @@ OSErrors
 ProcessLookupError
 Tufte
 Spelunky
+reentrancy
+heapq
