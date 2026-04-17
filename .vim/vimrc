@@ -82,7 +82,7 @@ if has ('x') && has ('gui')
 else
     set clipboard=unnamed
 endif
-set colorcolumn=80
+set colorcolumn=81  " Touching the column indicates >80 characters
 set copyindent
 set diffopt+=iwhite,horizontal,context:2
 set expandtab
