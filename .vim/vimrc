@@ -88,7 +88,13 @@ set diffopt+=iwhite,horizontal,context:2
 set expandtab
 set foldmethod=syntax
 set foldlevelstart=99
-set formatoptions=crqn
+set formatoptions+=1
+set formatoptions+=2
+set formatoptions+=c
+set formatoptions+=n
+set formatoptions+=o
+set formatoptions+=q
+set formatoptions+=r
 set guioptions+=a
 set guioptions-=b " One per line necessary
 set guioptions-=l " One per line necessary
