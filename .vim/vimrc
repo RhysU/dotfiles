@@ -120,8 +120,8 @@ endif
 
 " Some useful personal macros
 noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\>
-noremap =4 :set tabstop=4
-noremap =8 :set tabstop=8
+noremap =4 :set tabstop=4 shiftwidth=4 softtabstop=4
+noremap =8 :set tabstop=8 shiftwidth=8 softtabstop=8
 noremap =b :%s/\s\+$//g
 noremap =c :set ft=c
 noremap =C :set ft=cpp
