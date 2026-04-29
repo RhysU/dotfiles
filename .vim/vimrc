@@ -35,7 +35,7 @@ Plugin 'tpope/vim-surround'
 Plugin 'tpope/vim-vividchalk'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-scripts/VisIncr'
-Plugin 'vim-syntastic/syntastic'
+Plugin 'vim-syntastic/syntastic'  " synchronous: blocks on :w
 " FIXME Get TabNine working again as I've purchased a license
 call vundle#end()
 endif
