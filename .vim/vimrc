@@ -119,10 +119,6 @@ if exists('+signcolumn')
     set signcolumn=yes
 endif
 
-" Miscellaneous settings
-let fortran_dialect='f95'
-let fortran_free_source=1
-
 " Some useful personal macros
 noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\>
 noremap =4 :set tabstop=4
