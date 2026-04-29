@@ -77,9 +77,6 @@ if has('gui_running')
     set guioptions-=l
     set guioptions-=r
 endif
-set hidden
-set history=1000
-set hlsearch
 set joinspaces
 set list
 set matchpairs+=<:>
