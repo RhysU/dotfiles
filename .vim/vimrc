@@ -64,13 +64,7 @@ set diffopt+=iwhite,horizontal,context:2
 set expandtab
 set foldmethod=syntax
 set foldlevelstart=99
-set formatoptions+=1
-set formatoptions+=2
-set formatoptions+=c
-set formatoptions+=n
-set formatoptions+=o
-set formatoptions+=q
-set formatoptions+=r
+set formatoptions+=12cnoqr
 if has('gui_running')
     set guioptions+=a
     set guioptions-=b
