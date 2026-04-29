@@ -99,12 +99,6 @@ set wildignore+=*.sw?
 set wildmode=list:longest
 set winminheight=0
 
-" Vim-only: removed in Neovim
-if !has('nvim')
-    set ttyfast
-    set ttymouse=sgr
-endif
-
 " Always reserve the sign column so signify doesn't shift text
 " Guarded for old Vim where 'signcolumn' didn't exist yet
 if exists('+signcolumn')
