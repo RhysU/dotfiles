@@ -248,7 +248,6 @@ let g:syntastic_cpp_compiler = 'g++'
 let g:syntastic_cpp_compiler_options = '-std=c++14'
 let g:tex_flavor='latex'
 let g:xml_syntax_folding=1
-set iskeyword+=:
 
 " Avoid seeing common build artifacts in NERDTree
 let NERDTreeIgnore=[ '\.a$', 'autom4te.cache', '\.aux$', '\.bbl$', '\.blg$',
