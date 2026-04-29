@@ -95,7 +95,7 @@ set virtualedit=block
 set visualbell
 set whichwrap=b,s,h,l,<,>,[,]
 set wildignore+=*.aux,*.out,*.toc,.bbl
-set wildignore+=**.class
+set wildignore+=*.class
 set wildignore+=*.DS_Store
 set wildignore+=.hg,.git,.svn,.bzr
 set wildignore+=*.luac
