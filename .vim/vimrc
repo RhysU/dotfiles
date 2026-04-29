@@ -70,12 +70,16 @@ Plugin 'vim-scripts/VisIncr'
 
 call vundle#end()
 
-set t_Co=256
+if has('nvim')
+    set termguicolors
+else
+    set t_Co=256
+endif
 colorscheme candy " vividchalk darkbone molokai nord
 set background=dark
 highlight clear SpellBad
-highlight SpellBad term=standout term=underline ctermfg=red cterm=underline
-highlight ColorColumn term=standout ctermbg=magenta
+highlight SpellBad term=standout term=underline ctermfg=red cterm=underline gui=underline guifg=Red
+highlight ColorColumn term=standout ctermbg=magenta guibg=Magenta
 
 if has ('x') && has ('gui')
     set clipboard=unnamedplus
@@ -123,8 +127,6 @@ set splitright
 set textwidth=80
 set tabstop=4
 set title
-set ttyfast
-set ttymouse=xterm
 set undolevels=1000
 set viewoptions=folds,options,cursor,unix,slash
 set virtualedit=block
@@ -141,6 +143,18 @@ set wildignore+=*.spl
 set wildignore+=*.sw?
 set wildmode=list:longest
 set winminheight=0
+
+" Options present in Vim but removed in Neovim
+if !has('nvim')
+    set ttyfast
+    set ttymouse=xterm
+endif
+
+" Always reserve the sign column so signify doesn't shift text
+" Guarded for old Vim where 'signcolumn' didn't exist yet
+if exists('+signcolumn')
+    set signcolumn=yes
+endif
 
 " Miscellaneous settings
 let fortran_dialect='f95'
@@ -238,9 +252,15 @@ noremap <silent> <Leader>\| :set cursorcolumn!       <CR>:set cursorcolumn?<CR>
 noremap <silent> <Leader>-  :set cursorline!         <CR>:set cursorline?  <CR>
 noremap <silent> <Leader>#  :set number!             <CR>:set number?      <CR>
 noremap <silent> <Leader>S  :set spell!              <CR>:set spell?       <CR>
-noremap <silent> <Leader>s  :SyntasticToggleMode     <CR>
 noremap <silent> <Leader>t  :TagbarToggle            <CR>
 noremap <silent> <Leader>w  :set wrap!               <CR>:set wrap?        <CR>
+
+" Mapping — guard so Neovim doesn't blow up on <Leader>s:
+if exists(':SyntasticToggleMode')
+    noremap <silent> <Leader>s :SyntasticToggleMode<CR>
+elseif has('nvim')
+    nnoremap <silent> <Leader>s <cmd>lua vim.diagnostic.enable(not vim.diagnostic.is_enabled())<CR>
+endif
 
 " Tabularize mappings from
 " http://vimcasts.org/episodes/aligning-text-with-tabular-vim/
