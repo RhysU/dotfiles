@@ -99,9 +99,8 @@ set wildignore+=*.sw?
 set wildmode=list:longest
 set winminheight=0
 
-" Vim-only: removed in Neovim, or a footgun there
+" Vim-only: removed in Neovim
 if !has('nvim')
-    set lazyredraw
     set ttyfast
     set ttymouse=sgr
 endif
