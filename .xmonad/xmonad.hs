@@ -15,6 +15,7 @@ import XMonad.Layout.MultiToggle
 import XMonad.Layout.Reflect
 import XMonad.Layout.Tabbed
 import XMonad.StackSet
+import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig (mkNamedKeymap)
 import XMonad.Util.NamedActions
 import XMonad.Util.Run (spawnPipe)
@@ -55,9 +56,9 @@ showKeybindings x = addName "Show keybindings" $ io $ do
 myKeys c =
        section "Launchers"
          [ ("M-d",          addName "dmenu launcher"          $ spawn "dmenu_run")
-         , ("M-S-<Return>", addName "Terminal (gnome-terminal)" $ spawn "gnome-terminal")
+         , ("S-M-<Return>", addName "Terminal (gnome-terminal)" $ spawn "gnome-terminal")
          , ("M-b",          addName "Browser"                 $ spawn "xdg-open https://")
-         , ("M-S-l",        addName "Lock screen"             $ spawn "loginctl lock-session")
+         , ("S-M-l",        addName "Lock screen"             $ spawn "loginctl lock-session")
          ]
     ^++^ section "Layout"
          [ ("M-\\",         addName "Maximize / restore"      $ withFocused (sendMessage . maximizeRestore))
@@ -95,32 +96,32 @@ myKeys c =
     -- These are xmonad's built-in defaults; they would work even if not listed
     -- here, but enumerating them lets the M-/ cheat sheet act as a full reference.
     ^++^ section "Standard bindings"
-         ([ ("M-S-c",       addName "Close focused window"    $ kill)
+         ([ ("S-M-c",       addName "Close focused window"    $ kill)
           , ("M-q",         addName "Restart xmonad"          $ spawn "xmonad --recompile && xmonad --restart")
-          , ("M-S-q",       addName "Quit xmonad"             $ io exitSuccess)
+          , ("S-M-q",       addName "Quit xmonad"             $ io exitSuccess)
           , ("M-<Space>",   addName "Cycle layout"            $ sendMessage NextLayout)
-          , ("M-S-<Space>", addName "Reset layout"            $ setLayout $ layoutHook c)
-          , ("M-<Tab>",     addName "Focus next window"       $ windows focusDown)
-          , ("M-S-<Tab>",   addName "Focus prev window"       $ windows focusUp)
-          , ("M-j",         addName "Focus next in stack"     $ windows focusDown)
-          , ("M-k",         addName "Focus prev in stack"     $ windows focusUp)
-          , ("M-S-j",       addName "Swap with next"          $ windows swapDown)
-          , ("M-S-k",       addName "Swap with prev"          $ windows swapUp)
-          , ("M-<Return>",  addName "Promote to master"       $ windows swapMaster)
+          , ("S-M-<Space>", addName "Reset layout"            $ setLayout $ layoutHook c)
+          , ("M-<Tab>",     addName "Focus next window"       $ windows W.focusDown)
+          , ("S-M-<Tab>",   addName "Focus prev window"       $ windows W.focusUp)
+          , ("M-j",         addName "Focus next in stack"     $ windows W.focusDown)
+          , ("M-k",         addName "Focus prev in stack"     $ windows W.focusUp)
+          , ("S-M-j",       addName "Swap with next"          $ windows W.swapDown)
+          , ("S-M-k",       addName "Swap with prev"          $ windows W.swapUp)
+          , ("M-<Return>",  addName "Promote to master"       $ windows W.swapMaster)
           , ("M-h",         addName "Shrink master"           $ sendMessage Shrink)
           , ("M-l",         addName "Expand master"           $ sendMessage Expand)
-          , ("M-t",         addName "Sink floating window"    $ withFocused $ windows . sink)
+          , ("M-t",         addName "Sink floating window"    $ withFocused $ windows . W.sink)
           , ("M-,",         addName "Increment master count"  $ sendMessage (IncMasterN 1))
           , ("M-.",         addName "Decrement master count"  $ sendMessage (IncMasterN (-1)))
-          , ("M-w",         addName "Focus screen 1"          $ screenWorkspace 0 >>= flip whenJust (windows . view))
-          , ("M-e",         addName "Focus screen 2"          $ screenWorkspace 1 >>= flip whenJust (windows . view))
-          , ("M-r",         addName "Focus screen 3"          $ screenWorkspace 2 >>= flip whenJust (windows . view))
-          , ("M-S-w",       addName "Move window to screen 1" $ screenWorkspace 0 >>= flip whenJust (windows . shift))
-          , ("M-S-e",       addName "Move window to screen 2" $ screenWorkspace 1 >>= flip whenJust (windows . shift))
-          , ("M-S-r",       addName "Move window to screen 3" $ screenWorkspace 2 >>= flip whenJust (windows . shift))
+          , ("M-w",         addName "Focus screen 1"          $ screenWorkspace 0 >>= flip whenJust (windows . W.view))
+          , ("M-e",         addName "Focus screen 2"          $ screenWorkspace 1 >>= flip whenJust (windows . W.view))
+          , ("M-r",         addName "Focus screen 3"          $ screenWorkspace 2 >>= flip whenJust (windows . W.view))
+          , ("S-M-w",       addName "Move window to screen 1" $ screenWorkspace 0 >>= flip whenJust (windows . W.shift))
+          , ("S-M-e",       addName "Move window to screen 2" $ screenWorkspace 1 >>= flip whenJust (windows . W.shift))
+          , ("S-M-r",       addName "Move window to screen 3" $ screenWorkspace 2 >>= flip whenJust (windows . W.shift))
           ] ++
-          [ ("M-"   ++ [n], addName ("View workspace "    ++ [n]) $ windows $ greedyView [n]) | n <- "123456789" ] ++
-          [ ("M-S-" ++ [n], addName ("Move to workspace " ++ [n]) $ windows $ shift      [n]) | n <- "123456789" ])
+          [ ("M-"   ++ [n], addName ("View workspace "    ++ [n]) $ windows $ W.greedyView [n]) | n <- "123456789" ] ++
+          [ ("S-M-" ++ [n], addName ("Move to workspace " ++ [n]) $ windows $ W.shift      [n]) | n <- "123456789" ])
   where
     section name ks = subtitle name : mkNamedKeymap c ks
 
