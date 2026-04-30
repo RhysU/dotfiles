@@ -106,21 +106,21 @@ if exists('+signcolumn')
 endif
 
 " Some useful personal macros
-noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\>
-noremap =4 :set tabstop=4 shiftwidth=4 softtabstop=4
-noremap =8 :set tabstop=8 shiftwidth=8 softtabstop=8
-noremap =b :%s/\s\+$//ge
-noremap =c :set ft=c
-noremap =C :set ft=cpp
-noremap =d :set bg=dark
-noremap =D :set bg=light
-noremap =e :retab
-noremap =f !}fmt -w 78 -g 75 -c
+noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\><CR>
+noremap =4 :set tabstop=4 shiftwidth=4 softtabstop=4<CR>
+noremap =8 :set tabstop=8 shiftwidth=8 softtabstop=8<CR>
+noremap =b :%s/\s\+$//ge<CR>
+noremap =c :set ft=c<CR>
+noremap =C :set ft=cpp<CR>
+noremap =d :set bg=dark<CR>
+noremap =D :set bg=light<CR>
+noremap =e :retab<CR>
+noremap =f !}fmt -w 78 -g 75 -c<CR>
 noremap == i 
-noremap =s !}sort
-noremap =u !}sort -u
-noremap =v :new $MYVIMRC
-noremap =V :source $MYVIMRC
+noremap =s !}sort<CR>
+noremap =u !}sort -u<CR>
+noremap =v :new $MYVIMRC<CR>
+noremap =V :source $MYVIMRC<CR>
 
 " Toggle folds on space
 nnoremap <space> za
