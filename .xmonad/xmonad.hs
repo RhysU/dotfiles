@@ -16,16 +16,18 @@ import XMonad.StackSet
 import XMonad.Util.EZConfig
 import XMonad.Util.WorkspaceCompare
 
-desktop "gnome"        = gnomeConfig
-desktop "kde"          = kde4Config
-desktop "xfce"         = xfceConfig
-desktop "xmonad-gnome" = gnomeConfig
-desktop _              = desktopConfig
+sessionConfig "gnome"        = gnomeConfig
+sessionConfig "kde"          = kde4Config
+sessionConfig "xfce"         = xfceConfig
+sessionConfig "xmonad-gnome" = gnomeConfig
+sessionConfig _              = desktopConfig
 
 main = do
   session <- getEnv "DESKTOP_SESSION"
-  let config = personalize (maybe desktopConfig desktop session)
+  let config = personalize (maybe desktopConfig sessionConfig session)
   xmonad $ config
+
+hiddenNonEmptyWS = hiddenWS :&: Not emptyWS
 
 personalize c = c
     { modMask    = mod4Mask
@@ -40,12 +42,12 @@ personalize c = c
     } `additionalKeysP`
     [ ("M-d" ,      spawn "dmenu_run")
     , ("M-\\",      withFocused (sendMessage . maximizeRestore))
-    , ("M-f",       moveTo Next EmptyWS)
-    , ("M-<D>",     moveTo Next HiddenNonEmptyWS)
-    , ("M-<U>",     moveTo Prev HiddenNonEmptyWS)
-    , ("S-M-f",     followTo Next EmptyWS   )
-    , ("S-M-<D>",   followTo Next HiddenNonEmptyWS)
-    , ("S-M-<U>",   followTo Prev HiddenNonEmptyWS)
+    , ("M-f",       moveTo Next emptyWS)
+    , ("M-<D>",     moveTo Next hiddenNonEmptyWS)
+    , ("M-<U>",     moveTo Prev hiddenNonEmptyWS)
+    , ("S-M-f",     followTo Next emptyWS   )
+    , ("S-M-<D>",   followTo Next hiddenNonEmptyWS)
+    , ("S-M-<U>",   followTo Prev hiddenNonEmptyWS)
     , ("M-<R>",     nextScreen)
     , ("M-<L>",     prevScreen)
     , ("S-M-<R>",   shiftNextScreen)
