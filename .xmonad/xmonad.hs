@@ -32,6 +32,7 @@ main = do
 
 hiddenNonEmptyWS = hiddenWS :&: Not emptyWS
 
+-- Press M-/ at any time to pop up a cheat sheet of every binding below.
 personalize c = addDescrKeys' ((mod4Mask, xK_slash), showKeybindings) myKeys $ c
     { modMask    = mod4Mask
     , manageHook = manageHook c <+> composeOne
@@ -54,8 +55,8 @@ myKeys c =
        section "Launchers"
          [ ("M-d",          addName "dmenu launcher"          $ spawn "dmenu_run")
          , ("M-S-<Return>", addName "Terminal (gnome-terminal)" $ spawn "gnome-terminal")
-         , ("M-b",          addName "Browser"                 $ spawn "xdg-open https://")
-         , ("M-S-l",        addName "Lock screen"             $ spawn "xscreensaver-command -lock")
+         , ("M-b",          addName "Browser (firefox)"       $ spawn "firefox")
+         , ("M-S-l",        addName "Lock screen"             $ spawn "loginctl lock-session")
          ]
     ^++^ section "Layout"
          [ ("M-\\",         addName "Maximize / restore"      $ withFocused (sendMessage . maximizeRestore))
@@ -80,15 +81,15 @@ myKeys c =
          , ("C-S-M-<L>",    addName "Swap with prev screen"   $ swapPrevScreen)
          ]
     ^++^ section "Media"
-         [ ("<XF86AudioRaiseVolume>", addName "Volume up"      $ spawn "pactl set-sink-volume @DEFAULT_SINK@ +5%")
-         , ("<XF86AudioLowerVolume>", addName "Volume down"    $ spawn "pactl set-sink-volume @DEFAULT_SINK@ -5%")
-         , ("<XF86AudioMute>",        addName "Mute toggle"    $ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle")
+         [ ("<XF86AudioRaiseVolume>", addName "Volume up"      $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+")
+         , ("<XF86AudioLowerVolume>", addName "Volume down"    $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-")
+         , ("<XF86AudioMute>",        addName "Mute toggle"    $ spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
          , ("<XF86MonBrightnessUp>",  addName "Brightness up"  $ spawn "brightnessctl set +5%")
          , ("<XF86MonBrightnessDown>",addName "Brightness down" $ spawn "brightnessctl set 5%-")
          ]
     ^++^ section "Screenshots"
-         [ ("<Print>",      addName "Region screenshot"       $ spawn "scrot -s ~/Pictures/%F-%T.png")
-         , ("M-<Print>",    addName "Full screenshot"         $ spawn "scrot ~/Pictures/%F-%T.png")
+         [ ("<Print>",      addName "Region screenshot"       $ spawn "gnome-screenshot -a")
+         , ("M-<Print>",    addName "Full screenshot"         $ spawn "gnome-screenshot")
          ]
   where
     section name ks = subtitle name : mkNamedKeymap c ks
