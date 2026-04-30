@@ -1,3 +1,4 @@
+import System.Exit (exitSuccess)
 import System.IO (hPutStr, hClose)
 import System.Posix.Env (getEnv)
 import Data.Maybe (maybe)
@@ -91,6 +92,35 @@ myKeys c =
          [ ("<Print>",      addName "Region screenshot"       $ spawn "gnome-screenshot -a")
          , ("M-<Print>",    addName "Full screenshot"         $ spawn "gnome-screenshot")
          ]
+    -- These are xmonad's built-in defaults; they would work even if not listed
+    -- here, but enumerating them lets the M-/ cheat sheet act as a full reference.
+    ^++^ section "Standard bindings"
+         ([ ("M-S-c",       addName "Close focused window"    $ kill)
+          , ("M-q",         addName "Restart xmonad"          $ spawn "xmonad --recompile && xmonad --restart")
+          , ("M-S-q",       addName "Quit xmonad"             $ io exitSuccess)
+          , ("M-<Space>",   addName "Cycle layout"            $ sendMessage NextLayout)
+          , ("M-S-<Space>", addName "Reset layout"            $ setLayout $ layoutHook c)
+          , ("M-<Tab>",     addName "Focus next window"       $ windows focusDown)
+          , ("M-S-<Tab>",   addName "Focus prev window"       $ windows focusUp)
+          , ("M-j",         addName "Focus next in stack"     $ windows focusDown)
+          , ("M-k",         addName "Focus prev in stack"     $ windows focusUp)
+          , ("M-S-j",       addName "Swap with next"          $ windows swapDown)
+          , ("M-S-k",       addName "Swap with prev"          $ windows swapUp)
+          , ("M-<Return>",  addName "Promote to master"       $ windows swapMaster)
+          , ("M-h",         addName "Shrink master"           $ sendMessage Shrink)
+          , ("M-l",         addName "Expand master"           $ sendMessage Expand)
+          , ("M-t",         addName "Sink floating window"    $ withFocused $ windows . sink)
+          , ("M-,",         addName "Increment master count"  $ sendMessage (IncMasterN 1))
+          , ("M-.",         addName "Decrement master count"  $ sendMessage (IncMasterN (-1)))
+          , ("M-w",         addName "Focus screen 1"          $ screenWorkspace 0 >>= flip whenJust (windows . view))
+          , ("M-e",         addName "Focus screen 2"          $ screenWorkspace 1 >>= flip whenJust (windows . view))
+          , ("M-r",         addName "Focus screen 3"          $ screenWorkspace 2 >>= flip whenJust (windows . view))
+          , ("M-S-w",       addName "Move window to screen 1" $ screenWorkspace 0 >>= flip whenJust (windows . shift))
+          , ("M-S-e",       addName "Move window to screen 2" $ screenWorkspace 1 >>= flip whenJust (windows . shift))
+          , ("M-S-r",       addName "Move window to screen 3" $ screenWorkspace 2 >>= flip whenJust (windows . shift))
+          ] ++
+          [ ("M-"   ++ [n], addName ("View workspace "    ++ [n]) $ windows $ greedyView [n]) | n <- "123456789" ] ++
+          [ ("M-S-" ++ [n], addName ("Move to workspace " ++ [n]) $ windows $ shift      [n]) | n <- "123456789" ])
   where
     section name ks = subtitle name : mkNamedKeymap c ks
 
