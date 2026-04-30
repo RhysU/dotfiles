@@ -1,3 +1,4 @@
+import System.IO (hPutStr, hClose)
 import System.Posix.Env (getEnv)
 import Data.Maybe (maybe)
 
@@ -13,7 +14,9 @@ import XMonad.Layout.MultiToggle
 import XMonad.Layout.Reflect
 import XMonad.Layout.Tabbed
 import XMonad.StackSet
-import XMonad.Util.EZConfig
+import XMonad.Util.EZConfig (mkNamedKeymap)
+import XMonad.Util.NamedActions
+import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.WorkspaceCompare
 
 sessionConfig "gnome"        = gnomeConfig
@@ -29,7 +32,7 @@ main = do
 
 hiddenNonEmptyWS = hiddenWS :&: Not emptyWS
 
-personalize c = c
+personalize c = addDescrKeys' ((mod4Mask, xK_slash), showKeybindings) myKeys $ c
     { modMask    = mod4Mask
     , manageHook = manageHook c <+> composeOne
                    [
@@ -39,25 +42,56 @@ personalize c = c
     , layoutHook = mkToggle (single REFLECTX) $
                    mkToggle (single REFLECTY) $
                      maximize (layoutHook c ||| simpleTabbed)
-    } `additionalKeysP`
-    [ ("M-d" ,      spawn "dmenu_run")
-    , ("M-\\",      withFocused (sendMessage . maximizeRestore))
-    , ("M-f",       moveTo Next emptyWS)
-    , ("M-<D>",     moveTo Next hiddenNonEmptyWS)
-    , ("M-<U>",     moveTo Prev hiddenNonEmptyWS)
-    , ("S-M-f",     followTo Next emptyWS   )
-    , ("S-M-<D>",   followTo Next hiddenNonEmptyWS)
-    , ("S-M-<U>",   followTo Prev hiddenNonEmptyWS)
-    , ("M-<R>",     nextScreen)
-    , ("M-<L>",     prevScreen)
-    , ("S-M-<R>",   shiftNextScreen)
-    , ("S-M-<L>",   shiftPrevScreen)
-    , ("C-S-M-<R>", swapNextScreen)
-    , ("C-S-M-<L>", swapPrevScreen)
-    , ("S-M-x",     sendMessage $ Toggle REFLECTX)
-    , ("S-M-y",     sendMessage $ Toggle REFLECTY)
-    , ("M-z",       toggleWS)
-    ]
+    }
+
+showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
+showKeybindings x = addName "Show keybindings" $ io $ do
+    h <- spawnPipe "xmessage -file -"
+    hPutStr h (unlines $ showKm x)
+    hClose h
+
+myKeys c =
+       section "Launchers"
+         [ ("M-d",          addName "dmenu launcher"          $ spawn "dmenu_run")
+         , ("M-S-<Return>", addName "Terminal (alacritty)"    $ spawn "alacritty")
+         , ("M-b",          addName "Browser"                 $ spawn "xdg-open https://")
+         , ("M-S-l",        addName "Lock screen"             $ spawn "xscreensaver-command -lock")
+         ]
+    ^++^ section "Layout"
+         [ ("M-\\",         addName "Maximize / restore"      $ withFocused (sendMessage . maximizeRestore))
+         , ("S-M-x",        addName "Reflect X"               $ sendMessage $ Toggle REFLECTX)
+         , ("S-M-y",        addName "Reflect Y"               $ sendMessage $ Toggle REFLECTY)
+         ]
+    ^++^ section "Workspaces"
+         [ ("M-f",          addName "Move to next empty WS"   $ moveTo Next emptyWS)
+         , ("M-<D>",        addName "Move to next non-empty"  $ moveTo Next hiddenNonEmptyWS)
+         , ("M-<U>",        addName "Move to prev non-empty"  $ moveTo Prev hiddenNonEmptyWS)
+         , ("S-M-f",        addName "Follow to next empty WS" $ followTo Next emptyWS)
+         , ("S-M-<D>",      addName "Follow to next non-empty"$ followTo Next hiddenNonEmptyWS)
+         , ("S-M-<U>",      addName "Follow to prev non-empty"$ followTo Prev hiddenNonEmptyWS)
+         , ("M-z",          addName "Toggle last workspace"   $ toggleWS)
+         ]
+    ^++^ section "Screens"
+         [ ("M-<R>",        addName "Focus next screen"       $ nextScreen)
+         , ("M-<L>",        addName "Focus prev screen"       $ prevScreen)
+         , ("S-M-<R>",      addName "Shift to next screen"    $ shiftNextScreen)
+         , ("S-M-<L>",      addName "Shift to prev screen"    $ shiftPrevScreen)
+         , ("C-S-M-<R>",    addName "Swap with next screen"   $ swapNextScreen)
+         , ("C-S-M-<L>",    addName "Swap with prev screen"   $ swapPrevScreen)
+         ]
+    ^++^ section "Media"
+         [ ("<XF86AudioRaiseVolume>", addName "Volume up"      $ spawn "pactl set-sink-volume @DEFAULT_SINK@ +5%")
+         , ("<XF86AudioLowerVolume>", addName "Volume down"    $ spawn "pactl set-sink-volume @DEFAULT_SINK@ -5%")
+         , ("<XF86AudioMute>",        addName "Mute toggle"    $ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle")
+         , ("<XF86MonBrightnessUp>",  addName "Brightness up"  $ spawn "brightnessctl set +5%")
+         , ("<XF86MonBrightnessDown>",addName "Brightness down" $ spawn "brightnessctl set 5%-")
+         ]
+    ^++^ section "Screenshots"
+         [ ("<Print>",      addName "Region screenshot"       $ spawn "scrot -s ~/Pictures/%F-%T.png")
+         , ("M-<Print>",    addName "Full screenshot"         $ spawn "scrot ~/Pictures/%F-%T.png")
+         ]
+  where
+    section name ks = subtitle name : mkNamedKeymap c ks
 
 -- Written by Marshall Lochbaum on xmonad@haskell.org mailing list
 -- http://www.haskell.org/pipermail/xmonad/2013-August/013778.html
