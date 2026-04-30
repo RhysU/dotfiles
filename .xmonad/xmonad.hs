@@ -55,7 +55,7 @@ myKeys c =
        section "Launchers"
          [ ("M-d",          addName "dmenu launcher"          $ spawn "dmenu_run")
          , ("M-S-<Return>", addName "Terminal (gnome-terminal)" $ spawn "gnome-terminal")
-         , ("M-b",          addName "Browser (firefox)"       $ spawn "firefox")
+         , ("M-b",          addName "Browser"                 $ spawn "xdg-open https://")
          , ("M-S-l",        addName "Lock screen"             $ spawn "loginctl lock-session")
          ]
     ^++^ section "Layout"
