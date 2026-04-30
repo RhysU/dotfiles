@@ -55,8 +55,8 @@ showKeybindings x = addName "Show keybindings" $ io $ do
 
 myKeys c =
        section "Launchers"
-         [ ("M-d",          addName "dmenu launcher"          $ spawn "dmenu_run")
-         , ("S-M-<Return>", addName "Terminal (gnome-terminal)" $ spawn "gnome-terminal")
+         [ ("M-d",          addName "Run"                     $ spawn "dmenu_run")
+         , ("S-M-<Return>", addName "Terminal"                $ spawn "gnome-terminal")
          , ("M-b",          addName "Browser"                 $ spawn "xdg-open https://")
          , ("S-M-l",        addName "Lock screen"             $ spawn "loginctl lock-session")
          ]
@@ -66,39 +66,39 @@ myKeys c =
          , ("S-M-y",        addName "Reflect Y"               $ sendMessage $ Toggle REFLECTY)
          ]
     ^++^ section "Workspaces"
-         [ ("M-f",          addName "Move to next empty WS"   $ moveTo Next emptyWS)
-         , ("M-<D>",        addName "Move to next non-empty"  $ moveTo Next hiddenNonEmptyWS)
-         , ("M-<U>",        addName "Move to prev non-empty"  $ moveTo Prev hiddenNonEmptyWS)
-         , ("S-M-f",        addName "Follow to next empty WS" $ followTo Next emptyWS)
-         , ("S-M-<D>",      addName "Follow to next non-empty"$ followTo Next hiddenNonEmptyWS)
-         , ("S-M-<U>",      addName "Follow to prev non-empty"$ followTo Prev hiddenNonEmptyWS)
-         , ("M-z",          addName "Toggle last workspace"   $ toggleWS)
+         [ ("M-f",          addName "Move to next empty workspace"            $ moveTo Next emptyWS)
+         , ("M-<D>",        addName "Move to next non-empty workspace"        $ moveTo Next hiddenNonEmptyWS)
+         , ("M-<U>",        addName "Move to previous non-empty workspace"    $ moveTo Prev hiddenNonEmptyWS)
+         , ("S-M-f",        addName "Follow to next empty workspace"          $ followTo Next emptyWS)
+         , ("S-M-<D>",      addName "Follow to next non-empty workspace"      $ followTo Next hiddenNonEmptyWS)
+         , ("S-M-<U>",      addName "Follow to previous non-empty workspace"  $ followTo Prev hiddenNonEmptyWS)
+         , ("M-z",          addName "Toggle last workspace"                   $ toggleWS)
          ]
     ^++^ section "Screens"
-         [ ("M-<R>",        addName "Focus next screen"       $ nextScreen)
-         , ("M-<L>",        addName "Focus prev screen"       $ prevScreen)
-         , ("S-M-<R>",      addName "Shift to next screen"    $ shiftNextScreen)
-         , ("S-M-<L>",      addName "Shift to prev screen"    $ shiftPrevScreen)
-         , ("C-S-M-<R>",    addName "Swap with next screen"   $ swapNextScreen)
-         , ("C-S-M-<L>",    addName "Swap with prev screen"   $ swapPrevScreen)
+         [ ("M-<R>",        addName "Focus next screen"          $ nextScreen)
+         , ("M-<L>",        addName "Focus previous screen"      $ prevScreen)
+         , ("S-M-<R>",      addName "Shift to next screen"       $ shiftNextScreen)
+         , ("S-M-<L>",      addName "Shift to previous screen"   $ shiftPrevScreen)
+         , ("C-S-M-<R>",    addName "Swap with next screen"      $ swapNextScreen)
+         , ("C-S-M-<L>",    addName "Swap with previous screen"  $ swapPrevScreen)
          ]
     ^++^ section "Media"
-         [ ("<XF86AudioRaiseVolume>", addName "Volume up"      $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+")
-         , ("<XF86AudioLowerVolume>", addName "Volume down"    $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-")
-         , ("<XF86AudioMute>",        addName "Mute toggle"    $ spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
-         , ("<XF86MonBrightnessUp>",  addName "Brightness up"  $ spawn "brightnessctl set +5%")
+         [ ("<XF86AudioRaiseVolume>", addName "Volume up"       $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+")
+         , ("<XF86AudioLowerVolume>", addName "Volume down"     $ spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-")
+         , ("<XF86AudioMute>",        addName "Toggle mute"     $ spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+         , ("<XF86MonBrightnessUp>",  addName "Brightness up"   $ spawn "brightnessctl set +5%")
          , ("<XF86MonBrightnessDown>",addName "Brightness down" $ spawn "brightnessctl set 5%-")
          ]
     ^++^ section "Screenshots"
          [ ("<Print>",      addName "Region screenshot"       $ spawn "gnome-screenshot -a")
          , ("M-<Print>",    addName "Full screenshot"         $ spawn "gnome-screenshot")
          ]
-    -- These are xmonad's built-in defaults; they would work even if not listed
-    -- here, but enumerating them lets the M-/ cheat sheet act as a full reference.
+    -- XMonad built-in defaults would work even if not listed but enumerating
+    -- them here causes the M-/ cheat sheet to become a more full reference
     ^++^ section "Standard bindings"
          ([ ("S-M-c",       addName "Close focused window"    $ kill)
-          , ("M-q",         addName "Restart xmonad"          $ spawn "xmonad --recompile && xmonad --restart")
-          , ("S-M-q",       addName "Quit xmonad"             $ io exitSuccess)
+          , ("M-q",         addName "Restart XMonad"          $ spawn "xmonad --recompile && xmonad --restart")
+          , ("S-M-q",       addName "Quit XMonad"             $ io exitSuccess)
           , ("M-<Space>",   addName "Cycle layout"            $ sendMessage NextLayout)
           , ("S-M-<Space>", addName "Reset layout"            $ setLayout $ layoutHook c)
           , ("M-<Tab>",     addName "Focus next window"       $ windows W.focusDown)
@@ -120,8 +120,9 @@ myKeys c =
           , ("S-M-e",       addName "Move window to screen 2" $ screenWorkspace 1 >>= flip whenJust (windows . W.shift))
           , ("S-M-r",       addName "Move window to screen 3" $ screenWorkspace 2 >>= flip whenJust (windows . W.shift))
           ] ++
-          [ ("M-"   ++ [n], addName ("View workspace "    ++ [n]) $ windows $ W.greedyView [n]) | n <- "123456789" ] ++
-          [ ("S-M-" ++ [n], addName ("Move to workspace " ++ [n]) $ windows $ W.shift      [n]) | n <- "123456789" ])
+          -- Truncating below at 1, 2, 3 but all of 1 through 9 work
+          [ ("M-"   ++ [n], addName ("View workspace "    ++ [n]) $ windows $ W.greedyView [n]) | n <- "123" ] ++
+          [ ("S-M-" ++ [n], addName ("Move to workspace " ++ [n]) $ windows $ W.shift      [n]) | n <- "123" ])
   where
     section name ks = subtitle name : mkNamedKeymap c ks
 
