@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+RES=$(xrandr 2>/dev/null | awk '/\*/ {print $1; exit}')
+
+if [[ -z "$RES" ]]; then
+    echo "gamescope-auto: couldn't determine active resolution from xrandr" >&2
+    exit 1
+fi
+
+W=${RES%%x*}
+H=${RES##*x}
+
+set -x
+exec gamescope -w "$W" -h "$H" -W "$W" -H "$H" --expose-wayland --force-grab-cursor --fullscreen --steam "$@"
