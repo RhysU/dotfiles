@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
 """Print a histogram of NEEDLE and its synonyms over the given files or stdin.
 
 Synonyms come from the Datamuse `rel_syn` endpoint, fetched via wget. Matching
