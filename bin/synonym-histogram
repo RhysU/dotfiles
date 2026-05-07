@@ -44,7 +44,7 @@ def build_matcher(terms: list[str]) -> re.Pattern:
     """
     by_len = sorted(terms, key=len, reverse=True)
     parts = [r"\s+".join(re.escape(w) for w in t.split()) for t in by_len]
-    return re.compile(r"\b(?:" + "|".join(parts) + r")\b")
+    return re.compile(r"\b(?:" + "|".join(parts) + r")\b", re.IGNORECASE)
 
 
 WS_RE = re.compile(r"\s")
@@ -64,13 +64,13 @@ def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> Non
     flush = 4 * max_term_len
     buf = ""
     for line in stream:
-        buf += line.lower()
+        buf += line
         if len(buf) < flush:
             continue
         pending = []
         last_end = 0
         for match in matcher.finditer(buf):
-            pending.append(re.sub(r"\s+", " ", match.group()))
+            pending.append(re.sub(r"\s+", " ", match.group().lower()))
             last_end = match.end()
         cut_floor = max(last_end, len(buf) - max_term_len)
         ws = WS_RE.search(buf, cut_floor)
@@ -80,7 +80,7 @@ def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> Non
             counts[term] += 1
         buf = buf[ws.start() :]
     for match in matcher.finditer(buf):
-        counts[re.sub(r"\s+", " ", match.group())] += 1
+        counts[re.sub(r"\s+", " ", match.group().lower())] += 1
 
 
 def histogram(counts: Counter, terms: list[str]) -> str:
