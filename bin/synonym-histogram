@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Print a histogram of NEEDLE and its synonyms over the given files or stdin."""
+
+import fileinput
+import json
+import re
+import subprocess
+import sys
+from collections import Counter
+
+API = "https://api.datamuse.com/words?rel_syn={}"
+
+
+def fetch_synonyms(needle: str) -> list[str]:
+    """Return synonyms for needle from Datamuse, ordered by API score."""
+    result = subprocess.run(
+        ["wget", "-qO-", API.format(needle)],
+        capture_output=True, check=True, text=True,
+    )
+    return [entry["word"].lower() for entry in json.loads(result.stdout)]
+
+
+def build_matcher(terms: list[str]) -> re.Pattern:
+    """Compile an alternation matching any term as a whole word or phrase.
+
+    Internal whitespace in a phrase matches any run of whitespace.
+    Longest terms come first so 'at that place' wins over 'place'.
+    """
+    by_len = sorted(terms, key=len, reverse=True)
+    parts = [r"\s+".join(re.escape(w) for w in t.split()) for t in by_len]
+    return re.compile(r"\b(?:" + "|".join(parts) + r")\b")
+
+
+def histogram(counts: Counter, terms: list[str]) -> str:
+    """Render terms in given order, one per line, with '#' bars."""
+    width = max(len(t) for t in terms)
+    return "\n".join(f"{term:<{width}} {'#' * counts[term]}" for term in terms)
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) < 2:
+        print("usage: synonym-histogram NEEDLE [FILE ...]", file=sys.stderr)
+        return 2
+
+    needle = argv[1].lower()
+    terms = [needle] + [s for s in fetch_synonyms(needle) if s != needle]
+    matcher = build_matcher(terms)
+
+    counts = Counter()
+    with fileinput.input(files=argv[2:] or ("-",)) as stream:
+        text = "".join(stream).lower()
+    for match in matcher.finditer(text):
+        counts[re.sub(r"\s+", " ", match.group())] += 1
+
+    print(histogram(counts, terms))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
