@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
-"""Print a histogram of NEEDLE and its synonyms over the given files or stdin."""
+"""Print a histogram of NEEDLE and its synonyms over the given files or stdin.
 
+Synonyms come from the Datamuse `rel_syn` endpoint, fetched via wget. Matching
+is case-insensitive and handles multi-word synonyms such as "at that place"
+for "there", with internal whitespace matching any run of whitespace so
+phrases straddling line breaks still count. Input is processed as a stream
+rather than slurped: a sliding buffer holds enough trailing text that any
+phrase crossing a read boundary survives, with cuts taken at whitespace and
+match counts deferred until a successful cut to avoid double-counting near
+file boundaries. Memory use is bounded by the longest synonym plus one line,
+independent of input size.
+"""
+
+import argparse
 import fileinput
 import json
 import re
@@ -76,17 +88,26 @@ def histogram(counts: Counter, terms: list[str]) -> str:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 2:
-        print("usage: synonym-histogram NEEDLE [FILE ...]", file=sys.stderr)
-        return 2
+    parser = argparse.ArgumentParser(
+        prog="synonym-histogram",
+        description="Print a histogram of NEEDLE and its synonyms over input.",
+    )
+    parser.add_argument("needle", metavar="NEEDLE", help="word to look up synonyms for")
+    parser.add_argument(
+        "files",
+        metavar="FILE",
+        nargs="*",
+        help="input files; standard input is read when none are given",
+    )
+    args = parser.parse_args(argv[1:])
 
-    needle = argv[1].lower()
+    needle = args.needle.lower()
     terms = [needle] + [s for s in fetch_synonyms(needle) if s != needle]
     matcher = build_matcher(terms)
     max_term_len = max(len(t) for t in terms)
 
     counts = Counter()
-    with fileinput.input(files=argv[2:] or ("-",)) as stream:
+    with fileinput.input(files=args.files or ("-",)) as stream:
         scan(stream, matcher, max_term_len, counts)
 
     print(histogram(counts, terms))
