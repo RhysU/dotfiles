@@ -41,8 +41,11 @@ def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> Non
 
     The buffer holds enough trailing text that any phrase straddling a read
     boundary survives. After each scan, the cut point is the later of the
-    last counted match's end and len(buf) - max_term_len, advanced to the
-    next whitespace so word boundaries behave the same as in a single slurp.
+    last match's end and len(buf) - max_term_len, advanced to the next
+    whitespace so word boundaries behave the same as in a single slurp.
+    Matches are committed to counts only after a successful cut, so a buffer
+    without a viable cut point is rescanned in full next round without
+    double-counting.
     """
     flush = 4 * max_term_len
     buf = ""
@@ -50,14 +53,17 @@ def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> Non
         buf += line.lower()
         if len(buf) < flush:
             continue
+        pending = []
         last_end = 0
         for match in matcher.finditer(buf):
-            counts[re.sub(r"\s+", " ", match.group())] += 1
+            pending.append(re.sub(r"\s+", " ", match.group()))
             last_end = match.end()
         cut_floor = max(last_end, len(buf) - max_term_len)
         ws = WS_RE.search(buf, cut_floor)
         if ws is None:
             continue
+        for term in pending:
+            counts[term] += 1
         buf = buf[ws.start() :]
     for match in matcher.finditer(buf):
         counts[re.sub(r"\s+", " ", match.group())] += 1
