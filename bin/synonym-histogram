@@ -41,36 +41,41 @@ def build_matcher(terms: list[str]) -> re.Pattern:
 
     Internal whitespace in a phrase matches any run of whitespace.
     Longest terms come first so 'at that place' wins over 'place'.
+    Compiled as a bytes pattern so it can scan a bytearray buffer in place.
     """
     by_len = sorted(terms, key=len, reverse=True)
     parts = [r"\s+".join(re.escape(w) for w in t.split()) for t in by_len]
-    return re.compile(r"\b(?:" + "|".join(parts) + r")\b", re.IGNORECASE)
+    pattern = (r"\b(?:" + "|".join(parts) + r")\b").encode("ascii")
+    return re.compile(pattern, re.IGNORECASE)
 
 
-WS_RE = re.compile(r"\s")
+WS_RE = re.compile(rb"\s")
+WS_RUN = re.compile(rb"\s+")
 
 
 def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> None:
     """Stream through input, counting matches without buffering everything.
 
-    The buffer holds enough trailing text that any phrase straddling a read
-    boundary survives. After each scan, the cut point is the later of the
-    last match's end and len(buf) - max_term_len, advanced to the next
-    whitespace so word boundaries behave the same as in a single slurp.
-    Matches are committed to counts only after a successful cut, so a buffer
-    without a viable cut point is rescanned in full next round without
-    double-counting.
+    The buffer is a bytearray so appends and left-trims are in place. After
+    each scan, the cut point is the later of the last match's end and
+    len(buf) - max_term_len, advanced to the next whitespace so word
+    boundaries behave the same as in a single slurp. Matches are committed
+    to counts only after a successful cut, so a buffer without a viable cut
+    point is rescanned in full next round without double-counting.
     """
     flush = 4 * max_term_len
-    buf = ""
+    buf = bytearray()
     for line in stream:
-        buf += line
+        buf.extend(line)
         if len(buf) < flush:
             continue
         pending = []
         last_end = 0
         for match in matcher.finditer(buf):
-            pending.append(re.sub(r"\s+", " ", match.group().lower()))
+            normalized = (
+                WS_RUN.sub(b" ", match.group()).decode("ascii", "replace").lower()
+            )
+            pending.append(normalized)
             last_end = match.end()
         cut_floor = max(last_end, len(buf) - max_term_len)
         ws = WS_RE.search(buf, cut_floor)
@@ -78,9 +83,9 @@ def scan(stream, matcher: re.Pattern, max_term_len: int, counts: Counter) -> Non
             continue
         for term in pending:
             counts[term] += 1
-        buf = buf[ws.start() :]
+        del buf[: ws.start()]
     for match in matcher.finditer(buf):
-        counts[re.sub(r"\s+", " ", match.group().lower())] += 1
+        counts[WS_RUN.sub(b" ", match.group()).decode("ascii", "replace").lower()] += 1
 
 
 def histogram(counts: Counter, terms: list[str]) -> str:
@@ -109,7 +114,7 @@ def main(argv: list[str]) -> int:
     max_term_len = max(len(t) for t in terms)
 
     counts = Counter()
-    with fileinput.input(files=args.files or ("-",)) as stream:
+    with fileinput.input(files=args.files or ("-",), mode="rb") as stream:
         scan(stream, matcher, max_term_len, counts)
 
     print(histogram(counts, terms))
