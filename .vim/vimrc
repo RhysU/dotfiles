@@ -200,6 +200,7 @@ noremap <silent> <Leader>S  :set spell!              <CR>:set spell?       <CR>
 noremap <silent> <Leader>t  :TagbarToggle            <CR>
 noremap <silent> <Leader>w  :set wrap!               <CR>:set wrap?        <CR>
 
+" Use :SyntasticInfo to see which tools Syntastic presently is using
 if exists(':SyntasticToggleMode')
     noremap <silent> <Leader>s :SyntasticToggleMode<CR>
 endif
@@ -228,7 +229,6 @@ let g:syntastic_enable_signs = 1
 let g:syntastic_sh_checkers = ['sh', 'shellcheck']
 let g:syntastic_cpp_compiler = 'g++'
 let g:syntastic_cpp_compiler_options = '-std=c++14'
-let g:syntastic_tex_checkers = ['chktex']
 let g:syntastic_tex_chktex_args = "-wno 38"
 let g:tex_flavor='latex'
 let g:xml_syntax_folding=1
