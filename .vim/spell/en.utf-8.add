@@ -1,12 +1,8 @@
 #!/usr/bin/env
 #!r6rs
-#alulator
-#ccomodate
-#nterrium
-#ommmon
-#yapuonov
 10th
 11th
+AFIPS
 AIAA
 ALLTOALLV
 ANOVA
@@ -69,6 +65,7 @@ Balyasny's
 Banerjee
 Barsoumian
 BaseProcess
+Bastiat
 Baum
 Bauman
 Bauman's
@@ -239,6 +236,7 @@ Folu
 Foner
 Friedrichs
 Frobenius
+Frédéric
 GCC
 GEICO
 GFCI
@@ -455,6 +453,7 @@ Mueschke
 MultiArrays
 Mundy
 Myoungkyu
+NERDTree
 NULLs
 NYCB
 NYU
@@ -465,6 +464,7 @@ Narasimha
 Natzke
 Navier
 Nazarbegian
+Neovim
 Netzeband
 Nondimensional
 Nondimensionalize
@@ -565,6 +565,7 @@ Reθ
 Rhoden
 RhysU
 Riccati
+Rictus
 Ridgewood
 Ringleb
 Roache
@@ -678,6 +679,7 @@ Sushma
 Swaim
 Syama
 SymPy
+Syntastic
 Syntropy
 Syntropy's
 TACC
@@ -688,6 +690,9 @@ TLDR
 TODO
 TPS
 TSM
+TabNine
+Tabularize
+Tagbar
 Tebbo
 Tecplot
 Temin
@@ -740,6 +745,7 @@ Vinyasa
 VirtualEnv
 VisIt
 Vlada
+Vundle
 WENO
 WIN32
 WSDL
@@ -762,6 +768,7 @@ Windber
 Windle
 Woohoo
 XLF
+XMonad
 Xaoc
 Xeon
 Xinrui
@@ -788,6 +795,7 @@ ablator
 abscissae
 accomodate/!
 actually
+adjoints
 aerocapture
 aeroheating
 aerothermal
@@ -869,6 +877,7 @@ discretize
 discretizing
 dissertation
 dissipation
+distractibility
 diverter
 docstring
 doctests
@@ -916,6 +925,7 @@ heatshield
 heightism
 heightism's
 heightist
+hyperparameter
 hyperparameters
 hyperslab
 hypersonics
@@ -964,6 +974,7 @@ middleware
 millis
 minimial
 minimis
+mismeasure
 mixin
 modify
 mortem
@@ -1041,6 +1052,7 @@ quadrisected
 quadrisecting
 quantifiably
 quasilaminarization
+quickfix
 recomputation
 recomputations
 reconducted
@@ -1062,6 +1074,7 @@ retransition
 reweight
 rhys
 rtol
+runbook
 schlieren
 scriptable
 servlet
@@ -1096,6 +1109,7 @@ submatrix
 submeter
 submeters
 submodels
+subpar
 subproblem
 subproblems
 substep
@@ -1151,23 +1165,9 @@ vsnprintf
 wavenumbers
 wavespace
 whitepaper
+whitespace
 win32
 www
 zc
 zombification
 zombified
-Frédéric
-Bastiat
-Neovim
-NERDTree
-Tabularize
-Tagbar
-quickfix
-TabNine
-Vundle
-XMonad
-runbook
-Rictus
-mismeasure
-whitespace
-Syntastic
