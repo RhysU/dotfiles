@@ -1,5 +1,6 @@
 #!/bin/bash
-# Created because, on a 2-monitor system, Isonzo kept losing mouse focus
+# Created because, on a 2-monitor system, Isonzo kept losing mouse focus.
+# Configure in Steam like so: '~/bin/gamescope-auto -- %command%'
 set -euo pipefail
 
 RES=$(xrandr 2>/dev/null | awk '/\*/ {print $1; exit}')
