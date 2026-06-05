@@ -560,6 +560,7 @@ Refactor
 Reinsel
 Releasees
 Reroll
+ResourceWarning
 RetailMeNot
 Reθ
 Rhoden
@@ -810,6 +811,7 @@ antioch
 apophenia
 argc
 argmax
+args
 argv
 arity
 arxiv
@@ -907,6 +909,7 @@ float64
 flowfield
 fluctuating
 forebody
+forkserver
 frecency
 free'd
 freestream
@@ -952,6 +955,7 @@ ish
 isosurface
 jobserver
 judgement
+kwargs
 laminarescence
 laminarescent
 large
@@ -1134,6 +1138,7 @@ timecontroller
 timestepping
 tipota
 to
+traceback
 turbomachinery
 twosigma
 typehint
@@ -1146,6 +1151,7 @@ uncentered
 underfit
 underfitting
 underindulges
+underweighting
 unfactored
 unfactorized
 unitard
@@ -1171,4 +1177,3 @@ www
 zc
 zombification
 zombified
-underweighting
