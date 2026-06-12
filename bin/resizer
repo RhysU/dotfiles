@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Resizes images in parallel using GNU Parallel and ImageMagick
+set -euo pipefail
+
+REDUCTION=50
+PREFIX=""
+
+while getopts ":r:p:" OPT; do
+  case "$OPT" in
+    r) REDUCTION="$OPTARG" ;;
+    p) PREFIX="$OPTARG" ;;
+    \?) echo "Error: unknown option -$OPTARG" >&2; exit 1 ;;
+    :)  echo "Error: option -$OPTARG requires an argument" >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+PREFIX="${PREFIX:-resized${REDUCTION}-}"
+
+images=("$@")
+
+if [ ${#images[@]} -eq 0 ]; then
+  echo "Error: no images provided" >&2; exit 1
+fi
+if ! command -v parallel &>/dev/null; then
+  echo "Error: GNU Parallel is not installed" >&2; exit 1
+fi
+if ! command -v convert &>/dev/null; then
+  echo "Error: convert (ImageMagick) is not installed" >&2; exit 1
+fi
+
+parallel --verbose convert {} -resize "${REDUCTION}%" "${PREFIX}{/}" ::: "${images[@]}"
