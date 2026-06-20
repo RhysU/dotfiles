@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: writeup [OPTIONS] <target.tex> [LATEXMK_ARGS...]
+
+Use latexmk to build one LaTeX writeup without a full build system.
+For example, 'writeup radialflow.tex' should build 'radialflow.pdf'.
+Notably, 'writeup radialflow.tex -pvc' starts a continuous previewer.
+
+Options:
+  -h    Show this help message and exit
+EOF
+}
+
+args=$(getopt -o h -n writeup -- "$@")
+eval set -- "$args"
+while true; do
+    case "$1" in
+        -h) usage; exit 0 ;;
+        --) shift; break ;;
+    esac
+done
+
+if [[ $# -lt 1 ]]; then
+    usage >&2
+    exit 1
+fi
+
+target=$1
+shift
+TEXINPUTS=":${TEXINPUTS:+$TEXINPUTS:}." \
+BIBINPUTS=":${BIBINPUTS:+$BIBINPUTS:}." \
+    latexmk -dvi- -ps- -pdf -recorder   \
+    "$@"                                 \
+    -pdflatex="pdflatex --shell-escape %O %S" \
+    "$target"
