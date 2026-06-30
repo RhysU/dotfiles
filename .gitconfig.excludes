@@ -1,2 +1,4 @@
 # Vim temporary files
 *.sw[op]
+
+**/.claude/settings.local.json

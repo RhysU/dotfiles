@@ -1,3 +1,5 @@
 {
-  "theme": "dark"
+  "tui": "fullscreen",
+  "theme": "dark",
+  "skipDangerousModePermissionPrompt": true
 }
