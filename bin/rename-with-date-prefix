@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Convert filename date suffixes into prefixes, e.g. "Foo 20260702.pdf" to "20260702 Foo.pdf"
+set -euo pipefail
+
+usage() { echo "Usage: ${0##*/} [-hv] FILE..."; }
+
+VERBOSE=""
+while getopts ":hv" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    v) VERBOSE="-v" ;;
+    \?) echo >&2 "Error: unknown option -$OPTARG"; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ $# -eq 0 ]]; then
+  usage >&2
+  exit 1
+fi
+
+# Parse a YYYYMMDD date from the end of the basename, either before
+# a ".SUFFIX" or at the very end.  Strip trailing whitespace from
+# the pre-date portion and reassemble as "YYYYMMDD SOMETHING[.SUFFIX]".
+# Skip files with multiple dates or no date.  Skip loudly on clobber.
+process() {
+  local src dir base something date suffix dst
+  src="$1"
+  dir=$(dirname -- "$src")
+  base=$(basename -- "$src")
+
+  if [[ ! "$base" =~ ^(.*[^[:space:]])[[:space:]]*([0-9]{8})(\..*)?$ ]]; then
+    echo >&2 "${0##*/}: skipping '$base' (no non-trivial date suffix found)"
+    return
+  fi
+
+  something="${BASH_REMATCH[1]}"
+  date="${BASH_REMATCH[2]}"
+  suffix="${BASH_REMATCH[3]}"
+
+  if [[ "$something" =~ [0-9]{8} ]]; then
+    echo >&2 "${0##*/}: skipping '$base' (multiple dates)"
+    return
+  fi
+
+  dst="$dir/$date $something$suffix"
+
+  if [[ -e "$dst" ]]; then
+    echo >&2 "${0##*/}: SKIPPING '$base', '$dst' already exists"
+    return
+  fi
+
+  echo "'$src' -> '$dst'"
+  mv -in $VERBOSE -- "$src" "$dst"
+}
+
+for src; do
+  process "$src"
+done
+exit 0
+
+# TESTED AGAINST THE FOLLOWING:
+#   "20250101 Foo 20260702"           -> skipped (multiple dates)
+#   "20250101 Foo 20260702.pdf"       -> skipped (multiple dates)
+#   "20260702"                        -> skipped (no non-trivial date suffix found)
+#   "20260702 Also 20261231.pdf"      -> skipped (multiple dates)
+#   "20260702.pdf"                    -> skipped (no non-trivial date suffix found)
+#   "Bar Baz  20260702"               -> "20260702 Bar Baz"
+#   "Clobber 20260702.txt"            -> skipped (dest already exists)
+#   "Foo & Bar (Final) 20260702.pdf"  -> "20260702 Foo & Bar (Final).pdf"
+#   "Foo 20260702"                    -> "20260702 Foo"
+#   "Foo 20260702 Bar.pdf"            -> skipped (no non-trivial date suffix found)
+#   "Foo 20260702.pdf"                -> "20260702 Foo.pdf"
+#   "Foo20260702.pdf"                 -> "20260702 Foo.pdf"
+#   "Foo20260704"                     -> "20260704 Foo"
+#   "Just A File.pdf"                 -> skipped (no non-trivial date suffix found)
+#   "Report 20260101.pdf"             -> "20260101 Report.pdf"
+#   "Report 20260702.tar.gz"          -> "20260702 Report.tar.gz"
+#   "Report 20261231.pdf"             -> "20261231 Report.pdf"
+#   "Rev. 2.1 Draft 20260702.pdf"     -> "20260702 Rev. 2.1 Draft.pdf"
+#   "Some Long Name 20260702.pdf"     -> "20260702 Some Long Name.pdf"
+#   "Tab\t20260702.pdf"               -> "20260702 Tab.pdf"
+#   "Trailing   20260702.pdf"         -> "20260702 Trailing.pdf"
+#   "X 20260702.pdf"                  -> "20260702 X.pdf"
+#   "Year-End 20261231.xlsx"          -> "20261231 Year-End.xlsx"
+#   "sub/Doc 20260702.pdf"            -> "sub/20260702 Doc.pdf"
+#   "sub/deep/Note 20260702"          -> "sub/deep/20260702 Note"
+#   "Ñoño 20260702.pdf"              -> "20260702 Ñoño.pdf"
