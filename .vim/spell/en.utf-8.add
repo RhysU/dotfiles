@@ -26,6 +26,7 @@ Aleka
 Alessandro
 Alik
 Allisyn
+Allman
 Allreduce
 Altholz
 Altman
@@ -70,6 +71,7 @@ Baum
 Bauman
 Bauman's
 Bauserman
+Bayesians
 Beresh
 Betz
 Biometrika
@@ -178,6 +180,7 @@ DeFrantz
 Delwaide
 Demkowicz
 Demmel
+Deregister
 Deserialize
 Devan
 Dieterich
@@ -262,6 +265,7 @@ Gohberg
 Gombotz
 Gottlieb
 Grantor
+Graphviz
 Graynor
 Greenspun's
 Greville
@@ -286,6 +290,7 @@ Haydu
 Heckendorn
 Heightism
 Heilmeier
+Heilmeier's
 Heru
 Heuven
 Hinai
@@ -770,6 +775,7 @@ Windle
 Woohoo
 XLF
 XMonad
+XYZ
 Xaoc
 Xeon
 Xinrui
@@ -861,6 +867,8 @@ decorrelate
 decorrelation
 defaultdict
 deflectometry
+deregister
+deregistering
 deserialization
 deserialized
 designees
@@ -882,6 +890,7 @@ dissipation
 distractibility
 diverter
 docstring
+docstrings
 doctests
 downsample
 downsampled
@@ -1027,6 +1036,7 @@ overfit
 overfitted
 overfitting
 overridable
+parentheticals
 parsable
 passgrip
 patentability
@@ -1094,6 +1104,7 @@ spatiotemporal
 spatiotemporally
 stackoverflow
 stateful
+stationarity
 stderr
 stdin
 stdout
@@ -1102,6 +1113,7 @@ strided
 strlen
 strtok
 struct
+structs
 subblocks
 subboundary
 subclassing
@@ -1178,15 +1190,3 @@ zc
 zombification
 zombified
 χαοφίλοι
-stationarity
-Bayesians
-Heilmeier's
-Deregister
-deregistering
-deregister
-parentheticals
-XYZ
-docstrings
-Allman
-Graphviz
-structs
