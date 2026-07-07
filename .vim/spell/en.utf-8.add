@@ -500,6 +500,7 @@ PDF
 PDFs
 PEP8
 PETSc
+PID
 PIV
 POSIX
 PSIGDEATH
@@ -835,6 +836,8 @@ autotuned
 autotuning
 awk
 axisymmetric
+backfoot
+backfooted
 baroclinic
 barotropic
 baseflow
@@ -842,6 +845,7 @@ beaucoup
 bithack
 bottleneck
 bourne
+bumpless
 bytevector
 bytevectors
 cabletow
@@ -1093,6 +1097,7 @@ schlieren
 scriptable
 servlet
 servlets
+setpoint
 shadowgraph
 shocklets
 snprintf
@@ -1160,6 +1165,7 @@ ulimit
 unbox
 uncapturable
 uncentered
+uncloseable
 underfit
 underfitting
 underindulges
