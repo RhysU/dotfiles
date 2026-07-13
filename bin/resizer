@@ -5,10 +5,24 @@ set -euo pipefail
 REDUCTION=50
 PREFIX=""
 
-while getopts ":r:p:" OPT; do
+usage() {
+  cat <<'EOF'
+Usage: resizer [-r REDUCTION] [-p PREFIX] IMAGE...
+
+Resize images in parallel using GNU Parallel and ImageMagick.
+
+Options:
+  -r REDUCTION  Resize percentage (default: 50)
+  -p PREFIX     Output filename prefix (default: resized<REDUCTION>-)
+  -h            Show this help and exit
+EOF
+}
+
+while getopts ":r:p:h" OPT; do
   case "$OPT" in
     r) REDUCTION="$OPTARG" ;;
     p) PREFIX="$OPTARG" ;;
+    h) usage; exit 0 ;;
     \?) echo "Error: unknown option -$OPTARG" >&2; exit 1 ;;
     :)  echo "Error: option -$OPTARG requires an argument" >&2; exit 1 ;;
   esac
