@@ -4,24 +4,27 @@ set -euo pipefail
 
 REDUCTION=50
 PREFIX=""
+QUALITY=92
 
 usage() {
   cat <<'EOF'
-Usage: resizer [-r REDUCTION] [-p PREFIX] IMAGE...
+Usage: resizer [-r REDUCTION] [-p PREFIX] [-q QUALITY] IMAGE...
 
 Resize images in parallel using GNU Parallel and ImageMagick.
 
 Options:
   -r REDUCTION  Resize percentage (default: 50)
   -p PREFIX     Output filename prefix (default: resized<REDUCTION>-)
+  -q QUALITY    JPEG quality 1-100 (default: 92)
   -h            Show this help and exit
 EOF
 }
 
-while getopts ":r:p:h" OPT; do
+while getopts ":r:p:q:h" OPT; do
   case "$OPT" in
     r) REDUCTION="$OPTARG" ;;
     p) PREFIX="$OPTARG" ;;
+    q) QUALITY="$OPTARG" ;;
     h) usage; exit 0 ;;
     \?) echo "Error: unknown option -$OPTARG" >&2; exit 1 ;;
     :)  echo "Error: option -$OPTARG requires an argument" >&2; exit 1 ;;
@@ -43,4 +46,15 @@ if ! command -v convert &>/dev/null; then
   echo "Error: convert (ImageMagick) is not installed" >&2; exit 1
 fi
 
-parallel --verbose convert {} -resize "${REDUCTION}%" "${PREFIX}{/}" ::: "${images[@]}"
+resize() {
+  local ext="${1##*.}"
+  local args=(-resize "${REDUCTION}%")
+  case "${ext,,}" in
+    jpg|jpeg) args+=(-quality "$QUALITY") ;;
+  esac
+  convert "$1" "${args[@]}" "${PREFIX}$(basename "$1")"
+}
+export -f resize
+export REDUCTION PREFIX QUALITY
+
+parallel --verbose resize ::: "${images[@]}"
