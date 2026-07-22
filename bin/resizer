@@ -46,15 +46,5 @@ if ! command -v convert &>/dev/null; then
   echo "Error: convert (ImageMagick) is not installed" >&2; exit 1
 fi
 
-resize() {
-  local ext="${1##*.}"
-  local args=(-resize "${REDUCTION}%")
-  case "${ext,,}" in
-    jpg|jpeg) args+=(-quality "$QUALITY") ;;
-  esac
-  convert "$1" "${args[@]}" "${PREFIX}$(basename "$1")"
-}
-export -f resize
-export REDUCTION PREFIX QUALITY
-
-parallel --verbose resize ::: "${images[@]}"
+parallel --verbose convert {} -resize "${REDUCTION}%" -quality "$QUALITY" \
+  "${PREFIX}{/.}.jpg" ::: "${images[@]}"
