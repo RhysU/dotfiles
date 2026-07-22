@@ -7,15 +7,15 @@ PREFIX=""
 QUALITY=92
 
 usage() {
-  cat <<'EOF'
+  cat <<EOF
 Usage: resizer [-r REDUCTION] [-p PREFIX] [-q QUALITY] IMAGE...
 
 Resize images in parallel using GNU Parallel and ImageMagick.
 
 Options:
-  -r REDUCTION  Resize percentage (default: 50)
+  -r REDUCTION  Resize percentage (default: $REDUCTION)
   -p PREFIX     Output filename prefix (default: resized<REDUCTION>-)
-  -q QUALITY    JPEG quality 1-100 (default: 92)
+  -q QUALITY    JPEG quality 1-100 (default: $QUALITY)
   -h            Show this help and exit
 EOF
 }
