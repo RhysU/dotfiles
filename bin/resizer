@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Resizes images in parallel using GNU Parallel and ImageMagick
+# Resizes images to JPEG in parallel using GNU Parallel and ImageMagick
 set -euo pipefail
 
 REDUCTION=50
@@ -10,7 +10,7 @@ usage() {
   cat <<EOF
 Usage: resizer [-r REDUCTION] [-p PREFIX] [-q QUALITY] IMAGE...
 
-Resize images in parallel using GNU Parallel and ImageMagick.
+Resize images to JPEG in parallel using GNU Parallel and ImageMagick.
 
 Options:
   -r REDUCTION  Resize percentage (default: $REDUCTION)
