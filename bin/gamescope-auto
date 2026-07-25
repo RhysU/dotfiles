@@ -1,5 +1,6 @@
 #!/bin/bash
 # Created because, on a 2-monitor system, Isonzo kept losing mouse focus.
+# Isonzo required '-s 2.9' to adjust the mouse sensitivity but CS2 does not.
 # Configure in Steam like so: '~/bin/gamescope-auto -- %command%'
 set -euo pipefail
 
@@ -14,4 +15,4 @@ W=${RES%%x*}
 H=${RES##*x}
 
 set -x
-exec gamescope -w "$W" -h "$H" -W "$W" -H "$H" -s 2.9 --force-grab-cursor --force-windows-fullscreen "$@"
+exec gamescope -w "$W" -h "$H" -W "$W" -H "$H" --force-grab-cursor --force-windows-fullscreen "$@"
