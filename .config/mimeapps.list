@@ -1,5 +1,5 @@
 [Default Applications]
-application/pdf=org.gnome.Evince.desktop
+application/pdf=org.kde.okular.desktop
 video/mp4=vlc.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 
