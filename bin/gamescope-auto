@@ -2,7 +2,11 @@
 # Created because, on a 2-monitor system, Isonzo kept losing mouse focus.
 # Isonzo required '-s 2.9' to adjust the mouse sensitivity but CS2 does not.
 # Configure in Steam like so: '~/bin/gamescope-auto -- %command%'
-# Notice https://github.com/ValveSoftware/gamescope/issues/2180
+#
+# OBSERVE:
+# https://agentzlerich.blogspot.com/2026/07/workaround-gamescope-invisible-cursor.html
+# and that a GNU Stow-ed version earlier on the $PATH than /usr/games/gamescope
+# will automatically be used by this script.
 set -euo pipefail
 
 RES=$(xrandr 2>/dev/null | awk '/\*/ {print $1; exit}')
