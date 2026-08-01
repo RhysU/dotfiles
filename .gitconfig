@@ -2,6 +2,7 @@
     ci = commit -a
     co = checkout
     di = diff
+    dw = diff --color-words
     # https://stackoverflow.com/questions/949314/how-to-retrieve-the-hash-for-the-current-commit-in-git
     hash = rev-parse --verify HEAD
     lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
