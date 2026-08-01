@@ -20,4 +20,6 @@ W=${RES%%x*}
 H=${RES##*x}
 
 set -x
-exec gamescope -w "$W" -h "$H" -W "$W" -H "$H" --force-grab-cursor --force-windows-fullscreen "$@"
+GAMESCOPE=$(command -v gamescope)
+GAMESCOPE=$(readlink -f "$GAMESCOPE")
+exec "$GAMESCOPE" -w "$W" -h "$H" -W "$W" -H "$H" --force-grab-cursor --force-windows-fullscreen "$@"
