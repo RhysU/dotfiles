@@ -35,8 +35,8 @@ if [[ "$objtype" = "blob" ]]; then
 fi
 
 # Previously deleted?
-commit=$(git log --diff-filter=D --format=%H --max-count=1 \
-  -- "$target" 2>/dev/null || true)
+commit=$(git -C "$toplevel" log --diff-filter=D --format=%H \
+  --max-count=1 -- "$reporel" 2>/dev/null || true)
 if [[ -n "$commit" ]]; then
   objtype=$(git cat-file -t "${commit}^:${reporel}" 2>/dev/null || true)
   if [[ "$objtype" = "tree" ]]; then
