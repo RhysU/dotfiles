@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# List files deleted from a path in reverse chronological order
+set -euo pipefail
+
+usage() { echo "Usage: ${0##*/} [-h] [PATH]"; }
+
+while getopts ":h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    \?) echo >&2 "Error: unknown option -$OPTARG"; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ $# -gt 1 ]]; then
+  usage >&2
+  exit 1
+fi
+
+cd "${GIT_PREFIX:-.}"
+
+target="${1:-.}"
+
+# Exclude files that were re-added after deletion
+existing=$(git ls-tree -r --name-only HEAD -- "$target" 2>/dev/null || true)
+
+{ git log --diff-filter=D --date=iso-strict-local \
+  --format='%H %ad' --name-only -- "$target" 2>/dev/null || true; } |
+awk -v existing="$existing" '
+BEGIN {
+  n = split(existing, arr, "\n")
+  for (i = 1; i <= n; i++)
+    if (arr[i] != "") current[arr[i]] = 1
+}
+/^$/ { next }
+/^[0-9a-f]+ [0-9]{4}-[0-9]{2}-[0-9]{2}T/ {
+  commit = $1; date = $2; next
+}
+!seen[$0]++ && !($0 in current) {
+  printf "%-40s  %-25s  %s\n", commit, date, $0
+}
+'
+
+# To properly test, confirm expected behavior against:
+#   -h                          -> usage on stdout, exit 0
+#   -x                          -> unknown option error, exit 1
+#   two args                    -> usage on stderr, exit 1
+#   (no args)                   -> defaults to ".", lists all deletions
+#   specific subdir path        -> only deletions under that path
+#   no deleted files under path -> no output
+#   reverse chronological order -> most recent deletion first
+#   multiple files one commit   -> all listed under same commit
+#   delete/re-add/delete cycle  -> only last deletion, not re-added file
+#   from subdirectory with "."  -> scoped to that subdirectory
+#   spaces in filename          -> listed correctly
+#   empty repo (no commits)     -> no output, no crash
+#   path outside the repo       -> no output, no crash

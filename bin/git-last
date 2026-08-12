@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Show the last committed content of a file, even if deleted
+set -euo pipefail
+
+usage() { echo "Usage: ${0##*/} [-h] PATH"; }
+
+while getopts ":h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    \?) echo >&2 "Error: unknown option -$OPTARG"; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ $# -ne 1 ]]; then
+  usage >&2
+  exit 1
+fi
+
+cd "${GIT_PREFIX:-.}"
+
+target="$1"
+toplevel=$(git rev-parse --show-toplevel)
+reporel=$(realpath --canonicalize-missing --relative-to="$toplevel" -- "$target")
+
+# Currently in HEAD?
+objtype=$(git cat-file -t "HEAD:${reporel}" 2>/dev/null || true)
+if [[ "$objtype" = "tree" ]]; then
+  echo >&2 "${0##*/}: '$target' is a directory, not a file"
+  exit 1
+fi
+if [[ "$objtype" = "blob" ]]; then
+  git show "HEAD:${reporel}"
+  exit 0
+fi
+
+# Previously deleted?
+commit=$(git log --diff-filter=D --format=%H --max-count=1 \
+  -- "$target" 2>/dev/null || true)
+if [[ -n "$commit" ]]; then
+  objtype=$(git cat-file -t "${commit}^:${reporel}" 2>/dev/null || true)
+  if [[ "$objtype" = "tree" ]]; then
+    echo >&2 "${0##*/}: '$target' is a directory, not a file"
+    exit 1
+  fi
+  git show "${commit}^:${reporel}"
+  exit 0
+fi
+
+echo "${0##*/}: '$target' was never tracked"
+
+# To properly test, confirm expected behavior against:
+#   -h                        -> usage on stdout, exit 0
+#   (no args)                 -> usage on stderr, exit 1
+#   two args                  -> usage on stderr, exit 1
+#   -x                        -> unknown option error, exit 1
+#   existing tracked file     -> committed content from HEAD
+#   file with local changes   -> committed content, not working copy
+#   deleted file              -> content as of commit before deletion
+#   never-tracked path        -> informative message on stdout
+#   directory path            -> error on stderr, exit 1
+#   ./file (dotslash)         -> works like file
+#   relative path from subdir -> resolves correctly
+#   spaces in filename        -> works for existing and deleted
+#   empty repo (no commits)   -> informative message, no crash
+#   path outside the repo     -> informative message, no crash
+#   symlink to tracked file   -> shows target file content
