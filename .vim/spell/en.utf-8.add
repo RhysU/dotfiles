@@ -17,6 +17,7 @@ aerothermochemistry
 Aerothermochemisty
 aerothermodynamics
 AFIPS
+agnosia
 AIAA
 Ailey
 Akaike
@@ -70,6 +71,7 @@ Atheneum
 Athletica
 attribute's
 Audain
+auditable
 Auditorum
 AUM
 AustinVentures
@@ -187,6 +189,7 @@ Cheatham
 Chebfun
 Chebychev
 Chebyshev
+checkability
 Cheung
 Chez
 Chowchilla
@@ -213,9 +216,12 @@ const
 constrainer
 convectively
 CopyConstructible
+copyedit
+copyediting
 Coralli
 Corazon
 Couette
+counterintuitively
 CounterPointe
 Courant
 Coursera
@@ -278,6 +284,7 @@ discretization
 discretizations
 discretize
 discretizing
+dispositioned
 dissertation
 dissipation
 distractibility
@@ -311,6 +318,7 @@ Dussauge
 Dvorznak
 Easley
 Eck
+egest
 egrep
 Eigen
 eigenspace
@@ -336,6 +344,7 @@ ERYT200
 ESIO
 ESIO's
 Estacio
+Estimand
 eternality
 eucharistic
 Eucken
@@ -381,6 +390,7 @@ Frédéric
 free'd
 freestream
 freopen
+frequentist
 Friedrichs
 Frobenius
 Galerkin
@@ -411,6 +421,7 @@ gnulib
 Gohar
 Gohberg
 Gombotz
+Goodhart's
 Gottlieb
 GPL
 Grantor
@@ -418,6 +429,7 @@ Graphviz
 Graynor
 Greenspun's
 grep
+greppable
 Greville
 Grubbs
 GRVY
@@ -430,6 +442,8 @@ h5dump
 Häagen
 Hagale
 Haggarty
+Hamming's
+HARKing
 Harkness
 Hartnet
 Hartree
@@ -596,6 +610,7 @@ linearizations
 linears
 LLC
 LLM
+LLMs
 Lobdell
 LODI
 log4cxx
@@ -638,6 +653,8 @@ Mauriello
 maxima
 Mazzola
 Meagher
+measurand
+measurands
 mechane
 MechWarrior
 Medida
@@ -665,6 +682,7 @@ minimial
 minimis
 misattribution
 mismeasure
+misprioritize
 mixin
 Mixins
 MKL
@@ -729,6 +747,7 @@ nondimensionally
 nonevolution
 nonintrusive
 Nonlinearities
+Nonlinearity
 nonoscillatory
 nonreacting
 nonreflecting
@@ -888,6 +907,7 @@ Redux
 reentrancy
 Refactor
 refactored
+reflows
 Reframing
 reify
 Reinsel
@@ -915,6 +935,7 @@ RhysU
 Riccati
 Rictus
 Ridgewood
+Riedmaier
 Ringleb
 Roache
 Rochan
@@ -972,6 +993,7 @@ Shan
 Shante
 ShapeShifter
 Shapeshifters
+sharding
 Shariff
 Shcheberako
 Sherah
@@ -1057,6 +1079,8 @@ subboundary
 subclassing
 subcritical
 subdiagonals
+sublabel
+sublabels
 submatch
 submatrices
 submatrix
@@ -1133,6 +1157,8 @@ Topalian
 Topalian's
 TPS
 traceback
+tradeoff
+tradeoffs
 Trefethen
 TriBeCa
 Trilinos
@@ -1173,6 +1199,7 @@ unzombified
 Upadhyay
 UQ
 urethaned
+URIs
 #!/usr/bin/env
 Ussel
 Valero
@@ -1215,6 +1242,7 @@ WENO
 Westheimer
 Westlake
 Westmoreland
+Whewell
 whitepaper
 whitespace
 Wierdsma
@@ -1260,22 +1288,3 @@ Zwiers
 μηχανή
 τέχνη
 χαοφίλοι
-LLMs
-URIs
-egest
-Goodhart's
-counterintuitively
-Hamming's
-misprioritize
-sharding
-tradeoff
-frequentist
-Nonlinearity
-agnosia
-measurands
-measurand
-Estimand
-Riedmaier
-copyediting
-Whewell
-HARKing
