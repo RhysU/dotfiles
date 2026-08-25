@@ -292,6 +292,88 @@ and nothing is decoded as text.
 10. Every stored byte is reachable from a session dir whose liveness any later
     invocation can decide, so nothing becomes unreclaimable.
 
+## Appendix: worked invocations
+
+Output below is illustrative, unlike the evidence that follows it.
+
+Cold run, then the same pipeline reused four ways.  This is the whole point of
+the tool in five commands:
+
+    $ cachepipe curl -s "$URL" _/ jq .items
+    curl -s https://example.com/big.json <w> _/ jq .items <w>
+
+    $ cachepipe curl -s "$URL" _/ jq .items
+    <r>
+
+    $ cachepipe curl -s "$URL" _/ jq .items _/ head -n5
+    <r> _/ head -n5 <w>
+
+    $ cachepipe curl -s "$URL" _/ jq .items _/ head -n20
+    <r> _/ head -n20 <w>
+
+    $ cachepipe curl -s "$URL" _/ jq .count _/ head -n5
+    <r> _/ jq .count <w> _/ head -n5 <w>
+
+A regular file on stdin hashes into the key.  A pipe cannot, so nothing caches:
+
+    $ cachepipe jq .items < big.json
+    jq .items <w>
+
+    $ producer | cachepipe jq .items _/ head -n5
+    jq .items _/ head -n5
+    cachepipe: stage 1 read from a pipe; nothing cached this run
+
+A nonzero status that means "no" rather than "failed" is refused once, with the
+fix named:
+
+    $ cachepipe grep -c pat access.log _/ awk '{s+=$1} END {print s}'
+    grep -c pat access.log _/ awk ...
+    cachepipe: grep exit 1, not cached -- pass `+ok=1` if that status is a result here
+
+    $ cachepipe +ok=1 grep -c pat access.log _/ awk '{s+=$1} END {print s}'
+    grep -c pat access.log <w> _/ awk ... <w>
+
+`+no-cache` restores pipe semantics for one stage and blocks replay from there
+on; downstream still caches in its own namespace.  `+refresh` re-executes a
+stale head and republishes it:
+
+    $ cachepipe +no-cache curl -s "$URL" _/ jq .items _/ head -n5
+    curl -s https://example.com/big.json _/ jq .items <w> _/ head -n5 <w>
+
+    $ cachepipe +refresh curl -s "$URL" _/ jq .items
+    curl -s https://example.com/big.json <w> _/ jq .items <w>
+
+A failing stage propagates its status and publishes nothing, so the next run
+genuinely retries:
+
+    $ cachepipe curl -sf "$URL" _/ jq .items ; echo "rc=$?"
+    curl -sf https://example.com/big.json _/ jq .items
+    rc=22
+
+Early exit downstream no longer kills upstream, and the cap is what keeps that
+affordable:
+
+    $ cachepipe curl -s "$URL" _/ head -n5
+    curl -s https://example.com/big.json <w> _/ head -n5 <w>
+
+    $ cachepipe curl -s "$BIG" _/ head -n5
+    curl -s https://example.com/huge.tar <w> _/ head -n5 <w>
+    cachepipe: stage 1 exceeded 96M cap, entry abandoned, pipe semantics resumed
+
+Inspection elides prefix chains to the left:
+
+    $ cachepipe --status
+    /home/rhys/.cache/cachepipe/2906.10681   3 entries   14.2M   budget 512M
+       9.9M   2m ago   curl -s https://example.com/big.json
+       4.3M   2m ago   ... _/ jq .items
+        12K   1m ago   ... _/ jq .items _/ head -n20
+
+Naming a token shares one namespace across terminals for a project:
+
+    $ export CACHEPIPE_SESSION=acme-etl
+    $ cachepipe curl -s "$URL" _/ jq .items
+    <r>
+
 ## Appendix: evidence
 
 `#|` is the obvious separator and the shell eats it silently, which is the
