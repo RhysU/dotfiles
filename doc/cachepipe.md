@@ -50,11 +50,16 @@ the first bare token.
 |---|---|---|
 | `+no-cache` | this stage onward | no |
 | `+refresh`  | this stage onward | yes |
-| `+ok=N[,N]` | — | widens what counts as success |
+| `+N`        | — | widens what counts as success |
 
 One readability rule covers the first two: a marked stage makes every prefix
 ending at or after it unreadable.  They differ only in whether the marked stage
 writes.  `::cmd` remains shorthand for `+no-cache cmd`.
+
+No attribute takes a value.  Multiple accepted statuses are repetition, `+1 +2
+grep ...`, so the grammar needs no value delimiter.  Parsing decides on the
+first character after `+`: digits are a status, letters are a name, anything
+else is an error.
 
 An empty stage, a doubled separator, or a trailing separator is a usage error
 with a message naming the position.
@@ -133,10 +138,12 @@ Every entry records the per-stage exit statuses, and replay reproduces them.
 This is not configurable.
 
 Publication additionally requires an accepted status, defaulting to `{0}`.
-`+ok=N` adds to that set; `0` is always in it, since "0 means failure" is not a
-thing.  Signals are never acceptable and `+ok` cannot override that: a stage
-killed by a signal did not choose its output, so its bytes are not a result.  An
-unaccepted status poisons its own prefix and every longer one.
+`+N` adds to that set; `0` is always in it, since "0 means failure" is not a
+thing.  `N` runs 0 through 255 and names an exit status, so `+137` means a stage
+that called `exit(137)` and never `SIGKILL`.  Signals are never acceptable and
+no attribute overrides that: a stage killed by a signal did not choose its
+output, so its bytes are not a result.  An unaccepted status poisons its own
+prefix and every longer one.
 
 There is no built-in table of per-command exit conventions.  `1` means opposite
 things in `grep` and in `cat`, and a table would have to parse argv to tell
@@ -146,7 +153,7 @@ depend invisibly on a program's name.  See the appendix for the survey.
 Refusing publication on status is otherwise silent, so it is reported once with
 the fix:
 
-    grep pat: exit 1, not cached -- pass `+ok=1` if that status is a result here
+    grep pat: exit 1, not cached -- pass `+1` if that status is a result here
 
 Publication is a `link`, never a rename.  `O_TMPFILE` is the ideal source
 because the file has no name until it is published, so an interrupted run leaves
@@ -328,9 +335,9 @@ fix named:
 
     $ cachepipe grep -c pat access.log _/ awk '{s+=$1} END {print s}'
     grep -c pat access.log _/ awk ...
-    cachepipe: grep exit 1, not cached -- pass `+ok=1` if that status is a result here
+    cachepipe: grep exit 1, not cached -- pass `+1` if that status is a result here
 
-    $ cachepipe +ok=1 grep -c pat access.log _/ awk '{s+=$1} END {print s}'
+    $ cachepipe +1 grep -c pat access.log _/ awk '{s+=$1} END {print s}'
     grep -c pat access.log <w> _/ awk ... <w>
 
 `+no-cache` restores pipe semantics for one stage and blocks replay from there
