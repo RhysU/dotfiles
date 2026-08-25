@@ -102,12 +102,24 @@ environment is not, and the escape hatch is to name variables explicitly.
 
 ## 5  Stdin
 
-Stdin content is not otherwise in the key, so it is resolved at `k[0]` or
-caching is refused:
+Stdin content is not otherwise in the key, so it is resolved at `k[0]`.  Every
+prefix contains stage 0, so a rule that refuses caching whenever stdin is
+unidentifiable would refuse it always: an interactive shell has a terminal on
+stdin even when nothing reads it.  The key therefore records what stage 0
+actually consumed, which is knowable after the fact.
 
-- stdin is a regular file, identity is a content hash and prefixes are cacheable;
-- stdin is a terminal, pipe, or socket, no prefix that consumes stdin is
-  cacheable in either direction.  Stages after the first cache normally.
+- Stdin is a seekable regular file.  Its content hashes into `k[0]` for both
+  lookup and publication.  `jq . < a.json` hits its own cache and never collides
+  with `< b.json`.
+- Anything else.  Lookup uses a "consumed nothing" identity.  If stage 0 then
+  reads zero bytes, publication proceeds under that identity, which is the
+  common case of a first stage that ignores stdin.  If stage 0 reads any bytes
+  from an unidentifiable source, nothing is published for any prefix.
+
+So `curl -s URL _/ jq .` caches at a terminal, `producer | cachepipe jq .`
+caches nothing, and `cat _/ wc -l` typed by hand stores nothing rather than
+replaying yesterday's typing.  `< /dev/null` needs no special case: it reads
+zero bytes and lands in the second branch.
 
 A cache hit that replaces stage 0 does not consume stdin.
 
