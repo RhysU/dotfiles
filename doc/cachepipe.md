@@ -1,0 +1,314 @@
+# cachepipe
+
+A memoizing replacement for the shell pipe.  Each stage's output is cached and
+keyed by the pipeline prefix that produced it, so editing the tail of a pipeline
+replays the head from cache instead of recomputing it.
+
+Status: contract only.  No implementation yet.
+
+The central trade, stated before anything else: **a memoizing pipe is not a
+pipe.**  Caching a stage means running it to completion, so a downstream stage
+that exits early no longer kills the stages upstream of it.  Everything below
+follows from choosing memoization over pipe semantics rather than pretending to
+offer both.
+
+## 1  Model
+
+A pipeline is a linear chain of stages.  Each stage is an argv vector executed
+directly, with no shell.  Stage *i* reads stage *i-1*; stage 0 reads the
+pipeline's stdin; the last stage writes the pipeline's stdout.
+
+The cache memoizes prefixes.  For each prefix of length *i* the tool may hold an
+entry recording the exact bytes that prefix wrote to stdout and the exit status
+of every stage in it.  A run replays the longest usable prefix and executes the
+rest.
+
+Caching is best-effort and semantically invisible.  For a terminating pipeline
+of deterministic, side-effect-free stages, the bytes on stdout and the exit
+status are identical with a cold cache, a warm cache, a full disk, or no cache
+directory at all.  The rest of this document exists to keep that sentence true.
+
+## 2  Grammar
+
+    cachepipe [--OPTION...] [+ATTR...] CMD [ARG...] [ _/ [+ATTR...] CMD [ARG...] ]...
+    cachepipe --ACTION
+
+The separator is `_/`: a stem with the bowl angling up off its end, and a token
+that survives every shell unquoted.  `#|` spells the same object more literally
+and is unusable; see the appendix.
+
+Leading `--` tokens belong to the tool.  The first bare or `+` token starts
+stage 1.  An unrecognized `--x` before the first command is an error, never a
+command name, because no command is named `--okk`.  The same closed-set rule
+applies to `+`.
+
+Attributes describe one stage and precede its command.  `+` cannot collide with
+a command name, so `date +%s` and `sort +2` parse untouched: the scan stops at
+the first bare token.
+
+| Attribute | Blocks reads at | Publishes its own entry |
+|---|---|---|
+| `+no-cache` | this stage onward | no |
+| `+refresh`  | this stage onward | yes |
+| `+ok=N[,N]` | — | widens what counts as success |
+
+One readability rule covers the first two: a marked stage makes every prefix
+ending at or after it unreadable.  They differ only in whether the marked stage
+writes.  `::cmd` remains shorthand for `+no-cache cmd`.
+
+An empty stage, a doubled separator, or a trailing separator is a usage error
+with a message naming the position.
+
+## 3  Options
+
+Every option has two spellings, `--name=value` and `CACHEPIPE_NAME`.  Precedence
+is flag, then environment, then default.  There is no curated subset and nothing
+to memorize.
+
+| Option | Meaning |
+|---|---|
+| `session`    | Explicit token sharing one namespace across terminals |
+| `root`       | Cache root.  Point at `$XDG_RUNTIME_DIR/cachepipe` for RAM-backed storage that dies at logout |
+| `sep`        | Separator override, for a pipeline needing a literal `_/` argument |
+| `max-bytes`  | Per-entry cap, overriding the measured default |
+| `reserve`    | Free-space floor never consumed |
+| `budget`     | Total bytes before LRU eviction |
+| `refresh`    | Equivalent to `+refresh` on stage 1 |
+| `quiet`      | Suppress the plan on stderr |
+| `explain`    | Print the plan and exit without executing |
+
+Actions take no pipeline: `--help`, `--status`, `--prune`, `--clear`,
+`--shell-init`.  Naming one forbids stages.
+
+## 4  Identity
+
+A key is a Merkle chain over the prefix, not a hash of a flattened list:
+
+    k[0] = H(version || uid || cwd || stdin-identity)
+    k[i] = H(k[i-1] || encode(stage[i]))
+
+`encode` is injective: each argument length-prefixed, plus the stage's
+attributes.  Chaining makes the key stable under replay by construction, so
+reading a prefix back cannot change that prefix's own key.
+
+Attributes are part of the encoding, so a stage marked `+no-cache` keys
+differently from the same argv unmarked.  The two live in separate namespaces
+and never alias.
+
+`version` covers the on-disk format and the key construction, so a change to
+either invalidates everything old without touching a file.  `cwd` is in the salt
+because `cat data.json` means different things in different directories.  The
+environment is not, and the escape hatch is to name variables explicitly.
+
+## 5  Stdin
+
+Stdin content is not otherwise in the key, so it is resolved at `k[0]` or
+caching is refused:
+
+- stdin is a regular file, identity is a content hash and prefixes are cacheable;
+- stdin is a terminal, pipe, or socket, no prefix that consumes stdin is
+  cacheable in either direction.  Stages after the first cache normally.
+
+A cache hit that replaces stage 0 does not consume stdin.
+
+## 6  Validity and publication
+
+Recording the exit status is correctness.  Publishing on it is policy.  The
+original tool's sin was not caching a failure but discarding the status while
+keeping the bytes.
+
+Every entry records the per-stage exit statuses, and replay reproduces them.
+This is not configurable.
+
+Publication additionally requires an accepted status, defaulting to `{0}`.
+`+ok=N` adds to that set; `0` is always in it, since "0 means failure" is not a
+thing.  Signals are never acceptable and `+ok` cannot override that: a stage
+killed by a signal did not choose its output, so its bytes are not a result.  An
+unaccepted status poisons its own prefix and every longer one.
+
+There is no built-in table of per-command exit conventions.  `1` means opposite
+things in `grep` and in `cat`, and a table would have to parse argv to tell
+`grep -q` from `grep`, would be wrong for busybox, and would make semantics
+depend invisibly on a program's name.  See the appendix for the survey.
+
+Refusing publication on status is otherwise silent, so it is reported once with
+the fix:
+
+    grep pat: exit 1, not cached -- pass `+ok=1` if that status is a result here
+
+Publication is a `link`, never a rename.  `O_TMPFILE` is the ideal source
+because the file has no name until it is published, so an interrupted run leaves
+nothing to clean up.  It is not portable, so it is probed once and falls back to
+a named temp inside the session dir.  Both paths publish by `link`, which makes
+`EEXIST` mean "someone published this first, discard mine".  First-writer-wins
+costs nothing under the determinism assumption and needs no lock.
+
+Named temps carry the session token so the pruner sweeps a killed run's
+leftovers as ordinary dead-session debris.
+
+Each entry carries metadata: format version, the prefix's argv and attributes,
+byte count, exit statuses, creation time.  On read the argv and byte count are
+verified.  A mismatch is corruption, and corruption earns a loud diagnostic, an
+unlink, and a recompute.  Recomputing is the normal path for disposable state,
+not recovery inside error handling.
+
+Interruption publishes nothing partial.  Prefixes that had already completed at
+the moment of interruption are still published; killing `jq` does not throw away
+the `curl` already paid for.
+
+## 7  Replay and completion
+
+Every cacheable stage is drained to completion whether or not anything
+downstream is still reading.  Consequences, stated plainly:
+
+- `curl big.json _/ jq .items _/ head -n5` downloads the whole file.  That is
+  the price of the entry that makes the next run cheap.  Mark the stage
+  `+no-cache` to buy pipe semantics back.
+- Draining stops at a per-entry byte cap.  Past the cap the entry is abandoned,
+  the stage reverts to ordinary pipe semantics, and a diagnostic says so.  This
+  keeps `yes _/ head -n1` from hanging and keeps the cap from ever changing the
+  answer.
+
+Replay reproduces stdout and exit status only.  Stderr is never captured and
+never replayed, so a warm run is quieter than a cold one.  Side effects are not
+replayed either: a stage that writes files writes them on the first run and not
+on the second.  Both are hazards of the idea itself and belong in the first
+paragraph of the manual, not in a footnote.
+
+## 8  Exit status and diagnostics
+
+Exit status is the first nonzero stage status, else zero.  This is `pipefail`,
+not bash's default, because a memoizer that reports the tail's success over the
+head's failure will cache garbage and then swear it is fine.  Replayed prefixes
+report the statuses recorded at publication.
+
+Reserved codes: 2 for usage errors, and a distinct code for cache-integrity
+failure.  Everything else is the pipeline's own status.
+
+The plan prints to stderr before execution.  A replayed prefix collapses to
+`<r>`, and a stage whose entry will be published is followed by `<w>`:
+
+    curl -s URL <w> _/ jq .items <w> _/ head -n5 <w>
+    <r> _/ head -n10 <w>
+
+## 9  Storage
+
+The root is `$XDG_CACHE_HOME/cachepipe`, falling back to `~/.cache/cachepipe`.
+`$XDG_RUNTIME_DIR` is the opt-in alternative and not the default: it is a tmpfs
+sized at ten percent of RAM by default, shared with dbus, gnupg, ssh-agent and
+the compositor, so filling it breaks the whole desktop session rather than just
+this tool.  Drain-to-completion makes filling it plausible.  Liveness pruning
+already reclaims dead sessions, so the runtime dir adds only promptness.
+
+Root and session dirs are 0700 and uid-owned, opened `O_NOFOLLOW`.  Wrong
+ownership or mode is fatal and loud, never silently repaired.  A symlink where
+an entry belongs is an integrity failure, not a redirect.
+
+The session token is `sid` plus the session leader's start time, read from
+`/proc/<sid>/stat` field 22.  The start time is what defeats pid recycling;
+`sid` alone lets a new shell inherit a dead one's cache.  Where the platform
+will not yield a start time the token is unverifiable and the dir is treated as
+dead.  Liveness checks always fail toward discarding: a wrong "dead" costs a
+recompute, a wrong "alive" serves someone else's bytes.
+
+`session` names a token explicitly and every shell naming it shares one
+namespace.  A named token has no leader, so it is pruned by age and budget
+rather than by liveness.  Sharing remains uid-scoped and 0700; a token is a
+convenience for one person across terminals, not a multi-user cache.
+
+## 10  Lifetime and reclamation
+
+Every invocation is the collector.  On startup, scan sibling session dirs and
+remove any whose leader is gone or whose start time no longer matches.  Cost is
+one `stat` per session dir.  No hook, no daemon, nothing to install.
+
+`cachepipe --shell-init` prints a trap for an rc file to `eval`, which reclaims
+the session dir at shell exit.  It fires on normal exit and on `SIGHUP`, so it
+covers logout and a closed terminal, and it misses `SIGKILL` and a lost machine.
+The trap is an optimization and never a guarantee.  Correctness must not depend
+on the user having edited an rc file.
+
+Entries do not expire; they are evicted.  The root has a byte budget enforced
+LRU.  `--refresh` forces re-execution and republication, and it exists solely
+for stale successes, since failures are never published in the first place.
+
+A full store is a cache event, never a pipeline event.  On `ENOSPC` while
+draining, the entry is abandoned, the stage reverts to pipe semantics, a
+diagnostic names the store and the shortfall, and the bytes keep flowing
+downstream unharmed.  Three rules support this:
+
+- The byte cap is measured, not constant.  It derives from free space at
+  startup, so a 20 MB `/tmp` yields a cap of a few megabytes rather than a fixed
+  default that guarantees failure.
+- The reserve floor is never consumed.  Caching stops while free space is below
+  the floor, so `cachepipe` is never the process that breaks the machine.
+- Eviction runs before the cap bites: LRU within the session dir first, then
+  dead sessions, then stop caching.  Evicting your own older entries is right;
+  evicting a live sibling session's entries is not.
+
+On a store too small for the reserve floor, `cachepipe` runs every pipeline
+uncached, says so once, and is merely a slower `|`.  That is correct behaviour
+and needs no special path.
+
+## 11  Non-goals
+
+No shell semantics: no globs, redirection, builtins, or quoting rules.  No
+dependency tracking: the key covers the command, not the files, network, or
+clock behind it, so `cat f _/ jq .` keeps serving the old contents after `f`
+changes.  No fan-out, no DAG, no build system.  No sandboxing.  Bytes are bytes
+and nothing is decoded as text.
+
+## 12  Invariants
+
+1. A published entry is the complete stdout of its prefix from a run in which
+   every stage terminated with an accepted status and no signal.
+2. Presence, absence, exhaustion, or corruption of the cache never changes
+   stdout or exit status for a terminating, deterministic, side-effect-free
+   pipeline.
+3. Key equality implies prefix equality up to SHA-256, and key computation is
+   stable under replay substitution.
+4. No entry is ever observed partially written.
+5. No read or write follows a symlink or escapes the cache root, and no entry is
+   read that is not owned by the uid at 0600.
+6. Interruption never publishes a partial entry and never leaves a temp file
+   that the pruner will not collect.
+7. A prefix containing a `+no-cache` or `+refresh` stage is never replayed.
+8. A session dir is reused only when its leader is alive and its start time
+   matches.  Unverifiable is dead.
+9. Publication is a link into the session dir; a key is written at most once per
+   session.
+10. Every stored byte is reachable from a session dir whose liveness any later
+    invocation can decide, so nothing becomes unreclaimable.
+
+## Appendix: evidence
+
+`#|` is the obvious separator and the shell eats it silently, which is the
+failure class this design exists to eliminate:
+
+    $ bash -O interactive_comments -c "python3 argv.py a #| b"
+      argv: ['a']
+    $ bash -c "python3 argv.py a |# b"
+      bash: -c: line 2: syntax error: unexpected end of file
+
+Survivors of the same test were `_/`, `//`, `@_` and `,/`.  Any glyph containing
+`|` is dead.
+
+Exit status `1` is load-bearing in both directions, which is why the accepted
+set defaults to `{0}` and why no per-command table can be correct:
+
+    grep nomatch < nums.txt            -> 1
+    diff nums.txt <(echo x)            -> 1
+    cmp nums.txt /dev/null             -> 1
+    sort -c <(printf '2\n1\n')         -> 1
+    jq -e .missing <<< '{}'            -> 1
+    cat /nonexistent                   -> 1
+    wc -l /nonexistent                 -> 1
+    sed -e                             -> 1
+    python3 -c 'raise SystemExit(1)'   -> 1
+
+An unlinked directory cannot serve as a session-scoped cache, which is why
+reclamation is by process liveness rather than by fd lifetime:
+
+    dir fd still valid after rmdir: True
+    created an entry in the removed dir: no -> ENOENT
+    listing removed dir: []
