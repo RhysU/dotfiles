@@ -145,6 +145,15 @@ no attribute overrides that: a stage killed by a signal did not choose its
 output, so its bytes are not a result.  An unaccepted status poisons its own
 prefix and every longer one.
 
+A `+KILL` spelling admitting signals was considered and rejected.  A signal
+means the byte stream is short, so accepting one restores the truncated-entry
+defect this design exists to remove.  `+PIPE` would be inert besides: draining
+means a cacheable stage never takes a SIGPIPE, and the stages that can take one
+never publish.  The plausible motive is a deadline, which is spelled with a
+wrapper: `timeout` exits 124 and `+124` already covers it.  Adding `+KILL`
+alongside `+137` would also invite reading the two as synonyms, which they are
+not.
+
 There is no built-in table of per-command exit conventions.  `1` means opposite
 things in `grep` and in `cat`, and a table would have to parse argv to tell
 `grep -q` from `grep`, would be wrong for busybox, and would make semantics
