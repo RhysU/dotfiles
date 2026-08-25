@@ -349,6 +349,11 @@ fix named:
     $ cachepipe +1 grep -c pat access.log _/ awk '{s+=$1} END {print s}'
     grep -c pat access.log <w> _/ awk ... <w>
 
+Several accepted statuses are repetition, needing no delimiter:
+
+    $ cachepipe +1 +2 check-drift ./config _/ tee drift.log
+    check-drift ./config <w> _/ tee drift.log <w>
+
 `+no-cache` restores pipe semantics for one stage and blocks replay from there
 on; downstream still caches in its own namespace.  `+refresh` re-executes a
 stale head and republishes it:
