@@ -93,9 +93,7 @@ to memorize.
 | `session`    | Explicit token sharing one namespace across terminals |
 | `root`       | Cache root.  Point at `$XDG_RUNTIME_DIR/cachepipe` for RAM-backed storage that dies at logout |
 | `separator`  | The token that separates stages, for a pipeline needing a literal `::` argument |
-| `max-bytes`  | Per-entry cap, overriding the measured default |
-| `reserve`    | Free-space floor never consumed |
-| `budget`     | Total bytes before LRU eviction |
+| `budget`     | How much the cache may hold, as a size or a percentage of the store |
 | `fresh`      | Equivalent to `+fresh` on stage 1 |
 | `quiet`      | Suppress the plan on stderr |
 | `explain`    | Print the plan and exit without executing |
@@ -226,10 +224,10 @@ downstream is still reading.  Consequences, stated plainly:
 - `curl big.json :: jq .items :: head -n5` downloads the whole file.  That is
   the price of the entry that makes the next run cheap.  Move the stage outside
   `cachepipe` with a shell `|` to buy pipe semantics back.
-- Draining stops at a per-entry byte cap.  Past the cap the entry is abandoned,
-  the stage reverts to ordinary pipe semantics, and a diagnostic says so.  This
-  keeps `yes :: head -n1` from hanging and keeps the cap from ever changing the
-  answer.
+- Draining stops at a per-entry cap, a fixed fraction of the budget.  Past the
+  cap the entry is abandoned, the stage reverts to ordinary pipe semantics, and
+  a diagnostic says so.  This keeps `yes :: head -n1` from hanging and keeps the
+  cap from ever changing the answer.
 
 Replay reproduces stdout and exit status only.  Stderr is never captured and
 never replayed, so a warm run is quieter than a cold one.  Side effects are not
@@ -293,8 +291,9 @@ covers logout and a closed terminal, and it misses `SIGKILL` and a lost machine.
 The trap is an optimization and never a guarantee.  Correctness must not depend
 on the user having edited an rc file.
 
-Entries do not expire; they are evicted.  The root has a byte budget enforced
-LRU.  `--fresh` forces re-execution and republication, and it exists solely for
+Entries do not expire; they are evicted.  The root has a budget enforced LRU,
+expressed as a size or as a percentage of the store, since a dotfiles repo meets
+disks of very different sizes.  `--fresh` forces re-execution and republication, and it exists solely for
 stale successes, since failures are never published in the first place.
 
 A full store is a cache event, never a pipeline event.  On `ENOSPC` while
@@ -302,11 +301,13 @@ draining, the entry is abandoned, the stage reverts to pipe semantics, a
 diagnostic names the store and the shortfall, and the bytes keep flowing
 downstream unharmed.  Three rules support this:
 
-- The byte cap is measured, not constant.  It derives from free space at
-  startup, so a 20 MB `/tmp` yields a cap of a few megabytes rather than a fixed
-  default that guarantees failure.
-- The reserve floor is never consumed.  Caching stops while free space is below
-  the floor, so `cachepipe` is never the process that breaks the machine.
+- The per-entry cap is derived, not configured.  It is a fixed fraction of the
+  budget, so several entries always coexist and no single download can claim the
+  whole cache.  One knob sets the appetite; the rest follows.
+- The reserve floor is an invariant, not an option.  `cachepipe` never consumes
+  the last of a filesystem's free space, whatever the budget says, so it is
+  never the process that breaks the machine.  A safety floor you can switch off
+  is not a floor.
 - Eviction runs before the cap bites: LRU within the session dir first, then
   dead sessions, then stop caching.  Evicting your own older entries is right;
   evicting a live sibling session's entries is not.
