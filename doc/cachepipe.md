@@ -137,6 +137,16 @@ caches nothing, and `cat _/ wc -l` typed by hand stores nothing rather than
 replaying yesterday's typing.  `< /dev/null` needs no special case: it reads
 zero bytes and lands in the second branch.
 
+Piped stdin therefore stays unmemoizable, and the fix is to name the producer
+rather than pipe it: `cachepipe producer _/ jq .items` memoizes the whole chain.
+Content-keying the piped bytes was considered and rejected as too complicated
+for its payoff.  It would identify anonymous bytes by their digest, but the
+digest is unknown until the stream is complete, so the stage after the boundary
+could not start until the stage before it finished.  That trades concurrency for
+reuse, pays off only when the input is unpredictable yet frequently unchanged,
+and fails invisibly when it does not: the pipeline merely gets slower, with
+nothing to diagnose.
+
 A cache hit that replaces stage 0 does not consume stdin.
 
 ## 6  Validity and publication
