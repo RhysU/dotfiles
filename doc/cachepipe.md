@@ -278,10 +278,19 @@ Reserved codes come from `sysexits.h`, not from the low integers: 64 `EX_USAGE`
 for a malformed invocation and 78 `EX_CONFIG` for a cache root whose ownership
 or mode is wrong.  A stage can legitimately exit 2, as `grep` does on a real
 error, so spending 2 on the tool's own complaints would make the two
-indistinguishable.  Everything else is the pipeline's own status.
+indistinguishable.  A stage whose command cannot be executed yields 127, the
+shell's own convention, and publishes nothing.  Options naming no pipeline at
+all, as in `cachepipe --quiet`, are a usage error; only a wholly bare
+`cachepipe` is the defined usage-plus-status view.  Interruption exits
+128 plus the signal number, and signals reaching the process group are left to
+reach the stages too rather than being caught and forwarded.  Everything else is
+the pipeline's own status.
 
-The plan prints to stderr before execution.  A replayed prefix collapses to
-`<r>`, and a stage whose entry will be published is followed by `<w>`:
+The plan prints to stderr before execution, so it states intent rather than
+outcome: `<w>` marks a stage whose entry is *eligible* to be published, and
+status, the per-entry cap, and `ENOSPC` can each still prevent it.  Each of
+those refusals says so on its own line, so the plan is never silently
+contradicted.  A replayed prefix collapses to `<r>`:
 
     curl -s URL <w> :: jq .items <w> :: head -n5 <w>
     <r> :: head -n10 <w>
