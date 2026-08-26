@@ -20,8 +20,9 @@ pipeline's stdin; the last stage writes the pipeline's stdout.
 
 `cachepipe`'s argv is the cached region, and the shell's `|` bounds it.  Two
 markers carry two concepts and nothing carries either twice: `_/` delimits
-stages inside the region, `|` puts a stage outside it.  A stage outside runs
-fresh every time, which is why the tool needs no way to say "fresh" of its own.
+stages inside the region, `|` puts a stage outside it.  A stage outside is never
+read from the cache and never written to it, which is why the tool needs no way
+to say "keep this out of the cache" of its own.
 
 The cache memoizes prefixes.  For each prefix of length *i* the tool may hold an
 entry recording the exact bytes that prefix wrote to stdout and the exit status
@@ -53,7 +54,7 @@ the first bare token.
 
 | Attribute | Effect |
 |---|---|
-| `+refresh` | Makes every prefix ending at or after this stage unreadable, and republishes them |
+| `+fresh`   | Executes this stage rather than replaying it, making every prefix ending at or after it unreadable |
 | `+N`       | Widens what counts as success for this stage |
 
 There is no attribute for "do not cache this stage".  Fresh is the shell's own
@@ -86,7 +87,7 @@ to memorize.
 | `max-bytes`  | Per-entry cap, overriding the measured default |
 | `reserve`    | Free-space floor never consumed |
 | `budget`     | Total bytes before LRU eviction |
-| `refresh`    | Equivalent to `+refresh` on stage 1 |
+| `fresh`      | Equivalent to `+fresh` on stage 1 |
 | `quiet`      | Suppress the plan on stderr |
 | `explain`    | Print the plan and exit without executing |
 
@@ -104,7 +105,7 @@ A key is a Merkle chain over the prefix, not a hash of a flattened list:
 stable under replay by construction, so reading a prefix back cannot change that
 prefix's own key.
 
-No attribute enters the encoding.  `+refresh` is a transient instruction, and
+No attribute enters the encoding.  `+fresh` is a transient instruction, and
 keying on it would hide the entry it just published from every later run.  `+N`
 changes no byte of output: `+1 grep pat` and `grep pat` write the same bytes,
 and an entry published by the first is sound for the second to replay, since the
@@ -267,8 +268,8 @@ The trap is an optimization and never a guarantee.  Correctness must not depend
 on the user having edited an rc file.
 
 Entries do not expire; they are evicted.  The root has a byte budget enforced
-LRU.  `--refresh` forces re-execution and republication, and it exists solely
-for stale successes, since failures are never published in the first place.
+LRU.  `--fresh` forces re-execution and republication, and it exists solely for
+stale successes, since failures are never published in the first place.
 
 A full store is a cache event, never a pipeline event.  On `ENOSPC` while
 draining, the entry is abandoned, the stage reverts to pipe semantics, a
@@ -310,7 +311,7 @@ and nothing is decoded as text.
    read that is not owned by the uid at 0600.
 6. Interruption never publishes a partial entry and never leaves a temp file
    that the pruner will not collect.
-7. A prefix containing a `+refresh` stage is never replayed.
+7. A prefix containing a `+fresh` stage is never replayed.
 8. A session dir is reused only when its leader is alive and its start time
    matches.  Unverifiable is dead.
 9. Publication is a link into the session dir; a key is written at most once per
@@ -365,12 +366,12 @@ Several accepted statuses are repetition, needing no delimiter:
     check-drift ./config <w> _/ tee drift.log <w>
 
 A shell `|` ends the cached region, so the tail runs fresh every time and the
-head still caches.  `+refresh` re-executes a stale head and republishes it:
+head still caches.  `+fresh` re-executes a stale head and republishes it:
 
     $ cachepipe curl -s "$URL" _/ jq .items | head -n5
     curl -s https://example.com/big.json <w> _/ jq .items <w>
 
-    $ cachepipe +refresh curl -s "$URL" _/ jq .items
+    $ cachepipe +fresh curl -s "$URL" _/ jq .items
     curl -s https://example.com/big.json <w> _/ jq .items <w>
 
 A failing stage propagates its status and publishes nothing, so the next run
