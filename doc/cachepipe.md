@@ -49,8 +49,8 @@ than an argument list.
 Legality as a filename is what lets a separator also name the program, so an
 installed `:c` gives a uniform `:c curl -s URL :: jq .items` with no wrapper.
 The cost is a livelier collision than a rarer glyph would carry: `::` is a
-plausible argument in its own right, as in `grep ::` over C++ sources, and `sep`
-is the escape.
+plausible argument in its own right, as in `grep ::` over C++ sources, and
+`separator` is the escape.
 
 Leading `--` tokens belong to the tool.  The first bare or `+` token starts
 stage 1.  An unrecognized `--x` before the first command is an error, never a
@@ -92,7 +92,7 @@ to memorize.
 |---|---|
 | `session`    | Explicit token sharing one namespace across terminals |
 | `root`       | Cache root.  Point at `$XDG_RUNTIME_DIR/cachepipe` for RAM-backed storage that dies at logout |
-| `sep`        | Separator override, for a pipeline needing a literal `::` argument |
+| `separator`  | The token that separates stages, for a pipeline needing a literal `::` argument |
 | `max-bytes`  | Per-entry cap, overriding the measured default |
 | `reserve`    | Free-space floor never consumed |
 | `budget`     | Total bytes before LRU eviction |
