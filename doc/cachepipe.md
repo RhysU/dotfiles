@@ -95,13 +95,15 @@ A key is a Merkle chain over the prefix, not a hash of a flattened list:
     k[0] = H(version || uid || cwd || stdin-identity)
     k[i] = H(k[i-1] || encode(stage[i]))
 
-`encode` is injective: each argument length-prefixed, plus the stage's
-attributes.  Chaining makes the key stable under replay by construction, so
-reading a prefix back cannot change that prefix's own key.
+`encode` is injective: each argument length-prefixed.  Chaining makes the key
+stable under replay by construction, so reading a prefix back cannot change that
+prefix's own key.
 
-Attributes are part of the encoding, so a stage marked `+no-cache` keys
-differently from the same argv unmarked.  The two live in separate namespaces
-and never alias.
+No attribute enters the encoding.  `+refresh` is a transient instruction, and
+keying on it would hide the entry it just published from every later run.  `+N`
+changes no byte of output: `+1 grep pat` and `grep pat` write the same bytes,
+and an entry published by the first is sound for the second to replay, since the
+recorded status is reported either way.  So a key is a function of argv alone.
 
 `version` covers the on-disk format and the key construction, so a change to
 either invalidates everything old without touching a file.  `cwd` is in the salt
@@ -177,8 +179,8 @@ costs nothing under the determinism assumption and needs no lock.
 Named temps carry the session token so the pruner sweeps a killed run's
 leftovers as ordinary dead-session debris.
 
-Each entry carries metadata: format version, the prefix's argv and attributes,
-byte count, exit statuses, creation time.  On read the argv and byte count are
+Each entry carries metadata: format version, the prefix's argv, byte count,
+exit statuses, creation time.  On read the argv and byte count are
 verified.  A mismatch is corruption, and corruption earns a loud diagnostic, an
 unlink, and a recompute.  Recomputing is the normal path for disposable state,
 not recovery inside error handling.
