@@ -45,7 +45,7 @@ and is unusable; see the appendix.
 
 Leading `--` tokens belong to the tool.  The first bare or `+` token starts
 stage 1.  An unrecognized `--x` before the first command is an error, never a
-command name, because no command is named `--okk`.  The same closed-set rule
+command name, because no command is named `--freshh`.  The same closed-set rule
 applies to `+`.
 
 Attributes describe one stage and precede its command.  `+` cannot collide with
