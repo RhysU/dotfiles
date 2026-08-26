@@ -130,9 +130,15 @@ and an entry published by the first is sound for the second to replay, since the
 recorded status is reported either way.  So a key is a function of argv alone.
 
 `version` covers the on-disk format and the key construction, so a change to
-either invalidates everything old without touching a file.  `cwd` is in the salt
-because `cat data.json` means different things in different directories.  The
-environment is not, and the escape hatch is to name variables explicitly.
+either invalidates everything old without touching a file.  Entries under a
+superseded version are unreadable but not yet gone, so eviction treats them as
+the second cheapest loss after dead sessions.
+
+`cwd` is in the salt because `cat data.json` means different things in different
+directories.  It is the resolved path from `getcwd()` rather than the shell's
+logical `$PWD`, so two routes to one directory share a cache instead of
+duplicating every entry across a symlink farm.  The environment is not in the
+salt, and the escape hatch is to name variables explicitly.
 
 ## 5  Stdin
 
