@@ -214,8 +214,15 @@ Named temps carry the session token so the pruner sweeps a killed run's
 leftovers as ordinary dead-session debris.
 
 Each entry carries metadata: format version, the prefix's argv, byte count,
-exit statuses, creation time.  On read the argv and byte count are
-verified.  A mismatch is corruption, and corruption earns a loud diagnostic, an
+exit statuses, creation time, and a last-read stamp.  On read the argv and byte
+count are verified.
+
+The last-read stamp is what makes eviction genuinely least-recently-*used*.
+Filesystem `atime` cannot supply it, since `relatime` and `noatime` are common
+defaults and a tmpfs root may not maintain it at all, and creation time is
+actively wrong here: a stable prefix replayed by every run is by definition old,
+so evicting by age would discard the hottest entries first.  Stamping is
+best-effort — a hit whose stamp cannot be written is still a hit.  A mismatch is corruption, and corruption earns a loud diagnostic, an
 unlink, and a recompute.  Recomputing is the normal path for disposable state,
 not recovery inside error handling.
 
