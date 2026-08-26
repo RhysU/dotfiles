@@ -69,8 +69,8 @@ the first bare token.
 There is no attribute for "do not cache this stage".  Fresh is the shell's own
 `|`, outside the tool: `cachepipe curl -s URL :: jq .items | head -n5` runs
 `head` afresh every time.  `cachepipe`'s argv is exactly the cached region, and
-anything you do not want cached belongs outside it.  An attribute that suppressed
-caching mid-region could only mean one of two things, and both are already
+anything you do not want cached belongs outside it.  An attribute that
+suppressed caching mid-region could only mean one of two things, both already
 spelled better: publish nothing downstream, which is a plain pipe, or publish
 entries that no pipeline can ever read, which is a leak.
 
@@ -102,9 +102,10 @@ Actions take no pipeline: `--help`, `--status`, `--clear`, `--eval-init`.
 Naming one forbids stages.
 
 `--status` lists what the cache holds for every session under this uid, the
-current one first: a root-wide budget cannot be reasoned about from one session's
-entries alone.  `--clear` discards all of it, for every session under this uid, which is safe at any moment: by invariant 2 a sibling
-shell mid-pipeline loses recomputation and nothing else.  There is no `--prune`,
+current one first: a root-wide budget cannot be reasoned about from one
+session's entries alone.  `--clear` discards all of it, which is safe at any
+moment: by invariant 2 a sibling shell mid-pipeline loses recomputation and
+nothing else.  There is no `--prune`,
 because the sweep it would run happens at the start of every invocation anyway,
 `--status` among them.
 
@@ -240,9 +241,11 @@ Filesystem `atime` cannot supply it, since `relatime` and `noatime` are common
 defaults and a tmpfs root may not maintain it at all, and creation time is
 actively wrong here: a stable prefix replayed by every run is by definition old,
 so evicting by age would discard the hottest entries first.  Stamping is
-best-effort — a hit whose stamp cannot be written is still a hit.  A mismatch is corruption, and corruption earns a loud diagnostic, an
-unlink, and a recompute.  Recomputing is the normal path for disposable state,
-not recovery inside error handling.
+best-effort: a hit whose stamp cannot be written is still a hit.
+
+A verification mismatch is corruption, and corruption earns a loud diagnostic,
+an unlink, and a recompute.  Recomputing is the normal path for disposable
+state, not recovery inside error handling.
 
 Interruption publishes nothing partial.  Prefixes that had already completed at
 the moment of interruption are still published; killing `jq` does not throw away
