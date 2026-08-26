@@ -98,8 +98,14 @@ to memorize.
 | `quiet`      | Suppress the plan on stderr |
 | `explain`    | Print the plan and exit without executing |
 
-Actions take no pipeline: `--help`, `--status`, `--prune`, `--clear`,
-`--shell-init`.  Naming one forbids stages.
+Actions take no pipeline: `--help`, `--status`, `--clear`, `--shell-init`.
+Naming one forbids stages.
+
+`--status` lists what the cache holds.  `--clear` discards all of it, for every
+session under this uid, which is safe at any moment: by invariant 2 a sibling
+shell mid-pipeline loses recomputation and nothing else.  There is no `--prune`,
+because the sweep it would run happens at the start of every invocation anyway,
+`--status` among them.
 
 A bare `cachepipe` with no arguments is not an error and exits 0.  It prints the
 usage line followed by `--status`, so the argument-free invocation answers both
