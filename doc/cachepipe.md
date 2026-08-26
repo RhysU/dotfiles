@@ -98,7 +98,7 @@ to memorize.
 | `quiet`      | Suppress the plan on stderr |
 | `explain`    | Print the plan and exit without executing |
 
-Actions take no pipeline: `--help`, `--status`, `--clear`, `--shell-init`.
+Actions take no pipeline: `--help`, `--status`, `--clear`, `--eval-init`.
 Naming one forbids stages.
 
 `--status` lists what the cache holds.  `--clear` discards all of it, for every
@@ -291,7 +291,7 @@ Every invocation is the collector.  On startup, scan sibling session dirs and
 remove any whose leader is gone or whose start time no longer matches.  Cost is
 one `stat` per session dir.  No hook, no daemon, nothing to install.
 
-`cachepipe --shell-init` prints a trap for an rc file to `eval`, which reclaims
+`cachepipe --eval-init` prints a trap for an rc file to `eval`, which reclaims
 the session dir at shell exit.  It fires on normal exit and on `SIGHUP`, so it
 covers logout and a closed terminal, and it misses `SIGKILL` and a lost machine.
 The trap is an optimization and never a guarantee.  Correctness must not depend
