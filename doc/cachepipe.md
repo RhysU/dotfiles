@@ -101,8 +101,9 @@ to memorize.
 Actions take no pipeline: `--help`, `--status`, `--clear`, `--eval-init`.
 Naming one forbids stages.
 
-`--status` lists what the cache holds.  `--clear` discards all of it, for every
-session under this uid, which is safe at any moment: by invariant 2 a sibling
+`--status` lists what the cache holds for every session under this uid, the
+current one first: a root-wide budget cannot be reasoned about from one session's
+entries alone.  `--clear` discards all of it, for every session under this uid, which is safe at any moment: by invariant 2 a sibling
 shell mid-pipeline loses recomputation and nothing else.  There is no `--prune`,
 because the sweep it would run happens at the start of every invocation anyway,
 `--status` among them.
@@ -297,10 +298,16 @@ covers logout and a closed terminal, and it misses `SIGKILL` and a lost machine.
 The trap is an optimization and never a guarantee.  Correctness must not depend
 on the user having edited an rc file.
 
-Entries do not expire; they are evicted.  The root has a budget enforced LRU,
-expressed as a size or as a percentage of the store, since a dotfiles repo meets
-disks of very different sizes.  `--fresh` forces re-execution and republication, and it exists solely for
-stale successes, since failures are never published in the first place.
+Entries do not expire; they are evicted.  The budget bounds the whole root, not
+each session, and is expressed as a size or as a percentage of the store, since
+a dotfiles repo meets disks of very different sizes.  A root-wide budget means
+eviction reaches across sessions: a shell may discard a live sibling's entries,
+which invariant 2 makes safe, costing that sibling recomputation and nothing
+else.  A per-session budget was the alternative and it cannot bound the root at
+all, since concurrent terminals multiply it.
+
+`--fresh` forces re-execution and republication, and it exists solely for stale
+successes, since failures are never published in the first place.
 
 A full store is a cache event, never a pipeline event.  On `ENOSPC` while
 draining, the entry is abandoned, the stage reverts to pipe semantics, a
@@ -314,9 +321,13 @@ downstream unharmed.  Three rules support this:
   the last of a filesystem's free space, whatever the budget says, so it is
   never the process that breaks the machine.  A safety floor you can switch off
   is not a floor.
-- Eviction runs before the cap bites: LRU within the session dir first, then
-  dead sessions, then stop caching.  Evicting your own older entries is right;
-  evicting a live sibling session's entries is not.
+- Eviction runs before the cap bites, cheapest loss first: dead sessions, then
+  entries left by a superseded format version, then least-recently-read entries
+  anywhere under the root, then stop caching.  Reclaiming what no live session
+  can reach must come before discarding anything still in use.
+- Eviction needs no lock.  Two collectors may unlink concurrently, so `ENOENT`
+  is an expected outcome rather than an error, and over-eviction costs only
+  recomputation.
 
 On a store too small for the reserve floor, `cachepipe` runs every pipeline
 uncached, says so once, and is merely a slower `|`.  That is correct behaviour
