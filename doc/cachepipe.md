@@ -19,7 +19,7 @@ directly, with no shell.  Stage *i* reads stage *i-1*; stage 0 reads the
 pipeline's stdin; the last stage writes the pipeline's stdout.
 
 `cachepipe`'s argv is the cached region, and the shell's `|` bounds it.  Two
-markers carry two concepts and nothing carries either twice: `_/` delimits
+markers carry two concepts and nothing carries either twice: `::` delimits
 stages inside the region, `|` puts a stage outside it.  A stage outside is never
 read from the cache and never written to it, which is why the tool needs no way
 to say "keep this out of the cache" of its own.
@@ -36,12 +36,21 @@ directory at all.  The rest of this document exists to keep that sentence true.
 
 ## 2  Grammar
 
-    cachepipe [--OPTION...] [+ATTR...] CMD [ARG...] [ _/ [+ATTR...] CMD [ARG...] ]...
+    cachepipe [--OPTION...] [+ATTR...] CMD [ARG...] [ :: [+ATTR...] CMD [ARG...] ]...
     cachepipe --ACTION
 
-The separator is `_/`: a stem with the bowl angling up off its end, and a token
-that survives every shell unquoted.  `#|` spells the same object more literally
-and is unusable; see the appendix.
+The separator is `::`.  No convention exists to borrow: a repeatable stage
+delimiter living inside argv is a rare shape, and every near-convention means
+something else.  `--` says options are over, GNU parallel taught `:::` to mean
+fan out across an argument list, and `find -exec ... \;` needs an escape.  `::`
+is safe unquoted, legal as a filename, and connotes a section boundary rather
+than an argument list.
+
+Legality as a filename is what lets a separator also name the program, so an
+installed `:c` gives a uniform `:c curl -s URL :: jq .items` with no wrapper.
+The cost is a livelier collision than a rarer glyph would carry: `::` is a
+plausible argument in its own right, as in `grep ::` over C++ sources, and `sep`
+is the escape.
 
 Leading `--` tokens belong to the tool.  The first bare or `+` token starts
 stage 1.  An unrecognized `--x` before the first command is an error, never a
@@ -58,7 +67,7 @@ the first bare token.
 | `+N`       | Widens what counts as success for this stage |
 
 There is no attribute for "do not cache this stage".  Fresh is the shell's own
-`|`, outside the tool: `cachepipe curl -s URL _/ jq .items | head -n5` runs
+`|`, outside the tool: `cachepipe curl -s URL :: jq .items | head -n5` runs
 `head` afresh every time.  `cachepipe`'s argv is exactly the cached region, and
 anything you do not want cached belongs outside it.  An attribute that suppressed
 caching mid-region could only mean one of two things, and both are already
@@ -83,7 +92,7 @@ to memorize.
 |---|---|
 | `session`    | Explicit token sharing one namespace across terminals |
 | `root`       | Cache root.  Point at `$XDG_RUNTIME_DIR/cachepipe` for RAM-backed storage that dies at logout |
-| `sep`        | Separator override, for a pipeline needing a literal `_/` argument |
+| `sep`        | Separator override, for a pipeline needing a literal `::` argument |
 | `max-bytes`  | Per-entry cap, overriding the measured default |
 | `reserve`    | Free-space floor never consumed |
 | `budget`     | Total bytes before LRU eviction |
@@ -132,13 +141,13 @@ actually consumed, which is knowable after the fact.
   common case of a first stage that ignores stdin.  If stage 0 reads any bytes
   from an unidentifiable source, nothing is published for any prefix.
 
-So `curl -s URL _/ jq .` caches at a terminal, `producer | cachepipe jq .`
-caches nothing, and `cat _/ wc -l` typed by hand stores nothing rather than
+So `curl -s URL :: jq .` caches at a terminal, `producer | cachepipe jq .`
+caches nothing, and `cat :: wc -l` typed by hand stores nothing rather than
 replaying yesterday's typing.  `< /dev/null` needs no special case: it reads
 zero bytes and lands in the second branch.
 
 Piped stdin therefore stays unmemoizable, and the fix is to name the producer
-rather than pipe it: `cachepipe producer _/ jq .items` memoizes the whole chain.
+rather than pipe it: `cachepipe producer :: jq .items` memoizes the whole chain.
 Content-keying the piped bytes was considered and rejected as too complicated
 for its payoff.  It would identify anonymous bytes by their digest, but the
 digest is unknown until the stream is complete, so the stage after the boundary
@@ -210,12 +219,12 @@ the `curl` already paid for.
 Every cacheable stage is drained to completion whether or not anything
 downstream is still reading.  Consequences, stated plainly:
 
-- `curl big.json _/ jq .items _/ head -n5` downloads the whole file.  That is
+- `curl big.json :: jq .items :: head -n5` downloads the whole file.  That is
   the price of the entry that makes the next run cheap.  Move the stage outside
   `cachepipe` with a shell `|` to buy pipe semantics back.
 - Draining stops at a per-entry byte cap.  Past the cap the entry is abandoned,
   the stage reverts to ordinary pipe semantics, and a diagnostic says so.  This
-  keeps `yes _/ head -n1` from hanging and keeps the cap from ever changing the
+  keeps `yes :: head -n1` from hanging and keeps the cap from ever changing the
   answer.
 
 Replay reproduces stdout and exit status only.  Stderr is never captured and
@@ -237,8 +246,8 @@ failure.  Everything else is the pipeline's own status.
 The plan prints to stderr before execution.  A replayed prefix collapses to
 `<r>`, and a stage whose entry will be published is followed by `<w>`:
 
-    curl -s URL <w> _/ jq .items <w> _/ head -n5 <w>
-    <r> _/ head -n10 <w>
+    curl -s URL <w> :: jq .items <w> :: head -n5 <w>
+    <r> :: head -n10 <w>
 
 ## 9  Storage
 
@@ -303,7 +312,7 @@ and needs no special path.
 
 No shell semantics: no globs, redirection, builtins, or quoting rules.  No
 dependency tracking: the key covers the command, not the files, network, or
-clock behind it, so `cat f _/ jq .` keeps serving the old contents after `f`
+clock behind it, so `cat f :: jq .` keeps serving the old contents after `f`
 changes.  No fan-out, no DAG, no build system.  No sandboxing.  Bytes are bytes
 and nothing is decoded as text.
 
@@ -336,69 +345,69 @@ Output below is illustrative, unlike the evidence that follows it.
 Cold run, then the same pipeline reused four ways.  This is the whole point of
 the tool in five commands:
 
-    $ cachepipe curl -s "$URL" _/ jq .items
-    curl -s https://example.com/big.json <w> _/ jq .items <w>
+    $ cachepipe curl -s "$URL" :: jq .items
+    curl -s https://example.com/big.json <w> :: jq .items <w>
 
-    $ cachepipe curl -s "$URL" _/ jq .items
+    $ cachepipe curl -s "$URL" :: jq .items
     <r>
 
-    $ cachepipe curl -s "$URL" _/ jq .items _/ head -n5
-    <r> _/ head -n5 <w>
+    $ cachepipe curl -s "$URL" :: jq .items :: head -n5
+    <r> :: head -n5 <w>
 
-    $ cachepipe curl -s "$URL" _/ jq .items _/ head -n20
-    <r> _/ head -n20 <w>
+    $ cachepipe curl -s "$URL" :: jq .items :: head -n20
+    <r> :: head -n20 <w>
 
-    $ cachepipe curl -s "$URL" _/ jq .count _/ head -n5
-    <r> _/ jq .count <w> _/ head -n5 <w>
+    $ cachepipe curl -s "$URL" :: jq .count :: head -n5
+    <r> :: jq .count <w> :: head -n5 <w>
 
 A regular file on stdin hashes into the key.  A pipe cannot, so nothing caches:
 
     $ cachepipe jq .items < big.json
     jq .items <w>
 
-    $ producer | cachepipe jq .items _/ head -n5
-    jq .items _/ head -n5
+    $ producer | cachepipe jq .items :: head -n5
+    jq .items :: head -n5
     cachepipe: stage 1 read from a pipe; nothing cached this run
 
 A nonzero status that means "no" rather than "failed" is refused once, with the
 fix named:
 
-    $ cachepipe grep -c pat access.log _/ awk '{s+=$1} END {print s}'
-    grep -c pat access.log _/ awk ...
+    $ cachepipe grep -c pat access.log :: awk '{s+=$1} END {print s}'
+    grep -c pat access.log :: awk ...
     cachepipe: grep exit 1, not cached -- pass `+1` if that status is a result here
 
-    $ cachepipe +1 grep -c pat access.log _/ awk '{s+=$1} END {print s}'
-    grep -c pat access.log <w> _/ awk ... <w>
+    $ cachepipe +1 grep -c pat access.log :: awk '{s+=$1} END {print s}'
+    grep -c pat access.log <w> :: awk ... <w>
 
 Several accepted statuses are repetition, needing no delimiter:
 
-    $ cachepipe +1 +2 check-drift ./config _/ tee drift.log
-    check-drift ./config <w> _/ tee drift.log <w>
+    $ cachepipe +1 +2 check-drift ./config :: tee drift.log
+    check-drift ./config <w> :: tee drift.log <w>
 
 A shell `|` ends the cached region, so the tail runs fresh every time and the
 head still caches.  `+fresh` re-executes a stale head and republishes it:
 
-    $ cachepipe curl -s "$URL" _/ jq .items | head -n5
-    curl -s https://example.com/big.json <w> _/ jq .items <w>
+    $ cachepipe curl -s "$URL" :: jq .items | head -n5
+    curl -s https://example.com/big.json <w> :: jq .items <w>
 
-    $ cachepipe +fresh curl -s "$URL" _/ jq .items
-    curl -s https://example.com/big.json <w> _/ jq .items <w>
+    $ cachepipe +fresh curl -s "$URL" :: jq .items
+    curl -s https://example.com/big.json <w> :: jq .items <w>
 
 A failing stage propagates its status and publishes nothing, so the next run
 genuinely retries:
 
-    $ cachepipe curl -sf "$URL" _/ jq .items ; echo "rc=$?"
-    curl -sf https://example.com/big.json _/ jq .items
+    $ cachepipe curl -sf "$URL" :: jq .items ; echo "rc=$?"
+    curl -sf https://example.com/big.json :: jq .items
     rc=22
 
 Early exit downstream no longer kills upstream, and the cap is what keeps that
 affordable:
 
-    $ cachepipe curl -s "$URL" _/ head -n5
-    curl -s https://example.com/big.json <w> _/ head -n5 <w>
+    $ cachepipe curl -s "$URL" :: head -n5
+    curl -s https://example.com/big.json <w> :: head -n5 <w>
 
-    $ cachepipe curl -s "$BIG" _/ head -n5
-    curl -s https://example.com/huge.tar <w> _/ head -n5 <w>
+    $ cachepipe curl -s "$BIG" :: head -n5
+    curl -s https://example.com/huge.tar <w> :: head -n5 <w>
     cachepipe: stage 1 exceeded 96M cap, entry abandoned, pipe semantics resumed
 
 Inspection elides prefix chains to the left:
@@ -406,13 +415,13 @@ Inspection elides prefix chains to the left:
     $ cachepipe --status
     /home/rhys/.cache/cachepipe/2906.10681   3 entries   14.2M   budget 512M
        9.9M   2m ago   curl -s https://example.com/big.json
-       4.3M   2m ago   ... _/ jq .items
-        12K   1m ago   ... _/ jq .items _/ head -n20
+       4.3M   2m ago   ... :: jq .items
+        12K   1m ago   ... :: jq .items :: head -n20
 
 Naming a token shares one namespace across terminals for a project:
 
     $ export CACHEPIPE_SESSION=acme-etl
-    $ cachepipe curl -s "$URL" _/ jq .items
+    $ cachepipe curl -s "$URL" :: jq .items
     <r>
 
 ## Appendix: evidence
@@ -425,8 +434,17 @@ failure class this design exists to eliminate:
     $ bash -c "python3 argv.py a |# b"
       bash: -c: line 2: syntax error: unexpected end of file
 
-Survivors of the same test were `_/`, `//`, `@_` and `,/`.  Any glyph containing
-`|` is dead.
+Survivors of the same test were `::`, `:::`, `_/`, `//`, `%%`, `,,`, `@_` and
+`--`.  Any glyph containing `|` is dead, and `;;` is a shell syntax error.
+
+Only some survivors can also name a program, which is what allows the separator
+and the command to be the same token:
+
+    ::    legal      :::   legal      %%    legal      --    legal
+    _/    ILLEGAL    //    ILLEGAL
+
+`/` is the one byte forbidden in a filename, so every glyph that draws a pipe
+bowl is disqualified from naming the tool.
 
 Exit status `1` is load-bearing in both directions, which is why the accepted
 set defaults to `{0}` and why no per-command table can be correct:
