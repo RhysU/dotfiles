@@ -224,8 +224,16 @@ Named temps carry the session token so the pruner sweeps a killed run's
 leftovers as ordinary dead-session debris.
 
 Each entry carries metadata: format version, the prefix's argv, byte count,
-exit statuses, creation time, and a last-read stamp.  On read the argv and byte
-count are verified.
+exit statuses, creation time, a last-read stamp, and a codec name.  On read the
+argv and byte count are verified.
+
+The codec is `none` and nothing else today.  Entries are stored raw because a
+warm replay beats decompression: zlib at level 1 returns about 6x on JSON and
+logs but decompresses at roughly 430 MB/s, which a page-cache read beats even
+after reading six times fewer bytes, and a session's entries are minutes old.
+lzma is disqualified outright at 1 to 44 MB/s compressing, slower than the
+producers it would sit behind.  The field exists so that judgement can be
+revisited without a format version bump.
 
 The last-read stamp is what makes eviction genuinely least-recently-*used*.
 Filesystem `atime` cannot supply it, since `relatime` and `noatime` are common
