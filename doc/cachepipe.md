@@ -18,6 +18,11 @@ A pipeline is a linear chain of stages.  Each stage is an argv vector executed
 directly, with no shell.  Stage *i* reads stage *i-1*; stage 0 reads the
 pipeline's stdin; the last stage writes the pipeline's stdout.
 
+`cachepipe`'s argv is the cached region, and the shell's `|` bounds it.  Two
+markers carry two concepts and nothing carries either twice: `_/` delimits
+stages inside the region, `|` puts a stage outside it.  A stage outside runs
+fresh every time, which is why the tool needs no way to say "fresh" of its own.
+
 The cache memoizes prefixes.  For each prefix of length *i* the tool may hold an
 entry recording the exact bytes that prefix wrote to stdout and the exit status
 of every stage in it.  A run replays the longest usable prefix and executes the
