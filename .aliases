@@ -66,7 +66,7 @@ Head()    { head -n $(($(tput lines) - 1)) "$@"; }
 Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }
 
 # Run git on a freshly cleared display with the command line echoed
-Git()     ( reo . ; g="$(type -P git)"; boldecho "+ $g ${*:+$(printf '%q ' "$@")}" ; "$g" "$@" )
+Git()     ( reo . ; g="$(type -P git)"; boldecho "+ $g${*:+$(printf ' %q' "$@")}" ; "$g" "$@" )
 
 # Make-ish alias-like functions (so they may be invoked as commands)
 m()       { nice make "$@"; }
