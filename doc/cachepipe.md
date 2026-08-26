@@ -46,15 +46,18 @@ Attributes describe one stage and precede its command.  `+` cannot collide with
 a command name, so `date +%s` and `sort +2` parse untouched: the scan stops at
 the first bare token.
 
-| Attribute | Blocks reads at | Publishes its own entry |
-|---|---|---|
-| `+no-cache` | this stage onward | no |
-| `+refresh`  | this stage onward | yes |
-| `+N`        | — | widens what counts as success |
+| Attribute | Effect |
+|---|---|
+| `+refresh` | Makes every prefix ending at or after this stage unreadable, and republishes them |
+| `+N`       | Widens what counts as success for this stage |
 
-One readability rule covers the first two: a marked stage makes every prefix
-ending at or after it unreadable.  They differ only in whether the marked stage
-writes.  `::cmd` remains shorthand for `+no-cache cmd`.
+There is no attribute for "do not cache this stage".  Fresh is the shell's own
+`|`, outside the tool: `cachepipe curl -s URL _/ jq .items | head -n5` runs
+`head` afresh every time.  `cachepipe`'s argv is exactly the cached region, and
+anything you do not want cached belongs outside it.  An attribute that suppressed
+caching mid-region could only mean one of two things, and both are already
+spelled better: publish nothing downstream, which is a plain pipe, or publish
+entries that no pipeline can ever read, which is a leak.
 
 No attribute takes a value.  Multiple accepted statuses are repetition, `+1 +2
 grep ...`, so the grammar needs no value delimiter.  Parsing decides on the
@@ -190,8 +193,8 @@ Every cacheable stage is drained to completion whether or not anything
 downstream is still reading.  Consequences, stated plainly:
 
 - `curl big.json _/ jq .items _/ head -n5` downloads the whole file.  That is
-  the price of the entry that makes the next run cheap.  Mark the stage
-  `+no-cache` to buy pipe semantics back.
+  the price of the entry that makes the next run cheap.  Move the stage outside
+  `cachepipe` with a shell `|` to buy pipe semantics back.
 - Draining stops at a per-entry byte cap.  Past the cap the entry is abandoned,
   the stage reverts to ordinary pipe semantics, and a diagnostic says so.  This
   keeps `yes _/ head -n1` from hanging and keeps the cap from ever changing the
@@ -300,7 +303,7 @@ and nothing is decoded as text.
    read that is not owned by the uid at 0600.
 6. Interruption never publishes a partial entry and never leaves a temp file
    that the pruner will not collect.
-7. A prefix containing a `+no-cache` or `+refresh` stage is never replayed.
+7. A prefix containing a `+refresh` stage is never replayed.
 8. A session dir is reused only when its leader is alive and its start time
    matches.  Unverifiable is dead.
 9. Publication is a link into the session dir; a key is written at most once per
@@ -354,12 +357,11 @@ Several accepted statuses are repetition, needing no delimiter:
     $ cachepipe +1 +2 check-drift ./config _/ tee drift.log
     check-drift ./config <w> _/ tee drift.log <w>
 
-`+no-cache` restores pipe semantics for one stage and blocks replay from there
-on; downstream still caches in its own namespace.  `+refresh` re-executes a
-stale head and republishes it:
+A shell `|` ends the cached region, so the tail runs fresh every time and the
+head still caches.  `+refresh` re-executes a stale head and republishes it:
 
-    $ cachepipe +no-cache curl -s "$URL" _/ jq .items _/ head -n5
-    curl -s https://example.com/big.json _/ jq .items <w> _/ head -n5 <w>
+    $ cachepipe curl -s "$URL" _/ jq .items | head -n5
+    curl -s https://example.com/big.json <w> _/ jq .items <w>
 
     $ cachepipe +refresh curl -s "$URL" _/ jq .items
     curl -s https://example.com/big.json <w> _/ jq .items <w>
