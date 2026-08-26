@@ -63,6 +63,9 @@ v()       { vim "$@" ; }
 Head()    { head -n $(($(tput lines) - 1)) "$@"; }
 Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }
 
+# Run git on a freshly cleared display with the command line echoed
+Git()     { reo . ; local g="$(type -P git)"; ( set -x; "$g" "$@" ); }
+
 # Make-ish alias-like functions (so they may be invoked as commands)
 m()       { nice make "$@"; }
 mj()      { nice make -j${NPROC:-1} "$@"; }
