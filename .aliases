@@ -38,6 +38,8 @@ alias ....="cd ../../.."
 sa() { test -n "$1" && conda activate "$@" || conda env list; }
 sd() { conda deactivate "$@"; }
 
+boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
+
 # A variety of alias-like functions (so they may be invoked as commands)
 benicer() { renice +5 -p $BASHPID; }
 f78()     { fmt -w 78 "$@"; }
@@ -50,7 +52,7 @@ okular()  { command okular >&/dev/null "$@"; }
 o()       { octave --silent --persist "$@" ; }
 p8888()   { ping -c 10 8.8.8.8; }
 p()       { parallel "$@" ; }
-reo()     { clear ; pwd ; echo ; ls "$@"; echo ; }
+reo()     { clear ; boldecho "$PWD" ; echo ; ls "$@"; echo ; }
 sat()     { (cd "$1" && shift && screen "$@") ; }
 sin()     { set -- $(sort <<<"$@"); while [[ $# > 0 ]]; do (cd "$1" && screen) ; shift; done; }
 smv()     { rsync -avz --remove-source-files "$@"; }
