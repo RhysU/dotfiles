@@ -103,6 +103,10 @@ to memorize.
 Actions take no pipeline: `--help`, `--status`, `--prune`, `--clear`,
 `--shell-init`.  Naming one forbids stages.
 
+A bare `cachepipe` with no arguments is not an error and exits 0.  It prints the
+usage line followed by `--status`, so the argument-free invocation answers both
+"how do I call this" and "what am I holding".
+
 ## 4  Identity
 
 A key is a Merkle chain over the prefix, not a hash of a flattened list:
@@ -240,8 +244,11 @@ not bash's default, because a memoizer that reports the tail's success over the
 head's failure will cache garbage and then swear it is fine.  Replayed prefixes
 report the statuses recorded at publication.
 
-Reserved codes: 2 for usage errors, and a distinct code for cache-integrity
-failure.  Everything else is the pipeline's own status.
+Reserved codes come from `sysexits.h`, not from the low integers: 64 `EX_USAGE`
+for a malformed invocation and 78 `EX_CONFIG` for a cache root whose ownership
+or mode is wrong.  A stage can legitimately exit 2, as `grep` does on a real
+error, so spending 2 on the tool's own complaints would make the two
+indistinguishable.  Everything else is the pipeline's own status.
 
 The plan prints to stderr before execution.  A replayed prefix collapses to
 `<r>`, and a stage whose entry will be published is followed by `<w>`:
