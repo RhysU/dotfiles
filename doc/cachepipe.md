@@ -182,7 +182,11 @@ thing.  `N` runs 0 through 255 and names an exit status, so `+137` means a stage
 that called `exit(137)` and never `SIGKILL`.  Signals are never acceptable and
 no attribute overrides that: a stage killed by a signal did not choose its
 output, so its bytes are not a result.  An unaccepted status poisons its own
-prefix and every longer one.
+prefix and every longer one, and it does so whether the status was observed from
+a run or reported by a replay.  Since `+N` is not in the key, a plain `grep pat`
+can replay an entry that `+1 grep pat` published with status 1; the bytes and
+the status are reused, and nothing downstream publishes, exactly as if `grep`
+had run and exited 1 here.  Otherwise the cache would change what gets cached.
 
 A `+KILL` spelling admitting signals was considered and rejected.  A signal
 means the byte stream is short, so accepting one restores the truncated-entry
