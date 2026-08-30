@@ -1,0 +1,46 @@
+#!/bin/bash
+# audio-cycle: Cycle through pre-defined audio sink/source pairs
+#              so that both speakers and microphones change together
+#              Falls back to index 0 when no entries match
+
+# Format: "Name|sink|source" - define available devices across all machines
+entries=(
+    "Fortress-Autoengine-Brio|alsa_output.usb-Generic_USB_Audio_20210726905926-00.analog-stereo|alsa_input.usb-046d_Brio_101_2511APVFKRX8-02.mono-fallback"
+    "Fortress-Jabra-Jabra|alsa_output.usb-GN_Audio_A_S_Jabra_EVOLVE_30_II_0000CC93561A07-00.analog-stereo|alsa_input.usb-GN_Audio_A_S_Jabra_EVOLVE_30_II_0000CC93561A07-00.mono-fallback"
+)
+
+notify() { notify-send -t 2500 "Audio Cycle" "$1" 2>/dev/null; echo "$1"; }
+
+command -v pactl &>/dev/null || { notify "pactl not found"; exit 1; }
+
+# Get available devices
+sinks=$(pactl list short sinks 2>/dev/null | cut -f2)
+sources=$(pactl list short sources 2>/dev/null | cut -f2)
+
+[ -z "$sinks" ] && [ -z "$sources" ] && { notify "No audio devices found"; exit 1; }
+
+# Filter to present devices and find current index in one pass
+current_sink=$(pactl get-default-sink 2>/dev/null)
+filtered=()
+current_idx=-1
+for entry in "${entries[@]}"; do
+    IFS='|' read -r _ sink source <<< "$entry"
+    grep -qx "$sink" <<< "$sinks" && grep -qx "$source" <<< "$sources" || continue
+    filtered+=("$entry")
+    [ "$sink" = "$current_sink" ] && current_idx=${#filtered[@]}-1
+done
+
+# Fallback to index 0 if no entries matched
+if [ ${#filtered[@]} -eq 0 ]; then
+    pactl set-default-sink 0   2>/dev/null
+    pactl set-default-source 0 2>/dev/null
+    notify "No matching pairs — using first available"
+    exit 0
+fi
+
+# Advance to next entry, wrapping around
+next=$(( (current_idx + 1) % ${#filtered[@]} ))
+IFS='|' read -r name sink source <<< "${filtered[$next]}"
+pactl set-default-sink   "$sink"
+pactl set-default-source "$source"
+notify "Now using: $name"
