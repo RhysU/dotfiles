@@ -6,7 +6,6 @@
 #              device, which is then all-or-nothing
 #              Puts a card into the profile an entry names, which is how a
 #              Bluetooth headset gets its microphone
-#              Falls back to the first present device when nothing matches
 
 # Format: "Name|sink|source|profile" - define devices across all machines
 # The profile is optional; give it when the entry needs a card profile it does
@@ -66,12 +65,12 @@ provide() {
 # Move whichever defaults this machine has, recording skips in $skipped
 activate() {
     skipped=""
-    if [ -n "$1" ] && grep -qxF "$1" <<< "$sinks"; then
+    if grep -qxF "$1" <<< "$sinks"; then
         pactl set-default-sink "$1"   || { notify "Cannot set sink $1";   exit 1; }
     else
         skipped+=" - speakers unchanged"
     fi
-    if [ -n "$2" ] && grep -qxF "$2" <<< "$sources"; then
+    if grep -qxF "$2" <<< "$sources"; then
         pactl set-default-source "$2" || { notify "Cannot set source $2"; exit 1; }
     else
         skipped+=" - microphone unchanged"
@@ -103,15 +102,7 @@ for entry in "${entries[@]}"; do
     filtered+=("$entry")
 done
 
-# Fall back to the first present device, skipping monitor sources
-if [ ${#filtered[@]} -eq 0 ]; then
-    sink=$(head -n1 <<< "$sinks")
-    source=$(grep -v '\.monitor$' <<< "$sources" | head -n1)
-    [ -z "$sink" ] && { notify "No sinks available"; exit 1; }
-    activate "$sink" "$source"
-    notify "No matching pairs - using $sink$skipped"
-    exit 0
-fi
+[ ${#filtered[@]} -eq 0 ] && { notify "No entry matches this machine"; exit 1; }
 
 # Advance to next entry, wrapping around
 next=$(( (current_idx + 1) % ${#filtered[@]} ))
@@ -127,8 +118,7 @@ notify "Using $name$skipped"
 #   Source missing              speakers still advance, mic left alone
 #   Sink missing                mic still advances, speakers left alone
 #   Split state across entries  the sink alone says where we are
-#   Nothing known present       falls back, skipping .monitor sources
-#   No sources at all           speakers advance, no empty name reaches pactl
+#   Nothing known present       says so and exits 1, changing nothing
 #   pactl rejects sink/profile  aborts loudly, no success message
 #   Card in the wrong profile   switched first, so the entry's devices exist
 #   Same, but card absent       entry drops out instead of switching blindly
