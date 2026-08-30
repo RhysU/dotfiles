@@ -50,7 +50,7 @@ hr()      { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
 M()       { module "$@" ; }
 okular()  { command okular >&/dev/null "$@"; }
 o()       { octave --silent --persist "$@" ; }
-p8888()   { ping -c 10 8.8.8.8; }
+p8888()   { if command -v mtr >/dev/null 2>&1; then mtr -rw -c 5 8.8.8.8; else ping -c 5 8.8.8.8; fi; }
 p()       { parallel "$@" ; }
 reo()     { clear ; boldecho "$PWD" ; echo ; ls "$@"; echo ; }
 sat()     { (cd "$1" && shift && screen "$@") ; }
