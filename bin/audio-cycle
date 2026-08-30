@@ -1,7 +1,9 @@
 #!/bin/bash
 # audio-cycle: Cycle through pre-defined audio sink/source pairs
 #              so that both speakers and microphones change together
-#              Falls back to index 0 when no entries match
+#              Moves whichever half is present, so a missing microphone
+#              still lets the speakers switch
+#              Falls back to the first present device when nothing matches
 
 # Format: "Name|sink|source" - define available devices across all machines
 entries=(
@@ -12,6 +14,21 @@ entries=(
 
 notify() { notify-send -t 2500 "Audio Cycle" "$1" 2>/dev/null; echo "$1"; }
 
+# Move whichever defaults this machine has, recording skips in $skipped
+activate() {
+    skipped=""
+    if [ -n "$1" ] && grep -qxF "$1" <<< "$sinks"; then
+        pactl set-default-sink "$1"   || { notify "Cannot set sink $1";   exit 1; }
+    else
+        skipped+=" - speakers unchanged"
+    fi
+    if [ -n "$2" ] && grep -qxF "$2" <<< "$sources"; then
+        pactl set-default-source "$2" || { notify "Cannot set source $2"; exit 1; }
+    else
+        skipped+=" - microphone unchanged"
+    fi
+}
+
 command -v pactl &>/dev/null || { notify "pactl not found"; exit 1; }
 
 # Get available devices
@@ -20,28 +37,39 @@ sources=$(pactl list short sources 2>/dev/null | cut -f2)
 
 [ -z "$sinks" ] && [ -z "$sources" ] && { notify "No audio devices found"; exit 1; }
 
-# Filter to present devices and find current index in one pass
+# Keep entries with either half present; the sink alone says which is current
+# Entries must therefore have distinct sinks
 current_sink=$(pactl get-default-sink 2>/dev/null)
 filtered=()
 current_idx=-1
 for entry in "${entries[@]}"; do
     IFS='|' read -r _ sink source <<< "$entry"
-    grep -qx "$sink" <<< "$sinks" && grep -qx "$source" <<< "$sources" || continue
+    grep -qxF "$sink" <<< "$sinks" || grep -qxF "$source" <<< "$sources" || continue
+    [ "$sink" = "$current_sink" ] && current_idx=${#filtered[@]}
     filtered+=("$entry")
-    [ "$sink" = "$current_sink" ] && current_idx=${#filtered[@]}-1
 done
 
-# Fallback to index 0 if no entries matched
+# Fall back to the first present device, skipping monitor sources
 if [ ${#filtered[@]} -eq 0 ]; then
-    pactl set-default-sink 0   2>/dev/null
-    pactl set-default-source 0 2>/dev/null
-    notify "No matching pairs — using first available"
+    sink=$(head -n1 <<< "$sinks")
+    source=$(grep -v '\.monitor$' <<< "$sources" | head -n1)
+    [ -z "$sink" ] && { notify "No sinks available"; exit 1; }
+    activate "$sink" "$source"
+    notify "No matching pairs - using $sink$skipped"
     exit 0
 fi
 
 # Advance to next entry, wrapping around
 next=$(( (current_idx + 1) % ${#filtered[@]} ))
 IFS='|' read -r name sink source <<< "${filtered[$next]}"
-pactl set-default-sink   "$sink"
-pactl set-default-source "$source"
-notify "Now using: $name"
+activate "$sink" "$source"
+notify "Using $name$skipped"
+
+# Test plan: stub pactl on PATH, feed it synthetic device lists, and check
+#   Both halves present         cycles pairs and wraps at the end
+#   Source missing              speakers still advance, mic left alone
+#   Sink missing                mic still advances, speakers left alone
+#   Split state across entries  the sink alone says where we are
+#   Nothing known present       falls back, skipping .monitor sources
+#   No sources at all           speakers advance, no empty name reaches pactl
+#   pactl rejects a device      aborts loudly, no success message
