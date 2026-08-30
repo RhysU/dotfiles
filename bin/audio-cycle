@@ -2,17 +2,66 @@
 # audio-cycle: Cycle through pre-defined audio sink/source pairs
 #              so that both speakers and microphones change together
 #              Moves whichever half is present, so a missing microphone
-#              still lets the speakers switch
+#              still lets the speakers switch, unless both halves are one
+#              device, which is then all-or-nothing
+#              Puts a card into the profile an entry names, which is how a
+#              Bluetooth headset gets its microphone
 #              Falls back to the first present device when nothing matches
 
-# Format: "Name|sink|source" - define available devices across all machines
+# Format: "Name|sink|source|profile" - define devices across all machines
+# The profile is optional; give it when the entry needs a card profile it does
+# not already have, as with onboard audio split between analog and HDMI
+# Name the playback profile for a Bluetooth headset, never headset-head-unit:
+# WirePlumber drops to HFP by itself when an app opens the microphone, then
+# comes back, so pinning HFP only buys 16 kHz mono playback all day
 entries=(
     "Fortress-Audioengine-Brio|alsa_output.usb-Generic_USB_Audio_20210726905926-00.analog-stereo|alsa_input.usb-046d_Brio_101_2511APVFKRX8-02.mono-fallback"
     "Fortress-Jabra-Jabra|alsa_output.usb-GN_Audio_A_S_Jabra_EVOLVE_30_II_0000CC93561A07-00.analog-stereo|alsa_input.usb-GN_Audio_A_S_Jabra_EVOLVE_30_II_0000CC93561A07-00.mono-fallback"
-    "Kitchen-Audioengine-Brio|alsa_output.pci-0000_00_1f.3.analog-stereo|alsa_input.usb-046d_Brio_101_2444APVA1QP8-02.mono-fallback"
+    "Kitchen-Audioengine-Brio|alsa_output.pci-0000_00_1f.3.analog-stereo|alsa_input.usb-046d_Brio_101_2444APVA1QP8-02.mono-fallback|output:analog-stereo+input:analog-stereo"
+    "Kitchen-Bose-Bose|bluez_output.BC:87:FA:C8:60:03|bluez_input.BC:87:FA:C8:60:03|a2dp-sink-sbc_xq"
 )
 
 notify() { notify-send -t 2500 "Audio Cycle" "$1" 2>/dev/null; echo "$1"; }
+
+# Card owning a sink or source, by naming convention
+#   alsa_output.DEVICE.PROFILE -> alsa_card.DEVICE
+#   alsa_input.DEVICE.PROFILE  -> alsa_card.DEVICE
+#   bluez_output.AA:BB:CC      -> bluez_card.AA_BB_CC
+dev_card() {
+    local dev
+    case $1 in
+    bluez_*) dev=${1#bluez_*.}; echo "bluez_card.${dev//:/_}" ;;
+    *)       dev=${1%.*};       echo "alsa_card.${dev#alsa_*.}" ;;
+    esac
+}
+
+# True when a sink and source are one device, so half a move is never right
+paired() { [ "$(dev_card "$1")" = "$(dev_card "$2")" ]; }
+
+# True when a sink exists, or when a card profile could bring it into being
+reachable() {
+    grep -qxF "$1" <<< "$sinks" && return 0
+    [ -n "$2" ] && grep -qxF "$(dev_card "$1")" <<< "$cards"
+}
+
+# Active profile of a card
+card_profile() {
+    pactl list cards 2>/dev/null | awk -v want="$1" '
+        /^\tName: /       { cur = $2 }
+        /Active Profile:/ { if (cur == want) { print $3; exit } }'
+}
+
+# Put a card into the profile an entry names, then re-read the device lists
+provide() {
+    local card
+    [ -n "$2" ] || return 0
+    card=$(dev_card "$1")
+    grep -qxF "$card" <<< "$cards" || return 0
+    [ "$(card_profile "$card")" = "$2" ] && return 0
+    pactl set-card-profile "$card" "$2" || { notify "Cannot set profile $2"; exit 1; }
+    sinks=$(pactl list short sinks 2>/dev/null | cut -f2)
+    sources=$(pactl list short sources 2>/dev/null | cut -f2)
+}
 
 # Move whichever defaults this machine has, recording skips in $skipped
 activate() {
@@ -34,6 +83,7 @@ command -v pactl &>/dev/null || { notify "pactl not found"; exit 1; }
 # Get available devices
 sinks=$(pactl list short sinks 2>/dev/null | cut -f2)
 sources=$(pactl list short sources 2>/dev/null | cut -f2)
+cards=$(pactl list short cards 2>/dev/null | cut -f2)
 
 [ -z "$sinks" ] && [ -z "$sources" ] && { notify "No audio devices found"; exit 1; }
 
@@ -43,8 +93,12 @@ current_sink=$(pactl get-default-sink 2>/dev/null)
 filtered=()
 current_idx=-1
 for entry in "${entries[@]}"; do
-    IFS='|' read -r _ sink source <<< "$entry"
-    grep -qxF "$sink" <<< "$sinks" || grep -qxF "$source" <<< "$sources" || continue
+    IFS='|' read -r _ sink source profile <<< "$entry"
+    if paired "$sink" "$source"; then
+        reachable "$sink" "$profile" && grep -qxF "$source" <<< "$sources" || continue
+    else
+        reachable "$sink" "$profile" || grep -qxF "$source" <<< "$sources" || continue
+    fi
     [ "$sink" = "$current_sink" ] && current_idx=${#filtered[@]}
     filtered+=("$entry")
 done
@@ -61,15 +115,24 @@ fi
 
 # Advance to next entry, wrapping around
 next=$(( (current_idx + 1) % ${#filtered[@]} ))
-IFS='|' read -r name sink source <<< "${filtered[$next]}"
+IFS='|' read -r name sink source profile <<< "${filtered[$next]}"
+provide "$sink" "$profile"
 activate "$sink" "$source"
 notify "Using $name$skipped"
 
 # Test plan: stub pactl on PATH, feed it synthetic device lists, and check
+# Profile cases need a stub that reports active profiles and grows its lists
+# A real BlueZ switch lands a second or two late, so let it settle before judging
 #   Both halves present         cycles pairs and wraps at the end
 #   Source missing              speakers still advance, mic left alone
 #   Sink missing                mic still advances, speakers left alone
 #   Split state across entries  the sink alone says where we are
 #   Nothing known present       falls back, skipping .monitor sources
 #   No sources at all           speakers advance, no empty name reaches pactl
-#   pactl rejects a device      aborts loudly, no success message
+#   pactl rejects sink/profile  aborts loudly, no success message
+#   Card in the wrong profile   switched first, so the entry's devices exist
+#   Same, but card absent       entry drops out instead of switching blindly
+#   Card already in the profile no switch, so repeat runs stay a no-op
+#   BlueZ sink name             card derived with colons mapped to underscores
+#   One device, one half up     entry skipped, never half selected
+#   Two devices, one half up    entry kept, the present half still moves
