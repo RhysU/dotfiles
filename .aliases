@@ -38,15 +38,14 @@ alias ....="cd ../../.."
 sa() { test -n "$1" && conda activate "$@" || conda env list; }
 sd() { conda deactivate "$@"; }
 
-boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
-
 # A variety of alias-like functions (so they may be invoked as commands)
 benicer() { renice +5 -p $BASHPID; }
+boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
 f78()     { fmt -w 78 "$@"; }
 g()       { grep "$@" ; }
 h()       { history "$@" ; }
-HR()      { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
 hr()      { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
+HR()      { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
 M()       { module "$@" ; }
 okular()  { command okular >&/dev/null "$@"; }
 o()       { octave --silent --persist "$@" ; }
@@ -61,9 +60,10 @@ t()       { command time --verbose "$@" ; }
 tgl()     { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
 v()       { vim "$@" ; }
 
-# Variants of head and tail showing exactly one screenful
-Head()    { head -n $(($(tput lines) - 1)) "$@"; }
-Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }
+# Screen-handling aware variations on common commands
+Cat()     { clear > /dev/tty 2>/dev/null; cat "$@"; }  # Starts on new screen
+Head()    { head -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
+Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
 
 # Run git on a freshly cleared display with the command line echoed
 Git()     ( reo . ; g="$(type -P git)"; boldecho "+ $g${*:+$(printf ' %q' "$@")}" ; "$g" "$@" )
@@ -78,8 +78,9 @@ smj()     { V=0 nice make -j${NPROC:-1} "$@"; }
 smjl()    { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
 smjlc()   { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
 
-# Recursively grep through files in parallel, e.g. chat logs.  Modified from
-# http://stackoverflow.com/questions/9066609/fastest-possible-grep
+# Recursively grep through files in parallel, e.g. chat logs.
+# From http://stackoverflow.com/questions/9066609/fastest-possible-grep
+# These days, however, Ag (aka "the silver searcher") or Ack are preferred
 parallelgrep() {
    path="$1"
    shift
