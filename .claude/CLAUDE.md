@@ -96,3 +96,18 @@ setuptools_scm.
 
 Adopt each ecosystem's conventional tooling and layout rather than inventing
 your own.
+
+# Regarding your work
+
+## File operations
+
+<!-- https://github.com/anthropics/claude-code/issues/19649 -->
+The built-in Read, Glob, Grep, Edit, and Write tools handle file operations.
+Prefer these tools whenever possible:
+
+- Read files with Read, not cat, head, tail, or sed -n.
+- Find files with Glob, not find or ls -R.
+- Search contents with Grep, not grep, rg, ag, or ack.
+- Create or overwrite whole files with Write, not echo, tee, or a heredoc.
+- Change part of a file with Edit, not sed -i, awk, perl -pi, or a Python script
+  that rewrites the file.
