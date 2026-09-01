@@ -13,6 +13,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'bhurlow/vim-parinfer'
 Plugin 'bogado/file-line'
 Plugin 'ciaranm/detectindent'
+Plugin 'dense-analysis/ale'  " asynchronous: does not block on :w
 Plugin 'godlygeek/tabular'
 Plugin 'jlanzarotta/bufexplorer'
 Plugin 'jpalardy/vim-slime'
@@ -36,7 +37,6 @@ Plugin 'tpope/vim-surround'
 Plugin 'tpope/vim-vividchalk'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-scripts/VisIncr'
-Plugin 'vim-syntastic/syntastic'  " synchronous: blocks on :w
 " FIXME Get TabNine working again as I've purchased a license
 call vundle#end()
 endif
@@ -210,15 +210,12 @@ augroup vimrc_filetypes
     autocmd BufRead,BufNewFile *.sls set filetype=scheme
     autocmd FileType clojure,lisp,scheme RainbowParentheses
 augroup END
+let g:ale_cpp_cc_executable = 'g++'
+let g:ale_linters = {'sh': ['shell', 'shellcheck']}
+let g:ale_tex_chktex_options = '-I -n38'
 let g:signify_vcs_list = [ 'git', 'svn' ]
 let g:slime_default_config  = {"sessionname": $STY, "windowname": "0"}
 let g:slime_python_ipython = 1
-let g:syntastic_auto_jump = 0
-let g:syntastic_enable_signs = 1
-let g:syntastic_sh_checkers = ['sh', 'shellcheck']
-let g:syntastic_cpp_compiler = 'g++'
-let g:syntastic_cpp_compiler_options = '-std=c++14'
-let g:syntastic_tex_chktex_args = "-wno 38"
 let g:tex_flavor='latex'
 let g:xml_syntax_folding=1
 

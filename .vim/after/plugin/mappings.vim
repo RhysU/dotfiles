@@ -2,9 +2,9 @@
 " scripts load, so these guards are false there and the mappings never
 " appear.  Vim and Neovim source after/plugin/ once plugins have loaded.
 
-" Use :SyntasticInfo to see which tools Syntastic presently is using
-if exists(':SyntasticToggleMode')
-    noremap <silent> <Leader>s :SyntasticToggleMode<CR>
+" Use :ALEInfo to see which tools ALE presently is using
+if exists(':ALEToggle')
+    noremap <silent> <Leader>s :ALEToggle<CR>
 endif
 
 " Tabularize mappings from
