@@ -15,6 +15,7 @@ Plugin 'bogado/file-line'
 Plugin 'ciaranm/detectindent'
 Plugin 'dense-analysis/ale'  " asynchronous: does not block on :w
 Plugin 'godlygeek/tabular'
+Plugin 'guns/vim-sexp'  " tpope/vim-sexp-mappings remaps this
 Plugin 'jlanzarotta/bufexplorer'
 Plugin 'jpalardy/vim-slime'
 Plugin 'junegunn/rainbow_parentheses.vim'
