@@ -201,24 +201,6 @@ noremap <silent> <Leader>S  :set spell!              <CR>:set spell?       <CR>
 noremap <silent> <Leader>t  :TagbarToggle            <CR>
 noremap <silent> <Leader>w  :set wrap!               <CR>:set wrap?        <CR>
 
-" Use :SyntasticInfo to see which tools Syntastic presently is using
-if exists(':SyntasticToggleMode')
-    noremap <silent> <Leader>s :SyntasticToggleMode<CR>
-endif
-
-" Tabularize mappings from
-" http://vimcasts.org/episodes/aligning-text-with-tabular-vim/
-if exists(":Tabularize")
-  nmap <Leader>a| :Tabularize /|<CR>
-  vmap <Leader>a| :Tabularize /|<CR>
-  nmap <Leader>a= :Tabularize /=<CR>
-  vmap <Leader>a= :Tabularize /=<CR>
-  nmap <Leader>a: :Tabularize /:\zs<CR>
-  vmap <Leader>a: :Tabularize /:\zs<CR>
-  nmap <Leader>a<Space> :Tabularize / \zs<CR>
-  vmap <Leader>a<Space> :Tabularize / \zs<CR>
-endif
-
 " Miscellaneous plugin settings
 autocmd FileType gitcommit set foldmethod=syntax
 autocmd BufRead,BufNewFile *.sls set filetype=scheme
