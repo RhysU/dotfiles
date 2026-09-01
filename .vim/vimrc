@@ -208,6 +208,7 @@ noremap <silent> <Leader>w  :set wrap!               <CR>:set wrap?        <CR>
 augroup vimrc_filetypes
     autocmd!
     autocmd BufRead,BufNewFile *.sls set filetype=scheme
+    autocmd FileType clojure,lisp,scheme RainbowParentheses
 augroup END
 let g:signify_vcs_list = [ 'git', 'svn' ]
 let g:slime_default_config  = {"sessionname": $STY, "windowname": "0"}
