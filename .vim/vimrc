@@ -29,7 +29,7 @@ Plugin 'tpope/vim-abolish'
 Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-sexp-mappings-for-regular-people'
-Plugin 'tpope/vim-sleuth'
+Plugin 'tpope/vim-sleuth'  " may reset et, sw, sts, ts, tw per buffer
 Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
 Plugin 'tpope/vim-vividchalk'
