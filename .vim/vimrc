@@ -207,7 +207,6 @@ noremap <silent> <Leader>w  :set wrap!               <CR>:set wrap?        <CR>
 " Miscellaneous plugin settings
 augroup vimrc_filetypes
     autocmd!
-    autocmd FileType gitcommit set foldmethod=syntax
     autocmd BufRead,BufNewFile *.sls set filetype=scheme
 augroup END
 let g:signify_vcs_list = [ 'git', 'svn' ]
