@@ -26,7 +26,6 @@ Plugin 'preservim/nerdtree'
 Plugin 'preservim/tagbar'
 Plugin 'rrethy/vim-illuminate'  " Compare vim_current_word
 Plugin 'tpope/vim-abolish'
-Plugin 'tpope/vim-markdown'
 Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-sexp-mappings-for-regular-people'
