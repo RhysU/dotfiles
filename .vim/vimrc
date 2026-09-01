@@ -23,7 +23,6 @@ Plugin 'nathangrigg/vim-beancount'
 Plugin 'preservim/nerdcommenter'
 Plugin 'preservim/nerdtree'
 Plugin 'preservim/tagbar'
-Plugin 'rking/ag.vim'
 Plugin 'rrethy/vim-illuminate'  " Compare vim_current_word
 Plugin 'tomtom/tlib_vim'
 Plugin 'tpope/vim-abolish'
@@ -99,6 +98,15 @@ set wildignore+=*.spl
 set wildignore+=*.sw?
 set wildmode=list:longest
 set winminheight=0
+
+" Prefer a fast recursive searcher for :grep when one is installed
+if executable('rg')
+    set grepprg=rg\ --vimgrep\ --smart-case
+    set grepformat^=%f:%l:%c:%m
+elseif executable('ag')
+    set grepprg=ag\ --vimgrep
+    set grepformat^=%f:%l:%c:%m
+endif
 
 " Always reserve the sign column so signify doesn't shift text
 " Guarded because 'signcolumn' needs the optional +signs feature
