@@ -12,7 +12,6 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'bhurlow/vim-parinfer'
 Plugin 'bogado/file-line'
-Plugin 'ciaranm/detectindent'
 Plugin 'dense-analysis/ale'  " asynchronous: does not block on :w
 Plugin 'godlygeek/tabular'
 Plugin 'guns/vim-sexp'  " tpope/vim-sexp-mappings remaps this
@@ -30,6 +29,7 @@ Plugin 'tpope/vim-abolish'
 Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-sexp-mappings-for-regular-people'
+Plugin 'tpope/vim-sleuth'
 Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
 Plugin 'tpope/vim-vividchalk'
