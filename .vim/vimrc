@@ -128,7 +128,10 @@ nnoremap <space> za
 vnoremap <space> zf
 
 " Automatically quit if quickfix buffer is last
-au BufEnter * call MyLastWindow()
+augroup vimrc_quickfix
+    autocmd!
+    autocmd BufEnter * call MyLastWindow()
+augroup END
 function! MyLastWindow()
     " if the window is quickfix go on
     if &buftype=="quickfix"
@@ -220,8 +223,11 @@ if exists(":Tabularize")
 endif
 
 " Miscellaneous plugin settings
-autocmd FileType gitcommit set foldmethod=syntax
-autocmd BufRead,BufNewFile *.sls set filetype=scheme
+augroup vimrc_filetypes
+    autocmd!
+    autocmd FileType gitcommit set foldmethod=syntax
+    autocmd BufRead,BufNewFile *.sls set filetype=scheme
+augroup END
 let g:signify_vcs_list = [ 'git', 'svn' ]
 let g:slime_default_config  = {"sessionname": $STY, "windowname": "0"}
 let g:slime_python_ipython = 1
