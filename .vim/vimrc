@@ -81,7 +81,6 @@ set splitright
 set textwidth=80
 set tabstop=4
 set title
-set undolevels=1000
 set viewoptions=folds,cursor,unix,slash
 set virtualedit=block
 set visualbell
