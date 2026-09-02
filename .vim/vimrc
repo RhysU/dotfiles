@@ -230,3 +230,25 @@ let NERDTreeIgnore=[ '\.a$', 'autom4te.cache', '\.aux$', '\.bbl$', '\.blg$',
                    \ '\.dep$', '\.fdb_latexmk$', '\.fls$', '\.la$', '\.lo$',
                    \ '\.lof$', '\.log$', '\.lot$', '\.o$', '\.out$',
                    \ '\.so$', '\.tdo$', '\.toc$' ]
+
+" ALE hides warnings as if they actually appear as comments, which is annoying,
+" because I do not ever want to wonder if a virtual comment is a real comment.
+augroup ALEAllRed
+    autocmd!
+    autocmd VimEnter * highlight ALEBrightRed ctermfg=Red ctermbg=NONE cterm=bold guifg=#FF0000 guibg=NONE gui=bold
+    autocmd VimEnter * highlight link ALEError                   ALEBrightRed
+    autocmd VimEnter * highlight link ALEWarning                 ALEBrightRed
+    autocmd VimEnter * highlight link ALEInfo                    ALEBrightRed
+    autocmd VimEnter * highlight link ALEStyleError              ALEBrightRed
+    autocmd VimEnter * highlight link ALEStyleWarning            ALEBrightRed
+    autocmd VimEnter * highlight link ALEErrorSign               ALEBrightRed
+    autocmd VimEnter * highlight link ALEWarningSign             ALEBrightRed
+    autocmd VimEnter * highlight link ALEInfoSign                ALEBrightRed
+    autocmd VimEnter * highlight link ALEStyleErrorSign          ALEBrightRed
+    autocmd VimEnter * highlight link ALEStyleWarningSign        ALEBrightRed
+    autocmd VimEnter * highlight link ALEVirtualTextError        ALEBrightRed
+    autocmd VimEnter * highlight link ALEVirtualTextWarning      ALEBrightRed
+    autocmd VimEnter * highlight link ALEVirtualTextInfo         ALEBrightRed
+    autocmd VimEnter * highlight link ALEVirtualTextStyleError   ALEBrightRed
+    autocmd VimEnter * highlight link ALEVirtualTextStyleWarning ALEBrightRed
+augroup END
