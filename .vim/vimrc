@@ -44,10 +44,15 @@ if has('nvim')
     set termguicolors
 endif
 set background=dark
+
+" Install autocmd because ColorScheme reapplication resets highlight groups
+augroup vimrc_highlights
+    autocmd!
+    autocmd ColorScheme * highlight clear SpellBad
+    autocmd ColorScheme * highlight SpellBad term=underline ctermfg=red cterm=underline gui=underline guifg=Red
+    autocmd ColorScheme * highlight ColorColumn term=standout ctermbg=magenta guibg=Magenta
+augroup END
 colorscheme candy " vividchalk darkbone molokai nord
-highlight clear SpellBad
-highlight SpellBad term=underline ctermfg=red cterm=underline gui=underline guifg=Red
-highlight ColorColumn term=standout ctermbg=magenta guibg=Magenta
 
 if has('unnamedplus')
     set clipboard=unnamedplus
