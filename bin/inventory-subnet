@@ -1,0 +1,57 @@
+#!/bin/bash
+# subnet-inventory.sh - enumerate live hosts on a LAN with hostnames, MACs, and vendors
+
+SUBNET=${1:-192.168.1.0/24}
+ROUTER=${2:-192.168.1.1}
+OUI=/usr/share/nmap/nmap-mac-prefixes
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") [SUBNET] [ROUTER]
+
+Produce an incremental table of live hosts on a subnet, including
+reverse-DNS hostnames, MAC addresses, and vendor identification.
+
+Arguments:
+  SUBNET   CIDR subnet to sweep           (default: 192.168.1.0/24)
+  ROUTER   DNS server for PTR lookups     (default: 192.168.1.1)
+
+Options:
+  -h       Show this help and exit
+
+Examples:
+  $(basename "$0")                          # sweep 192.168.1.0/24 via 192.168.1.1
+  $(basename "$0") 10.0.0.0/24 10.0.0.1     # sweep 10.0.0.0/24 via 10.0.0.1
+EOF
+}
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    usage
+    exit 0
+fi
+
+# Basic validation: subnet must look like a CIDR, router must be an IPv4 address
+if [[ ! "$SUBNET" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$ ]]; then
+    echo "Error: invalid subnet '$SUBNET'" >&2
+    usage >&2
+    exit 1
+fi
+if [[ ! "$ROUTER" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: invalid router address '$ROUTER'" >&2
+    usage >&2
+    exit 1
+fi
+
+printf "%-16s %-25s %-18s %s\n" "IP" "PTR/Hostname" "MAC" "Vendor/Notes"
+
+nmap -sn --dns-servers "$ROUTER" "$SUBNET" -oG - \
+| awk '/Up$/{print $2}' \
+| while read -r ip; do
+    name=$(dig +short -x "$ip" @"$ROUTER" | head -1)
+    mac=$(ip neigh | awk -v ip="$ip" '$1==ip{print $5; exit}')
+    vendor=""
+    if [ -n "$mac" ] && [ -f "$OUI" ]; then
+        vendor=$(grep -i "$(echo "$mac" | tr -d ':' | cut -c1-6)" "$OUI" | cut -d' ' -f2-)
+    fi
+    printf "%-16s %-25s %-18s %s\n" "$ip" "${name:-<no name>}" "${mac:--}" "${vendor:--}"
+done
