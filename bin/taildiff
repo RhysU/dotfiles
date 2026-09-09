@@ -31,13 +31,9 @@ Examples:
 EOF
 }
 
-showdiff() {
-    git --no-pager diff --no-index "$@"
-}
-
 # Print what FILE gained since the reference, then advance it.
 update() {
-    showdiff "$ref" "$FILE"
+    git --no-pager diff --no-index "$ref" "$FILE"
     $CUMULATIVE || cp "$FILE" "$ref"
     touch "$stamp"
 }
@@ -82,9 +78,7 @@ fi
 touch "$stamp"
 trap 'rm -rf "$refdir"' EXIT
 
-if $EMPTY; then
-    showdiff /dev/null "$FILE"
-fi
+$EMPTY && update
 
 # Wake on every write, and again whenever the watch idles out.  Waking
 # on a timeout recovers writes that landed while git held the loop.
