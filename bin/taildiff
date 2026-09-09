@@ -4,10 +4,11 @@
 FILE=
 CUMULATIVE=false
 EMPTY=false
+INTERVAL=2
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [-a] [-e] FILE
+Usage: $(basename "$0") [-a] [-e] [-i SECONDS] FILE
 
 Print a colored diff of FILE each time it is written, using inotify
 and git diff. Exits when FILE is removed or renamed.
@@ -20,6 +21,8 @@ Options:
            against the last-seen version, showing only new edits
   -e       diff against an empty file at startup. The first diff
            shows the entire file as additions
+  -i SECS  show at most one diff every SECS seconds, batching whatever
+           arrives in between. Default $INTERVAL
   -h       Show this help and exit
 
 Examples:
@@ -32,10 +35,18 @@ showdiff() {
     git --no-pager diff --no-index "$@"
 }
 
-while getopts "aeh" opt; do
+# Print what FILE gained since the reference, then advance it.
+update() {
+    showdiff "$ref" "$FILE"
+    $CUMULATIVE || cp "$FILE" "$ref"
+    touch "$stamp"
+}
+
+while getopts "aehi:" opt; do
     case "$opt" in
         a) CUMULATIVE=true ;;
         e) EMPTY=true ;;
+        i) INTERVAL=$OPTARG ;;
         h) usage; exit 0 ;;
         *) usage >&2; exit 1 ;;
     esac
@@ -48,6 +59,10 @@ if [[ -z "$FILE" || ! -f "$FILE" ]]; then
     usage >&2
     exit 1
 fi
+if [[ ! "$INTERVAL" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: -i wants a whole number of seconds, not '$INTERVAL'" >&2
+    exit 1
+fi
 if ! command -v inotifywait >/dev/null 2>&1; then
     echo "Error: inotifywait not found (install inotify-tools)" >&2
     exit 1
@@ -58,18 +73,30 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 refdir=$(mktemp -d) && ref="$refdir/$(basename "$FILE")"
+stamp="$refdir/stamp"
 if $EMPTY; then
     : > "$ref"
 else
     cp "$FILE" "$ref"
 fi
+touch "$stamp"
 trap 'rm -rf "$refdir"' EXIT
 
 if $EMPTY; then
     showdiff /dev/null "$FILE"
 fi
 
-while inotifywait -qq -e close_write "$FILE" 2>/dev/null; do
-    showdiff "$ref" "$FILE"
-    $CUMULATIVE || cp "$FILE" "$ref"
+# Wake on every write, and again whenever the watch idles out.  Waking
+# on a timeout recovers writes that landed while git held the loop.
+last=$((SECONDS - INTERVAL))
+while :; do
+    inotifywait -qq -t "$INTERVAL" -e modify -e close_write "$FILE" 2>/dev/null
+    case $? in
+        0|2) ;;
+        *)   break ;;
+    esac
+    ((SECONDS - last >= INTERVAL)) || continue
+    [[ "$FILE" -nt "$stamp" ]] || continue
+    update
+    last=$SECONDS
 done
