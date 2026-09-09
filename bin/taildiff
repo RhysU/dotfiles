@@ -13,7 +13,8 @@ Usage: $PROG [-a] [-e] [-i SECS] FILE
 Watch FILE with inotify and print a colored git diff as it changes,
 labeling the sides before and after.  Batch a burst into one diff.
 Follow a file whose writer keeps it open, such as a daemon appending
-to its log.  Exit when FILE is removed or renamed.
+to its log, and one replaced by rename, as an editor does on save.
+Exit when FILE is removed.
 
 Options:
   -a       diff against the startup snapshot, so edits accumulate.
@@ -44,6 +45,16 @@ update() {
     git -C "$refdir" --no-pager diff --no-index --no-prefix \
         "before/$base" "after/$base"
     $CUMULATIVE || mv "$after" "$before" || exit 1
+}
+
+# The watch died.  Editors save by writing a new file over the old, so
+# follow the replacement.  A removal, or a watch that never took, ends
+# the run instead.
+rewatch() {
+    local ino
+    ino=$(stat -c %i "$FILE" 2>/dev/null) || return 1
+    [[ "$ino" != "$watched" ]] || return 1
+    watched=$ino
 }
 
 while getopts "aehi:" opt; do
@@ -85,11 +96,12 @@ fi
 # ran are lost, so the stamp, never the event, says whether work waits.
 # A write within a tick of the stamp ties it, so read a tie as stale.
 last=$((SECONDS - INTERVAL))                 # fire on the first write
+watched=$(stat -c %i "$FILE") || exit 1
 while :; do
     inotifywait -qq -t "$INTERVAL" -e modify -e close_write "$FILE"
     case $? in
         0|2) ;;
-        *)   break ;;
+        *)   rewatch || break ;;
     esac
     ((SECONDS - last >= INTERVAL)) || continue   # too soon
     [[ "$stamp" -nt "$FILE" ]] && continue       # nothing new
@@ -106,4 +118,4 @@ done
 #   timing    batching a burst, flushing its tail, quiet when idle
 #   races     a writer holding FILE open, two hundred hammered writes
 #             accounted for, an mtime tying the stamp read as stale
-#   lifetime  exit on removal, exit on rename
+#   lifetime  exit on removal, following a rename
