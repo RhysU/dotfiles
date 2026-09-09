@@ -39,26 +39,27 @@ sa() { test -n "$1" && conda activate "$@" || conda env list; }
 sd() { conda deactivate "$@"; }
 
 # A variety of alias-like functions (so they may be invoked as commands)
-benicer() { renice +5 -p $BASHPID; }
+benicer()  { renice +5 -p $BASHPID; }
 boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
-f78()     { fmt -w 78 "$@"; }
-g()       { grep "$@" ; }
-h()       { history "$@" ; }
-hr()      { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
-HR()      { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
-M()       { module "$@" ; }
-okular()  { command okular >&/dev/null "$@"; }
-o()       { octave --silent --persist "$@" ; }
-p8888()   { if command -v mtr >/dev/null 2>&1; then mtr -rw -G 2 -m 20 -c 5 8.8.8.8; else ping -c 5 8.8.8.8; fi; }
-p()       { parallel "$@" ; }
-reo()     { clear ; boldecho "$PWD" ; echo ; ls "$@"; echo ; }
-sat()     { (cd "$1" && shift && screen "$@") ; }
-sin()     { set -- $(sort <<<"$@"); while [[ $# > 0 ]]; do (cd "$1" && screen) ; shift; done; }
-smv()     { rsync -avz --remove-source-files "$@"; }
-s()       { screen "$@" ; }
-t()       { command time --verbose "$@" ; }
-tgl()     { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
-v()       { vim "$@" ; }
+f78()      { fmt -w 78 "$@"; }
+g()        { grep "$@" ; }
+h()        { history "$@" ; }
+hr()       { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
+HR()       { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
+M()        { module "$@" ; }
+okular()   { command okular >&/dev/null "$@"; }
+o()        { octave --silent --persist "$@" ; }
+p8888()    { if command -v mtr >/dev/null 2>&1; then mtr -rw -G 2 -m 20 -c 5 8.8.8.8; else ping -c 5 8.8.8.8; fi; }
+p()        { parallel "$@" ; }
+reo()      { clear ; boldecho "$PWD" ; echo ; ls "$@"; echo ; }
+sat()      { (cd "$1" && shift && screen "$@") ; }
+sin()      { set -- $(sort <<<"$@"); while [[ $# > 0 ]]; do (cd "$1" && screen) ; shift; done; }
+smv()      { rsync -avz --remove-source-files "$@"; }
+s()        { screen "$@" ; }
+t()        { command time --verbose "$@" ; }
+tailfull() { command tail -n +1 -F "$@"; }
+tgl()      { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
+v()        { vim "$@" ; }
 
 # Screen-handling aware variations on common commands
 Cat()     { clear > /dev/tty 2>/dev/null; cat "$@"; }  # Starts on new screen
