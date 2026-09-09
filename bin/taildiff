@@ -31,11 +31,15 @@ Examples:
 EOF
 }
 
-# Print what FILE gained since the reference, then advance it.
+# Print what FILE gained since the reference, then advance it.  One
+# snapshot feeds both the diff and the reference, so the two can never
+# disagree over what was shown.  Promote by rename to keep the reference
+# whole.
 update() {
-    git --no-pager diff --no-index "$ref" "$FILE"
-    $CUMULATIVE || cp "$FILE" "$ref"
     touch "$stamp"
+    cp "$FILE" "$after" || exit 1
+    git --no-pager diff --no-index "$before" "$after"
+    $CUMULATIVE || mv "$after" "$before" || exit 1
 }
 
 while getopts "aehi:" opt; do
@@ -68,29 +72,37 @@ if ! command -v git >/dev/null 2>&1; then
     exit 1
 fi
 
-refdir=$(mktemp -d) && ref="$refdir/$(basename "$FILE")"
+refdir=$(mktemp -d) && mkdir "$refdir/before" "$refdir/after"
+base=$(basename "$FILE")
+before="$refdir/before/$base"
+after="$refdir/after/$base"
 stamp="$refdir/stamp"
 if $EMPTY; then
-    : > "$ref"
+    : > "$before"
 else
-    cp "$FILE" "$ref"
+    cp "$FILE" "$before"
 fi
 touch "$stamp"
 trap 'rm -rf "$refdir"' EXIT
 
 $EMPTY && update
 
-# Wake on every write, and again whenever the watch idles out.  Waking
-# on a timeout recovers writes that landed while git held the loop.
+# Wake on every write, and again whenever the watch idles out.  An event
+# alone decides that work is pending; the stamp is only a backstop for
+# events that fired while git held the loop.  Timestamps a tick apart
+# compare equal, so read an equal stamp as stale and diff again.
 last=$((SECONDS - INTERVAL))
+pending=false
 while :; do
     inotifywait -qq -t "$INTERVAL" -e modify -e close_write "$FILE" 2>/dev/null
     case $? in
-        0|2) ;;
-        *)   break ;;
+        0) pending=true ;;
+        2) ;;
+        *) break ;;
     esac
+    $pending || [[ ! "$stamp" -nt "$FILE" ]] || continue
     ((SECONDS - last >= INTERVAL)) || continue
-    [[ "$FILE" -nt "$stamp" ]] || continue
     update
+    pending=false
     last=$SECONDS
 done
