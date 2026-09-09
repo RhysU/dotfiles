@@ -1,5 +1,5 @@
 #!/bin/bash
-# taildiff - show a file's diffs as it is edited in place
+# taildiff - show a file's diffs as it changes
 
 PROG=$(basename "$0")
 CUMULATIVE=false
@@ -118,4 +118,4 @@ done
 #   timing    batching a burst, flushing its tail, quiet when idle
 #   races     a writer holding FILE open, two hundred hammered writes
 #             accounted for, an mtime tying the stamp read as stale
-#   lifetime  exit on removal, following a rename
+#   lifetime  exit on removal, following renames
