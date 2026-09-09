@@ -8,26 +8,30 @@ INTERVAL=2
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [-a] [-e] [-i SECONDS] FILE
+Usage: $(basename "$0") [-a] [-e] [-i SECS] FILE
 
-Print a colored diff of FILE each time it is written, using inotify
-and git diff. Exits when FILE is removed or renamed.
+Watch FILE with inotify and print a colored git diff each time it
+changes, labeling the sides before and after.  Batch the diffs, so a
+burst of writes costs one diff rather than one per write.  Follow a
+file whose writer keeps it open, such as a daemon appending to its
+log.  Exit when FILE is removed or renamed.
 
 Arguments:
   FILE     file to watch
 
 Options:
-  -a       diff against the original snapshot. Default is to diff
-           against the last-seen version, showing only new edits
-  -e       diff against an empty file at startup. The first diff
-           shows the entire file as additions
+  -a       diff against the startup snapshot, so edits accumulate.
+           Default is to diff against the version last shown
+  -e       start from an empty file, so the first diff spells out the
+           whole of FILE.  Under -a every later diff does the same
   -i SECS  show at most one diff every SECS seconds, batching whatever
-           arrives in between. Default $INTERVAL
-  -h       Show this help and exit
+           arrives in between.  Default $INTERVAL
+  -h       show this help and exit
 
 Examples:
   $(basename "$0") /var/log/myapp.log
   $(basename "$0") -a -e /var/log/myapp.log
+  $(basename "$0") -i 10 /var/log/chatty.log
 EOF
 }
 
@@ -107,3 +111,14 @@ while :; do
     pending=false
     last=$SECONDS
 done
+
+# Exercised against, in brief:
+#
+#   options   -h, -a, -e, -i, a bad flag, a bad interval, a missing or
+#             non-regular FILE, an absent inotifywait or git
+#   diffs     incremental, cumulative, truncating rewrite, absent final
+#             newline, a name holding a space, the before and after labels
+#   timing    batching a burst, flushing its tail, staying quiet when idle
+#   races     a writer holding FILE open, two hundred hammered writes all
+#             accounted for, an mtime tying the stamp read as stale
+#   lifetime  exit on removal, exit on rename
