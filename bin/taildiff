@@ -38,7 +38,8 @@ EOF
 update() {
     touch "$stamp"
     cp "$FILE" "$after" || exit 1
-    git --no-pager diff --no-index "$before" "$after"
+    git -C "$refdir" --no-pager diff --no-index --no-prefix \
+        "before/$base" "after/$base"
     $CUMULATIVE || mv "$after" "$before" || exit 1
 }
 
