@@ -1,14 +1,14 @@
 #!/bin/bash
 # taildiff - show a file's diffs as it is edited in place
 
-FILE=
+PROG=$(basename "$0")
 CUMULATIVE=false
 EMPTY=false
 INTERVAL=2
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [-a] [-e] [-i SECS] FILE
+Usage: $PROG [-a] [-e] [-i SECS] FILE
 
 Watch FILE with inotify and print a colored git diff each time it
 changes, labeling the sides before and after.  Batch the diffs, so a
@@ -29,16 +29,20 @@ Options:
   -h       show this help and exit
 
 Examples:
-  $(basename "$0") /var/log/myapp.log
-  $(basename "$0") -a -e /var/log/myapp.log
-  $(basename "$0") -i 10 /var/log/chatty.log
+  $PROG /var/log/myapp.log
+  $PROG -a -e /var/log/myapp.log
+  $PROG -i 10 /var/log/chatty.log
 EOF
 }
 
-# Print what FILE gained since the reference, then advance it.  One
-# snapshot feeds both the diff and the reference, so the two can never
-# disagree over what was shown.  Promote by rename to keep the reference
-# whole.
+die() {
+    echo "Error: $*" >&2
+    exit 1
+}
+
+# Diff FILE against the reference and advance it.  One snapshot feeds
+# both, so what is shown and what is remembered cannot diverge.  Stamp
+# first, so a write racing the snapshot is not mistaken for seen.
 update() {
     touch "$stamp"
     cp "$FILE" "$after" || exit 1
@@ -59,56 +63,42 @@ done
 shift $((OPTIND-1))
 FILE=${1:-}
 
-if [[ -z "$FILE" || ! -f "$FILE" ]]; then
-    echo "Error: '$FILE' is not a regular file" >&2
-    usage >&2
-    exit 1
-fi
-if [[ ! "$INTERVAL" =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: -i wants a whole number of seconds, not '$INTERVAL'" >&2
-    exit 1
-fi
-if ! command -v inotifywait >/dev/null 2>&1; then
-    echo "Error: inotifywait not found (install inotify-tools)" >&2
-    exit 1
-fi
-if ! command -v git >/dev/null 2>&1; then
-    echo "Error: git not found" >&2
-    exit 1
-fi
+[[ -f "$FILE" ]] || { usage >&2; die "'$FILE' is not a regular file"; }
+[[ "$INTERVAL" =~ ^[1-9][0-9]*$ ]] ||
+    die "-i wants whole seconds, got '$INTERVAL'"
+command -v inotifywait >/dev/null ||
+    die "inotifywait not found; install inotify-tools"
+command -v git >/dev/null || die "git not found"
 
-refdir=$(mktemp -d) && mkdir "$refdir/before" "$refdir/after"
+refdir=$(mktemp -d) || exit 1
+trap 'rm -rf "$refdir"' EXIT
+mkdir "$refdir/before" "$refdir/after" || exit 1
 base=$(basename "$FILE")
 before="$refdir/before/$base"
 after="$refdir/after/$base"
 stamp="$refdir/stamp"
+
 if $EMPTY; then
     : > "$before"
-else
-    cp "$FILE" "$before"
-fi
-touch "$stamp"
-trap 'rm -rf "$refdir"' EXIT
-
-$EMPTY && update
-
-# Wake on every write, and again whenever the watch idles out.  An event
-# alone decides that work is pending; the stamp is only a backstop for
-# events that fired while git held the loop.  Timestamps a tick apart
-# compare equal, so read an equal stamp as stale and diff again.
-last=$((SECONDS - INTERVAL))
-pending=false
-while :; do
-    inotifywait -qq -t "$INTERVAL" -e modify -e close_write "$FILE" 2>/dev/null
-    case $? in
-        0) pending=true ;;
-        2) ;;
-        *) break ;;
-    esac
-    $pending || [[ ! "$stamp" -nt "$FILE" ]] || continue
-    ((SECONDS - last >= INTERVAL)) || continue
     update
-    pending=false
+else
+    cp "$FILE" "$before" || exit 1
+    touch "$stamp"
+fi
+
+# Wake on a write, or on the watch idling out.  Events raised while git
+# ran are lost, so the stamp, never the event, says whether work waits.
+# A write within a tick of the stamp ties it, so read a tie as stale.
+last=$((SECONDS - INTERVAL))                 # fire on the first write
+while :; do
+    inotifywait -qq -t "$INTERVAL" -e modify -e close_write "$FILE"
+    case $? in
+        0|2) ;;
+        *)   break ;;
+    esac
+    ((SECONDS - last >= INTERVAL)) || continue   # too soon
+    [[ "$stamp" -nt "$FILE" ]] && continue       # nothing new
+    update
     last=$SECONDS
 done
 
