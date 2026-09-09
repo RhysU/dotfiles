@@ -28,6 +28,10 @@ Examples:
 EOF
 }
 
+showdiff() {
+    git --no-pager diff --no-index "$@"
+}
+
 while getopts "aeh" opt; do
     case "$opt" in
         a) CUMULATIVE=true ;;
@@ -61,7 +65,11 @@ else
 fi
 trap 'rm -rf "$refdir"' EXIT
 
+if $EMPTY; then
+    showdiff /dev/null "$FILE"
+fi
+
 while inotifywait -qq -e close_write "$FILE" 2>/dev/null; do
-    git --no-pager diff --no-index "$ref" "$FILE"
+    showdiff "$ref" "$FILE"
     $CUMULATIVE || cp "$FILE" "$ref"
 done
