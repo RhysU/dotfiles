@@ -40,8 +40,8 @@ export PAGER=less             # Default pager
 # colored GCC warnings and errors
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# Avoid some ulimit problems
-ulimit -s unlimited
+# Avoid some ulimit problems on systems where modifying it is permitted
+ulimit -s unlimited 2>/dev/null || true
 
 # Smarter history searching
 # http://lists.opensuse.org/opensuse-bugs/2009-10/msg10451.html
