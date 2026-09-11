@@ -16,11 +16,15 @@ dotfiles-install() {
 # Third:
 #   Fire up vim and run :BundleUpdate
 
-# Add color to basic commands whenever possible
+# Add color to basic commands when possible, even where GNU is spelled 'gls'
 function egrep() { command egrep --color=auto "$@"; }
 function fgrep() { command fgrep --color=auto "$@"; }
 function grep()  { command grep  --color=auto "$@"; }
-function ls()    { command ls    --color=auto "$@"; }
+if command -v gls >/dev/null 2>&1; then
+    ls() { command gls --color=auto "$@"; }
+else
+    ls() { command ls --color=auto "$@"; }
+fi
 
 # "H foo" searches history for "foo" ignoring other "H anything" entries
 # Additional magic present to remove duplicate commands when nonconsecutive
