@@ -1,6 +1,6 @@
 # Maintain dotfiles within a bare git repository, adopted from
 # https://developer.atlassian.com/blog/2016/02/best-way-to-store-dotfiles-git-bare-repo/
-dotfiles() { /usr/bin/git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"; }
+dotfiles() { command git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"; }
 dotfiles-install() {
   (
     set -ex
