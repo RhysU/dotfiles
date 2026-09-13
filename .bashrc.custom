@@ -1,4 +1,5 @@
 # Source every drop-in in sorted order.  Numeric prefixes fix that order.
+# Drop-ins named *.local.sh hold private content and are never committed.
 for element in ~/.bashrc.d/*.sh
 do
     if [ -r "$element" ]; then
