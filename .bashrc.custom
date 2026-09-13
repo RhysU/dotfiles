@@ -3,6 +3,7 @@
 for element in ~/.bashrc.d/*.sh
 do
     if [ -r "$element" ]; then
+        #echo "Sourcing $element" 1>&2  # Uncomment to trace startup
         . "$element"
     fi
 done
