@@ -1,3 +1,10 @@
+# Vendored verbatim below this guard.  Keep the guard when refreshing upstream.
+# Nothing here matters outside an interactive shell
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
 # bash-preexec.sh -- Bash support for ZSH-like 'preexec' and 'precmd' functions.
 # https://github.com/rcaloras/bash-preexec
 #
