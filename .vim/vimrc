@@ -226,18 +226,20 @@ augroup vimrc_filetypes
     autocmd FileType clojure,lisp,scheme RainbowParentheses
 augroup END
 
-" Wrap prose under Goyo, marking each continuation line.  Goyo dims NonText to
-" hide end-of-buffer tildes, and 'showbreak' draws in NonText, so restore the
-" colorscheme's definition and drop the tildes through 'fillchars' instead.
-" Silence ALE for the duration, restoring whatever the buffer had on the way out.
 augroup vimrc_goyo
     autocmd!
+    " Soft-wrap prose at spaces, holding the paragraph indent
     autocmd User GoyoEnter setlocal wrap linebreak breakindent breakindentopt=sbr
+    " Mark every continuation line
     autocmd User GoyoEnter let &l:showbreak = '↪ '
+    " Hide the end-of-buffer tildes without leaning on NonText
     autocmd User GoyoEnter let &l:fillchars = &fillchars . ',eob: '
+    " Undo Goyo's dimming of NonText, in which 'showbreak' draws
     autocmd User GoyoEnter call hlset(s:nontext)
+    " Push ALE's state before silencing its signs and virtual text
     autocmd User GoyoEnter let b:ale_goyo = get(b:, 'ale_enabled', 1)
     autocmd User GoyoEnter ALEDisableBuffer
+    " Pop it, leaving a buffer disabled by hand disabled
     autocmd User GoyoLeave if get(b:, 'ale_goyo', 0) | ALEEnableBuffer | endif
 augroup END
 
