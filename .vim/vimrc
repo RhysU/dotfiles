@@ -252,9 +252,11 @@ augroup vimrc_goyo
     autocmd User GoyoEnter let &l:fillchars = &fillchars . ',eob: '
     " Undo Goyo's dimming of NonText, in which 'showbreak' draws
     autocmd User GoyoEnter call hlset(s:nontext)
-    " Dim every paragraph but the one holding the cursor
+    " Push Limelight's state before dimming all but the paragraph under the cursor
+    autocmd User GoyoEnter let s:limelight = exists('#limelight')
     autocmd User GoyoEnter Limelight
-    autocmd User GoyoLeave Limelight!
+    " Pop it, leaving Limelight lit where it already was
+    autocmd User GoyoLeave if !get(s:, 'limelight', 0) | Limelight! | endif
     " Push ALE's state before silencing its signs and virtual text
     autocmd User GoyoEnter let b:ale_goyo = get(b:, 'ale_enabled', 1)
     autocmd User GoyoEnter ALEDisableBuffer
