@@ -47,6 +47,18 @@ if has('nvim')
 endif
 set background=dark
 
+" Mean intensity of a #rrggbb colour
+function! s:Gray(hex)
+    return (str2nr(a:hex[1:2], 16) + str2nr(a:hex[3:4], 16) + str2nr(a:hex[5:6], 16)) / 3
+endfunction
+
+" Normal blended halfway to its background, landing on the xterm grey ramp
+function! s:ConcealGray()
+    let normal = hlget('Normal')[0]
+    let gray = (s:Gray(normal.guifg) + s:Gray(normal.guibg)) / 2
+    return max([232, min([255, 232 + (gray - 8) / 10])])
+endfunction
+
 " Install autocmd because ColorScheme reapplication resets highlight groups
 augroup vimrc_highlights
     autocmd!
@@ -55,6 +67,8 @@ augroup vimrc_highlights
     autocmd ColorScheme * highlight ColorColumn term=standout ctermbg=magenta guibg=Magenta
     " Remember NonText because Goyo dims it and 'showbreak' draws in it
     autocmd ColorScheme * let s:nontext = hlget('NonText')
+    " Hand Limelight a cterm colour because candy states Normal in GUI alone
+    autocmd ColorScheme * let g:limelight_conceal_ctermfg = s:ConcealGray()
 augroup END
 colorscheme candy " vividchalk darkbone molokai nord
 
@@ -251,9 +265,6 @@ let g:ale_cpp_cc_executable = 'g++'
 let g:ale_linters = {'sh': ['shell', 'shellcheck']}
 let g:ale_tex_chktex_options = '-I -n38'
 let g:goyo_height = '90%'
-" candy states Normal in GUI colours alone, leaving Limelight nothing to dim from
-let g:limelight_conceal_ctermfg = 240
-let g:limelight_conceal_guifg = '#585858'
 let g:signify_vcs_list = [ 'git', 'svn' ]
 let g:slime_default_config  = {"sessionname": $STY, "windowname": "0"}
 let g:slime_python_ipython = 1
