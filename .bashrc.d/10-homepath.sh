@@ -1,11 +1,6 @@
-# Add home directory installations to the path
-for element in      \
-    ~/.cabal/bin    \
-    ~/.cargo/bin    \
-    ~/.local/bin    \
-    ~/bin
-do
-    if [ -d "$element" ]; then
-        export "PATH=$element:$PATH"
-    fi
-done
+# Add home directory installations to the path, leftmost winning
+path_prepend_missing \
+    ~/bin            \
+    ~/.local/bin     \
+    ~/.cargo/bin     \
+    ~/.cabal/bin
