@@ -1,3 +1,14 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# Adopt these settings on a machine wanting them:
+#     ln -s .bashrc.custom ~/.bashrc
+
+# Everything loads regardless of interactivity.  Uncomment to skip the lot
+# in non-interactive shells, as the stock Debian ~/.bashrc does.
+#case $- in
+#    *i*) ;;
+#      *) return;;
+#esac
+
 # Source every drop-in in sorted order.  Numeric prefixes fix that order.
 # Drop-ins named *.local.sh hold private content and are never committed.
 for element in ~/.bashrc.d/*.sh
