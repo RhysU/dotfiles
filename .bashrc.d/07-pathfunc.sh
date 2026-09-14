@@ -1,6 +1,7 @@
 # Colon-separated list handling, wrapped for PATH and its kin.
 # All are idempotent, so a nested shell re-sourcing these leaves PATH alone.
 # Underscored locals keep indirect expansion clear of the caller's variables.
+# The guarded array expansion survives set -u on bash before 4.4.
 # Adapted from https://superuser.com/questions/39751/
 
 # list_items_valid ITEM...
@@ -68,7 +69,7 @@ path_append_missing()
     do
         test -d "$_dir" && _dirs+=("$_dir")
     done
-    list_append_missing PATH "${_dirs[@]}"
+    list_append_missing PATH ${_dirs[@]+"${_dirs[@]}"}
 }
 
 # path_prepend_missing DIR...
@@ -80,5 +81,5 @@ path_prepend_missing()
     do
         test -d "$_dir" && _dirs+=("$_dir")
     done
-    list_prepend_missing PATH "${_dirs[@]}"
+    list_prepend_missing PATH ${_dirs[@]+"${_dirs[@]}"}
 }
