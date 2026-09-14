@@ -22,7 +22,7 @@ export EDITOR=vim             # Default editor
 export FCEDIT="vim -X"        # X-less editor for 'fc'
 export LC_ALL=en_US.UTF-8     # Default locale
 export PAPERSIZE=letter       # Default paper
-export LESS="-R -X -F"        # Default less options
+export LESS="-R -F"           # Default less options
 export PAGER=less             # Default pager
 
 # colored GCC warnings and errors
