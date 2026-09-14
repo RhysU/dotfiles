@@ -20,27 +20,21 @@ fi
 # Modified slightly from https://gist.github.com/828432
 prompt_git_branch()
 {
-    GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
-    if [ -z "$GIT_DIR" ]; then
-        return 0
+    local git_dir head branch color
+    git_dir=$(git rev-parse --git-dir 2>/dev/null) || return 0
+    read -r head < "$git_dir/HEAD"
+    branch=${head##*/}
+    if [ ${#branch} -eq 40 ]; then
+        branch="(no branch)"
     fi
-    GIT_HEAD=$(cat "$GIT_DIR/HEAD")
-    GIT_BRANCH=${GIT_HEAD##*/}
-    if [ ${#GIT_BRANCH} -eq 40 ]; then
-        GIT_BRANCH="(no branch)"
-    fi
-    STATUS=$(git status --porcelain)
-    if [ -z "$STATUS" ]; then
-        git_color="${prompt_color_git_clean}"
+    if ! git diff --no-ext-diff --quiet; then
+        color="${prompt_color_git_unstaged}"
+    elif ! git diff --no-ext-diff --cached --quiet; then
+        color="${prompt_color_git_staged}"
     else
-        echo -e "$STATUS" | grep -q '^ [A-Z\?]'
-        if [ $? -eq 0 ]; then
-            git_color="${prompt_color_git_unstaged}"
-        else
-            git_color="${prompt_color_git_staged}"
-        fi
+        color="${prompt_color_git_clean}"
     fi
-    echo "${git_color}${GIT_BRANCH}${prompt_color_reset} "
+    echo "${color}${branch}${prompt_color_reset} "
 }
 
 # Function to grab any non-root conda environment and Python virtual environment
