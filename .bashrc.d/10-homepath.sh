@@ -1,4 +1,4 @@
-# Add various things to the path
+# Add home directory installations to the path
 for element in      \
     ~/.cabal/bin    \
     ~/.cargo/bin    \
