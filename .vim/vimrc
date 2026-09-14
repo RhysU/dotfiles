@@ -229,12 +229,16 @@ augroup END
 " Wrap prose under Goyo, marking each continuation line.  Goyo dims NonText to
 " hide end-of-buffer tildes, and 'showbreak' draws in NonText, so restore the
 " colorscheme's definition and drop the tildes through 'fillchars' instead.
+" Silence ALE for the duration, restoring whatever the buffer had on the way out.
 augroup vimrc_goyo
     autocmd!
     autocmd User GoyoEnter setlocal wrap linebreak breakindent breakindentopt=sbr
     autocmd User GoyoEnter let &l:showbreak = '↪ '
     autocmd User GoyoEnter let &l:fillchars = &fillchars . ',eob: '
     autocmd User GoyoEnter call hlset(s:nontext)
+    autocmd User GoyoEnter let b:ale_goyo = get(b:, 'ale_enabled', 1)
+    autocmd User GoyoEnter ALEDisableBuffer
+    autocmd User GoyoLeave if get(b:, 'ale_goyo', 0) | ALEEnableBuffer | endif
 augroup END
 
 let g:ale_cpp_cc_executable = 'g++'
