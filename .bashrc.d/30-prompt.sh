@@ -92,7 +92,3 @@ preexec_prompt()
 
 precmd_functions+=(precmd_prompt)
 preexec_functions+=(preexec_prompt)
-
-# Use a nice prompt for bash -x debugging
-PS4='(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]} - [${SHLVL},${BASH_SUBSHELL}, $?]
-'
