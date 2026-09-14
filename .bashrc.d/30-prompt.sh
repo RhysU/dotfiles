@@ -1,14 +1,8 @@
-# Nothing here matters outside an interactive shell
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
 # Configure colors, if available.
 # Modified slightly from https://gist.github.com/828432
 # Detection based on http://unix.stackexchange.com/questions/9957/
 # Fixing TeX output width based on http://tex.stackexchange.com/questions/83600/
-if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+if command -v tput >/dev/null 2>&1 && tput setaf 1 >&/dev/null; then
     prompt_color_reset='\[\e[0m\]'
     prompt_color_git_clean='\[\e[0;37m\]'
     prompt_color_git_staged='\[\e[0;32m\]'
