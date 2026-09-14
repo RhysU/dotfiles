@@ -14,7 +14,7 @@ ulimit -s unlimited 2>/dev/null || true
 
 # enable color support of ls
 if command -v dircolors >/dev/null 2>&1; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    eval "$(dircolors -b)"
 fi
 
 # Pager and locale settings
