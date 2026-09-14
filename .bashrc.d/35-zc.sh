@@ -1,9 +1,3 @@
-# Nothing here matters outside an interactive shell
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
 # Aliases ease using https://github.com/RhysU/zc against a particular database
 if test -x "${HOME}/bin/zc"; then
     z_raw() { "$HOME/bin/zc" -d "$HOME/.zc"       "$@"; }
