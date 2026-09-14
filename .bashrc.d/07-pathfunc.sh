@@ -1,7 +1,9 @@
 # Colon-separated list handling, wrapped for PATH and its kin.
+# All are idempotent, so a nested shell re-sourcing these leaves PATH alone.
 # Adapted from https://superuser.com/questions/39751/
 
-# Report whether colon-separated list $1 already holds item $2.
+# list_contains LIST ITEM
+# Report whether colon-separated LIST already holds ITEM.
 list_contains()
 {
     case ":$1:" in
@@ -10,7 +12,8 @@ list_contains()
     return 1
 }
 
-# Append each item to the colon-separated list named $1, skipping those held.
+# list_append_missing NAME ITEM...
+# Append each ITEM to the colon-separated list named NAME, skipping those held.
 list_append_missing()
 {
     local name=$1 item
@@ -22,7 +25,8 @@ list_append_missing()
     done
 }
 
-# Prepend each item to the colon-separated list named $1, skipping those held.
+# list_prepend_missing NAME ITEM...
+# Prepend each ITEM to the colon-separated list named NAME, skipping those held.
 # Items keep their argument order, so the first named lands leftmost.
 list_prepend_missing()
 {
@@ -35,8 +39,8 @@ list_prepend_missing()
     done
 }
 
-# Add existing directories to PATH.  Both are idempotent, so a nested shell
-# re-sourcing these settings leaves PATH alone.
+# path_append_missing DIR...
+# Append each existing DIR to PATH, skipping those held.
 path_append_missing()
 {
     local dir dirs=()
@@ -47,6 +51,8 @@ path_append_missing()
     list_append_missing PATH "${dirs[@]}"
 }
 
+# path_prepend_missing DIR...
+# Prepend each existing DIR to PATH, skipping those held.
 path_prepend_missing()
 {
     local dir dirs=()
