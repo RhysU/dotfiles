@@ -147,6 +147,7 @@ noremap =D :set bg=light<CR>
 noremap =e :retab<CR>
 noremap =f !}fmt -w 78 -g 75 -c<CR>
 noremap =G :Goyo<CR>
+noremap =L :Limelight!!<CR>
 noremap == i 
 noremap =s !}sort<CR>
 noremap =u !}sort -u<CR>
