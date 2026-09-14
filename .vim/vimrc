@@ -52,6 +52,8 @@ augroup vimrc_highlights
     autocmd ColorScheme * highlight clear SpellBad
     autocmd ColorScheme * highlight SpellBad term=underline ctermfg=red cterm=underline gui=underline guifg=Red
     autocmd ColorScheme * highlight ColorColumn term=standout ctermbg=magenta guibg=Magenta
+    " Remember NonText because Goyo dims it and 'showbreak' draws in it
+    autocmd ColorScheme * let s:nontext = hlget('NonText')
 augroup END
 colorscheme candy " vividchalk darkbone molokai nord
 
@@ -223,6 +225,18 @@ augroup vimrc_filetypes
     autocmd BufRead,BufNewFile *.sls set filetype=scheme
     autocmd FileType clojure,lisp,scheme RainbowParentheses
 augroup END
+
+" Wrap prose under Goyo, marking each continuation line.  Goyo dims NonText to
+" hide end-of-buffer tildes, and 'showbreak' draws in NonText, so restore the
+" colorscheme's definition and drop the tildes through 'fillchars' instead.
+augroup vimrc_goyo
+    autocmd!
+    autocmd User GoyoEnter setlocal wrap linebreak breakindent breakindentopt=sbr
+    autocmd User GoyoEnter let &l:showbreak = '↪ '
+    autocmd User GoyoEnter let &l:fillchars = &fillchars . ',eob: '
+    autocmd User GoyoEnter call hlset(s:nontext)
+augroup END
+
 let g:ale_cpp_cc_executable = 'g++'
 let g:ale_linters = {'sh': ['shell', 'shellcheck']}
 let g:ale_tex_chktex_options = '-I -n38'
