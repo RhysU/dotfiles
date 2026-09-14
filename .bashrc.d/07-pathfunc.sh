@@ -3,28 +3,40 @@
 # Underscored locals keep indirect expansion clear of the caller's variables.
 # Adapted from https://superuser.com/questions/39751/
 
-# list_append_missing NAME ITEM...
-# Append each ITEM to the colon-separated list named NAME, skipping those it
-# already holds.  Export NAME so children inherit it.  Return 1 given an ITEM
-# holding the separator or refusing assignment, and 2 given no NAME at all.
-list_append_missing()
+# list_items_valid ITEM...
+# Report whether every ITEM is free of the separator, naming those that
+# are not.  Complaints carry the caller's name rather than this one.
+list_items_valid()
 {
-    local _name=$1 _item _status=0
-    shift || return 2
+    local _item _status=0
     for _item in "$@"
     do
         case $_item in
-            *:*) echo "${FUNCNAME[0]}: colon within '$_item'" 1>&2
-                 _status=1
-                 continue;;
+            *:*) echo "${FUNCNAME[1]}: colon within '$_item'" 1>&2
+                 _status=1;;
         esac
+    done
+    return $_status
+}
+
+# list_append_missing NAME ITEM...
+# Append each ITEM to the colon-separated list named NAME, skipping those it
+# already holds.  Export NAME so children inherit it.  Return 2 given no NAME
+# and 1 given any ITEM holding the separator, in which case NAME goes
+# untouched rather than half updated.
+list_append_missing()
+{
+    local _name=$1 _item
+    shift || return 2
+    list_items_valid "$@" || return 1
+    for _item in "$@"
+    do
         case ":${!_name-}:" in
             *":$_item:"*) continue;;
         esac
-        printf -v "$_name" '%s' "${!_name:+${!_name}:}$_item" || _status=1
+        printf -v "$_name" '%s' "${!_name:+${!_name}:}$_item" || return 1
     done
     export "$_name"
-    return $_status
 }
 
 # list_prepend_missing NAME ITEM...
@@ -33,23 +45,18 @@ list_append_missing()
 # leftmost.  Errors as list_append_missing does.
 list_prepend_missing()
 {
-    local _name=$1 _item _status=0 _i
-    test $# -gt 0 || return 2
-    for ((_i = $#; _i > 1; _i--))
+    local _name=$1 _item _i
+    shift || return 2
+    list_items_valid "$@" || return 1
+    for ((_i = $#; _i > 0; _i--))
     do
         _item=${!_i}
-        case $_item in
-            *:*) echo "${FUNCNAME[0]}: colon within '$_item'" 1>&2
-                 _status=1
-                 continue;;
-        esac
         case ":${!_name-}:" in
             *":$_item:"*) continue;;
         esac
-        printf -v "$_name" '%s' "$_item${!_name:+:${!_name}}" || _status=1
+        printf -v "$_name" '%s' "$_item${!_name:+:${!_name}}" || return 1
     done
     export "$_name"
-    return $_status
 }
 
 # path_append_missing DIR...
