@@ -2,16 +2,6 @@
 # All are idempotent, so a nested shell re-sourcing these leaves PATH alone.
 # Adapted from https://superuser.com/questions/39751/
 
-# list_contains LIST ITEM
-# Report whether colon-separated LIST already holds ITEM.
-list_contains()
-{
-    case ":$1:" in
-        *":$2:"*) return 0;;
-    esac
-    return 1
-}
-
 # list_append_missing NAME ITEM...
 # Append each ITEM to the colon-separated list named NAME, skipping those held.
 list_append_missing()
@@ -20,7 +10,9 @@ list_append_missing()
     shift
     for item in "$@"
     do
-        list_contains "${!name}" "$item" && continue
+        case ":${!name}:" in
+            *":$item:"*) continue;;
+        esac
         printf -v "$name" '%s' "${!name:+${!name}:}$item"
     done
 }
@@ -34,7 +26,9 @@ list_prepend_missing()
     for ((i = $#; i > 1; i--))
     do
         item=${!i}
-        list_contains "${!name}" "$item" && continue
+        case ":${!name}:" in
+            *":$item:"*) continue;;
+        esac
         printf -v "$name" '%s' "$item${!name:+:${!name}}"
     done
 }
