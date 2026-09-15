@@ -111,3 +111,14 @@ Prefer these tools whenever possible:
 - Create or overwrite whole files with Write, not echo, tee, or a heredoc.
 - Change part of a file with Edit, not sed -i, awk, perl -pi, or a Python script
   that rewrites the file.
+
+## Claude Code memory files
+
+Never write to your memory directory without asking me first.  Ask once
+about the specific memory, plainly, and accept no as the answer.  Absent
+a yes, keep it in the conversation.
+
+Statelessness trumps confusing hysteresis.  A session that starts cold
+behaves predictably.  One carrying accumulated memory answers today's
+question through yesterday's grievances, with nothing in the session
+showing what steered it.
