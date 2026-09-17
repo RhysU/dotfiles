@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Rule off the terminal with a tall banner dated down the right margin
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [CHAR]
+
+Rule off the terminal with a tall banner of CHAR, defaulting to '#'.
+Stack one line per word of the current date, each word flush right.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -le 1 ]] || { echo >&2 "${0##*/}: too many arguments"; exit 1; }
+
+# Leave the date unquoted.  Word splitting drives the banner height, since
+# printf reuses a one-conversion format once per word it is handed.
+# shellcheck disable=SC2046
+printf "%$(tput cols)s\n" $(date) | tr ' ' "${1:-#}"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   two args      -> one-line error on stderr, exit 1
+#   (no args)     -> banner of '#', one line per word of date
+#   '='           -> same banner drawn in '='
+#   LC_ALL=C      -> six lines, the date's word count
+#   vim :r!HR     -> banner only, no trailing blank
