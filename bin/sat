@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Run screen in a given directory
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] DIR [SCREEN_ARG...]
+
+Change to DIR, then run screen there.
+Pass -- before options meant for screen.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing directory"; exit 1; }
+
+dir=$1
+shift
+cd "$dir"
+exec screen "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h              -> usage on stdout, exit 0
+#   -x              -> getopts diagnostic on stderr, exit 1
+#   (no args)       -> one-line error on stderr, exit 1
+#   a directory     -> screen starts with that as its working directory
+#   -- -S name      -> -S reaches screen
+#   missing dir     -> cd's own error, nonzero exit, screen never starts
+#   dir with spaces -> works
