@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 renice -n 10 "$$" >/dev/null
 delay=1
 total_mem=$(/usr/bin/free --mega | /usr/bin/awk '$1 == "Mem:" { print $2 }')

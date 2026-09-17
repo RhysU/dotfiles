@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # taildiff - show a file's diffs as it changes
 
 PROG=$(basename "$0")

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # subnet-inventory.sh - enumerate live hosts on a LAN with hostnames, MACs, and vendors
 
 SUBNET=${1:-192.168.1.0/24}
