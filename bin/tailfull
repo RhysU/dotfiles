@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Follow a file from its first line rather than its last
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] FILE...
+
+Print FILE whole, then follow it, tracking the name across a rename.
+Pass -- before options meant for tail.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing file"; exit 1; }
+
+exec tail -n +1 -F "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   (no args)     -> one-line error on stderr, exit 1
+#   one file      -> whole file, then new lines as they arrive
+#   two files     -> headers between them, as tail gives
+#   renamed file  -> follows the new file at that name
+#   missing file  -> tail waits for it, as -F does
