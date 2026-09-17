@@ -6,11 +6,10 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [SED_ARG...] [FILE...]
 
-Remove SGR and erase-line escape sequences from FILE, or from standard
-input when given none.  Every argument reaches sed untouched.
+Strip ANSI colour escapes from FILE, or from standard input.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
@@ -25,6 +24,6 @@ exec sed -r 's/\x1B\[[0-9;]*[mK]//g' "$@"
 #   a file             -> strips escapes from it
 #   plain text         -> passes through unchanged
 #   ls --color output  -> colour gone, filenames intact
-#   truecolor 38;2;R;G;B -> stripped, unlike the two-parameter original
+#   truecolor 38;2;R;G;B -> stripped
 #   -i file            -> -i reaches sed and edits in place
 #   missing file       -> sed's own error, nonzero exit
