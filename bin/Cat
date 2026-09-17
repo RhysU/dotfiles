@@ -4,23 +4,17 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h] [FILE...]
+Usage: ${0##*/} [-h] [CAT_ARG...] [FILE...]
 
 Clear the screen, then print FILE, or standard input when given none.
-Pass -- before options meant for cat.
+Every argument reaches cat untouched.
 
 Options:
-  -h    Show this help and exit
+  -h    Show this help and exit, when given first
 EOF
 }
 
-while getopts "h" OPT; do
-  case "$OPT" in
-    h) usage; exit 0 ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
+[[ ${1-} != -h ]] || { usage; exit 0; }
 
 # Clear the terminal itself, so a redirected stdout still starts clean.
 clear 2>/dev/null > /dev/tty || true
@@ -29,9 +23,8 @@ exec cat "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h             -> usage on stdout, exit 0
-#   -x             -> getopts diagnostic on stderr, exit 1
 #   (no args)      -> clears, then copies standard input
 #   one file       -> clears, then prints it
-#   -- -n file     -> -n reaches cat
+#   -n file        -> -n reaches cat
 #   stdout to file -> screen still cleared, file holds only the content
-#   no tty at all  -> no clear, content still printed
+#   no tty at all  -> no clear, no stderr noise, content still printed

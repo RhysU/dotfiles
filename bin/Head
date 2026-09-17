@@ -4,32 +4,25 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h] [FILE...]
+Usage: ${0##*/} [-h] [HEAD_ARG...] [FILE...]
 
 Print the first lines of FILE, one screenful less the line the prompt
 will take.  Read standard input when given no FILE.
-Pass -- before options meant for head.
+Every argument reaches head untouched.
 
 Options:
-  -h    Show this help and exit
+  -h    Show this help and exit, when given first
 EOF
 }
 
-while getopts "h" OPT; do
-  case "$OPT" in
-    h) usage; exit 0 ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
+[[ ${1-} != -h ]] || { usage; exit 0; }
 
 exec head -n $(($(tput lines) - 1)) "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h            -> usage on stdout, exit 0
-#   -x            -> getopts diagnostic on stderr, exit 1
 #   (no args)     -> one screenful of standard input
 #   a long file   -> one screenful, prompt still visible
 #   a short file  -> the whole file
-#   -- -c 10 file -> -c reaches head
+#   -c 10 file    -> -c reaches head and wins over our -n
 #   piped output  -> terminfo's line count, as the function also gave

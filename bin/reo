@@ -7,20 +7,14 @@ usage() {
 Usage: ${0##*/} [-h] [LS_ARG...]
 
 Clear the screen, print the working directory in bold, then list.
-Pass -- before options meant for ls.
+Every argument reaches ls untouched.
 
 Options:
-  -h    Show this help and exit
+  -h    Show this help and exit, when given first
 EOF
 }
 
-while getopts "h" OPT; do
-  case "$OPT" in
-    h) usage; exit 0 ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
+[[ ${1-} != -h ]] || { usage; exit 0; }
 
 clear
 boldecho "$PWD"
@@ -30,9 +24,8 @@ echo
 
 # To properly test, confirm expected behavior against:
 #   -h            -> usage on stdout, exit 0
-#   -x            -> getopts diagnostic on stderr, exit 1
 #   (no args)     -> clears, bold cwd, listing, blank lines around it
 #   a directory   -> lists that directory instead
-#   -- -l         -> long format, as the function gave
+#   -l            -> long format, as the function gave
 #   colour        -> present on a terminal, absent through a pipe
 #   missing path  -> ls's own error, nonzero exit

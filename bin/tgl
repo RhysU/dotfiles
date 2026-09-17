@@ -10,17 +10,11 @@ Follow FILE from its end and print only lines matching PATTERN.
 Output stays line buffered, so matches appear as they arrive.
 
 Options:
-  -h    Show this help and exit
+  -h    Show this help and exit, when given first
 EOF
 }
 
-while getopts "h" OPT; do
-  case "$OPT" in
-    h) usage; exit 0 ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
+[[ ${1-} != -h ]] || { usage; exit 0; }
 
 [[ $# -ge 2 ]] || { echo >&2 "${0##*/}: need a pattern and a file"; exit 1; }
 
@@ -30,9 +24,9 @@ tail -n 1 -f "$@" | grep --line-buffered "$pat"
 
 # To properly test, confirm expected behavior against:
 #   -h            -> usage on stdout, exit 0
-#   -x            -> getopts diagnostic on stderr, exit 1
 #   one arg       -> one-line error on stderr, exit 1
 #   pattern, file -> only matching lines, appearing as written
 #   two files     -> both followed
+#   a pattern starting with a dash -> reaches grep, not us
 #   no match      -> nothing printed, still following
 #   missing file  -> tail's own error
