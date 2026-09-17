@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Run a tool under libtool, so it sees the real binary and not the wrapper
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] PROGRAM [ARG...]
+
+Run PROGRAM under libtool --mode=execute.  The invoked name supplies the
+tool, so libtoolgdb runs gdb and libtoolddd runs ddd.  Symlink a new name
+to gain a new tool: 'ln -s libtoolgdb libtoolnm'.
+Every argument reaches the tool untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+tool="${0##*/}"
+tool="${tool#libtool}"
+
+exec libtool --mode=execute "$tool" "$@"
+
+# To properly test, confirm expected behavior against:
+#   libtoolgdb -h       -> usage naming libtoolgdb, exit 0
+#   libtoolddd -h       -> same usage naming libtoolddd, exit 0
+#   fresh libtoolnm link -> runs nm, no edit to this file
+#   (no args)           -> the tool's own usage through libtool
+#   a libtool binary    -> the tool sees the real executable
+#   -q prog             -> the flag reaches the tool
+#   link to a missing tool -> exec fails naming it, exit 127
