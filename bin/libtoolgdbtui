@@ -6,21 +6,20 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] PROGRAM [ARG...]
 
-Run PROGRAM under libtool --mode=execute with gdb in its terminal
-interface.  Every argument reaches gdb untouched.
+Run gdb's terminal interface under libtool.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-exec libtool --mode=execute gdb -tui "$@"
+exec libtoolgdb -tui "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h               -> usage on stdout, exit 0
 #   (no args)        -> gdb's terminal interface with no program loaded
 #   a libtool binary -> gdb sees the real executable
 #   --args prog x    -> --args reaches gdb
-#   libtool absent   -> exec fails naming libtool, exit 127
+#   argv             -> matches libtoolgdb -tui exactly
