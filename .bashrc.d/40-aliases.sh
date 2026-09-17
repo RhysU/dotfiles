@@ -50,7 +50,6 @@ o()        { octave --silent --persist "$@" ; }
 p()        { parallel "$@" ; }
 s()        { screen "$@" ; }
 t()        { command time --verbose "$@" ; }
-tgl()      { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
 v()        { vim "$@" ; }
 
 # Screen-handling aware variations on common commands
