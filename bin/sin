@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Run screen in each of several directories, in sorted order
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] DIR...
+
+Sort DIR the way a person reads numbers, so run2 comes before run10, then
+run screen in each in turn, waiting for each to exit before the next.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing directory"; exit 1; }
+
+# Sort the way a person reads numbers, so run2 lands before run10.
+# Delimit on NUL, so names holding spaces or newlines survive the round trip.
+mapfile -t -d '' dirs < <(printf '%s\0' "$@" | sort -zV)
+
+# Keep going past a directory that will not open, as the function did.
+for dir in "${dirs[@]}"; do
+  (cd "$dir" && screen) || continue
+done
+
+# To properly test, confirm expected behavior against:
+#   -h              -> usage on stdout, exit 0
+#   -x              -> getopts diagnostic on stderr, exit 1
+#   (no args)       -> one-line error on stderr, exit 1
+#   c a b           -> visited a, b, c, unlike the function it replaces
+#   run10 run2      -> run2 first, the human ordering
+#   one directory   -> screen starts there
+#   dir with spaces -> sorted and entered intact
+#   dir with a newline -> same
+#   missing dir     -> cd's own error, that one skipped
