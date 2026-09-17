@@ -47,8 +47,6 @@ benicer()  { renice +5 -p $BASHPID; }
 boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
 f78()      { fmt -w 78 "$@"; }
 h()        { history "$@" ; }
-hr()       { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
-HR()       { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
 okular()   { command okular >&/dev/null "$@"; }
 o()        { octave --silent --persist "$@" ; }
 p8888()    { if command -v mtr >/dev/null 2>&1; then mtr -rw -G 2 -m 20 -c 5 8.8.8.8; else ping -c 5 8.8.8.8; fi; }

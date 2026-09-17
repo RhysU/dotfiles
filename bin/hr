@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Rule off the terminal with a line of a repeated character
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [CHAR]
+
+Rule off the terminal with a single line of CHAR, defaulting to '#'.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -le 1 ]] || { echo >&2 "${0##*/}: too many arguments"; exit 1; }
+
+printf "%$(tput cols)s\n" | tr ' ' "${1:-#}"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   two args      -> one-line error on stderr, exit 1
+#   (no args)     -> one rule of '#' spanning the terminal
+#   '='           -> one rule of '='
+#   vim :r!hr     -> one line, no trailing blank
