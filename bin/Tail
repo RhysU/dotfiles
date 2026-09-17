@@ -17,7 +17,10 @@ EOF
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-exec tail -n $(($(tput lines) - 1)) "$@"
+# Fall back to a classic terminal, since a failed tput leaves -1 lines.
+lines=$(tput lines 2>/dev/null) || lines=24
+
+exec tail -n $((lines - 1)) "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h            -> usage on stdout, exit 0
