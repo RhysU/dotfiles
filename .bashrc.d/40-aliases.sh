@@ -82,11 +82,8 @@ strpre() { p=$1; shift; for s in "$@"; do echo -n "$p$s "; done }
 
 # Shortcuts for working with valgrind and/or libtool
 # Complication for valgrind invocation comes from limited .valgrindrc functionality
-alias libtoolddd="     libtool --mode=execute ddd"
-alias libtoolgdb="     libtool --mode=execute gdb"
 alias libtoolgdbtui="  libtool --mode=execute gdb -tui"
 alias libtoolvalgrind="libtool --mode=execute valgrind --db-command='gdb -tui -w %f %p' $(strpre --suppressions= $HOME/.valgrind/*.supp)"
-alias libtoolmpiexec=" libtool --mode=execute mpiexec"
 
 
 
