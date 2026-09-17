@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Clear the screen, then head a directory listing with the working directory
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [LS_ARG...]
+
+Clear the screen, print the working directory in bold, then list.
+Pass -- before options meant for ls.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+clear
+boldecho "$PWD"
+echo
+ls --color=auto "$@"     # spell out the colour the ls function used to add
+echo
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   (no args)     -> clears, bold cwd, listing, blank lines around it
+#   a directory   -> lists that directory instead
+#   -- -l         -> long format, as the function gave
+#   colour        -> present on a terminal, absent through a pipe
+#   missing path  -> ls's own error, nonzero exit
