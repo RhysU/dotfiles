@@ -23,7 +23,10 @@ shift $((OPTIND - 1))
 
 [[ $# -le 1 ]] || { echo >&2 "${0##*/}: too many arguments"; exit 1; }
 
-printf "%$(tput cols)s\n" | tr ' ' "${1:-#}"
+# Fall back to a classic terminal, since a failed tput leaves no width.
+cols=$(tput cols 2>/dev/null) || cols=80
+
+printf "%${cols}s\n" | tr ' ' "${1:-#}"
 
 # To properly test, confirm expected behavior against:
 #   -h            -> usage on stdout, exit 0
