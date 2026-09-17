@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Follow a file, showing only the lines matching a pattern
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] PATTERN FILE...
+
+Follow FILE from its end and print only lines matching PATTERN.
+Output stays line buffered, so matches appear as they arrive.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -ge 2 ]] || { echo >&2 "${0##*/}: need a pattern and a file"; exit 1; }
+
+pat=$1
+shift
+tail -n 1 -f "$@" | grep --line-buffered "$pat"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   one arg       -> one-line error on stderr, exit 1
+#   pattern, file -> only matching lines, appearing as written
+#   two files     -> both followed
+#   no match      -> nothing printed, still following
+#   missing file  -> tail's own error
