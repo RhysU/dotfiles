@@ -5,34 +5,28 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h]
+Usage: ${0##*/} [-h] [FILE...]
 
-Read standard input and emit it quoted as a single word bash will
-reproduce verbatim.  Handy for pasting a blob into a command line.
+Emit on stdout how to quote stdin, or FILE, for bash.
 
 Options:
   -h    Show this help and exit
 EOF
 }
 
-while getopts "h" OPT; do
-  case "$OPT" in
-    h) usage; exit 0 ;;
-    *) exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
+[[ ${1-} != -h ]] || { usage; exit 0; }
 
-[[ $# -eq 0 ]] || { echo >&2 "${0##*/}: takes no arguments"; exit 1; }
-
-printf '%q\n' "$(cat)"
+# Capture first, so a failing cat stops us rather than quoting nothing.
+text=$(cat "$@")
+printf '%q\n' "$text"
 
 # To properly test, confirm expected behavior against:
 #   -h              -> usage on stdout, exit 0
-#   -x              -> getopts diagnostic on stderr, exit 1
-#   any argument    -> one-line error on stderr, exit 1
 #   plain word      -> echoed unchanged
 #   spaces, quotes  -> quoted so eval reproduces the input
 #   embedded $HOME  -> quoted, not expanded
 #   empty stdin     -> ''
 #   binary stdin    -> $'...' form
+#   one file        -> that file's contents quoted
+#   two files       -> both, concatenated, as one word
+#   missing file    -> cat's own error, nonzero exit
