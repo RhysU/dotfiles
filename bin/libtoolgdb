@@ -29,5 +29,5 @@ exec libtool --mode=execute "$tool" "$@"
 #   (no args)           -> the tool's own usage through libtool
 #   a libtool binary    -> the tool sees the real executable
 #   -q prog             -> the flag reaches the tool
-#   a name with no libtool prefix -> tries that name, exec says not found
-#   link to a missing tool -> exec fails naming it, exit 127
+#   a name with no libtool prefix -> the whole name reaches libtool as the tool
+#   link naming a tool libtool lacks -> libtool's own complaint and exit status
