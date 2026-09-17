@@ -44,7 +44,6 @@ sd() { conda deactivate "$@"; }
 
 # A variety of alias-like functions (so they may be invoked as commands)
 benicer()  { renice +5 -p $BASHPID; }
-f78()      { fmt -w 78 "$@"; }
 h()        { history "$@" ; }
 okular()   { command okular >&/dev/null "$@"; }
 o()        { octave --silent --persist "$@" ; }

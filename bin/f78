@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Wrap text at seventy-eight columns
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [FILE...]
+
+Wrap FILE at seventy-eight columns, or standard input when given none.
+Pass -- before options meant for fmt.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+exec fmt -w 78 "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   (no args)     -> wraps standard input
+#   one file      -> wraps that file
+#   two files     -> wraps both, as fmt does
+#   -- -s file    -> -s reaches fmt
+#   missing file  -> fmt's own error, nonzero exit
