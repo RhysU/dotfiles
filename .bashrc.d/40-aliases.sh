@@ -91,8 +91,6 @@ alias libtoolvalgrind="libtool --mode=execute valgrind --db-command='gdb -tui -w
 alias libtoolmpiexec=" libtool --mode=execute mpiexec"
 
 
-# Report maximum resident set size of a given command
-maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
 
 # Emit on stdout how to quote stdin for bash
 # Lifted from https://news.ycombinator.com/item?id=24659282

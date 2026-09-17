@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Report the maximum resident set size of a command
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] COMMAND [ARG...]
+
+Run COMMAND and report its peak resident set size in kilobytes.
+Every argument reaches COMMAND untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing command"; exit 1; }
+
+# Spell out the path.  Bare 'time' is a bash keyword with no -f option.
+exec /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h                  -> usage on stdout, exit 0
+#   (no args)           -> one-line error on stderr, exit 1
+#   true                -> reports a size, exit 0
+#   false               -> reports a size, exit 1
+#   grep -h pattern     -> -h reaches grep, not us
+#   nonexistent command -> /usr/bin/time's own error, nonzero exit
