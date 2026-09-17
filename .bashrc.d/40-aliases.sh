@@ -52,9 +52,6 @@ s()        { screen "$@" ; }
 t()        { command time --verbose "$@" ; }
 v()        { vim "$@" ; }
 
-# Screen-handling aware variations on common commands
-
-
 # Make-ish alias-like functions (so they may be invoked as commands)
 m()       { nice make "$@"; }
 mj()      { nice make -j"$(nproc-available)" "$@"; }
@@ -65,24 +62,14 @@ smj()     { V=0 nice make -j"$(nproc-available)" "$@"; }
 smjl()    { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" "$@"; }
 smjlc()   { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" -C "$@"; }
 
-
-
 # Create and change to a directory
 mkcd      () {                 mkdir -vp "$1" && cd    "$1"; }
 mkpushd   () {                 mkdir -vp "$1" && pushd "$1"; }
 rmmkcd    () { rm -rfv "$1" && mkdir -vp "$1" && cd    "$1"; }
 rmmkpushd () { rm -rfv "$1" && mkdir -vp "$1" && pushd "$1"; }
 
-
 # Permit the OS X-like 'open' to work on Linux for one or more files
 open() { for file in "$@"; do xdg-open "$file" & done; }
-
-
-# Shortcuts for working with valgrind and/or libtool
-# Complication for valgrind invocation comes from limited .valgrindrc functionality
-
-
-
 
 # Sometimes one wants to convert an alias into a function for subshells
 convert_alias_to_exported_function() {
@@ -93,4 +80,3 @@ convert_alias_to_exported_function() {
        eval "export -f $1"
     fi
 }
-
