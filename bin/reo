@@ -16,10 +16,15 @@ EOF
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-clear
+# Prefer GNU ls where it is spelled gls, since BSD ls has no --color.
+lsprog="ls"
+command -v gls >/dev/null 2>&1 && lsprog="gls"
+
+# Clear the terminal itself, so a redirected stdout still starts clean.
+clear 2>/dev/null > /dev/tty || true
 boldecho "$PWD"
 echo
-ls --color=auto "$@"     # spell out the colour the ls function used to add
+"$lsprog" --color=auto "$@"
 echo
 
 # To properly test, confirm expected behavior against:
@@ -28,4 +33,6 @@ echo
 #   a directory   -> lists that directory instead
 #   -l            -> long format, as the function gave
 #   colour        -> present on a terminal, absent through a pipe
+#   gls on PATH   -> chosen over ls, as the rc function did
+#   no tty at all -> no clear, no stderr noise, listing still printed
 #   missing path  -> ls's own error, nonzero exit
