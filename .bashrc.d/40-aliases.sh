@@ -77,8 +77,6 @@ rmmkpushd () { rm -rfv "$1" && mkdir -vp "$1" && pushd "$1"; }
 # Permit the OS X-like 'open' to work on Linux for one or more files
 open() { for file in "$@"; do xdg-open "$file" & done; }
 
-# Utility to add a prefix to the second and subsequent parameters
-strpre() { p=$1; shift; for s in "$@"; do echo -n "$p$s "; done }
 
 # Shortcuts for working with valgrind and/or libtool
 # Complication for valgrind invocation comes from limited .valgrindrc functionality
