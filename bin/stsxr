@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Attach to a screen session on a remote host, starting one if needed
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [SSH_ARG...] HOST
+
+Open a terminal on HOST and attach to its screen session, creating the
+session when none is running.  Every argument reaches ssh untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing host"; exit 1; }
+
+exec ssh -t "$@" 'bash -ls -c "screen -xR"'
+
+# To properly test, confirm expected behavior against:
+#   -h                 -> usage on stdout, exit 0
+#   (no args)          -> one-line error on stderr, exit 1
+#   a host             -> attaches, or starts a session and attaches
+#   -p 2222 host       -> -p reaches ssh
+#   user@host          -> works
+#   unreachable host   -> ssh's own error and exit status

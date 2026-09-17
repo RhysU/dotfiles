@@ -75,8 +75,6 @@ mkpushd   () {                 mkdir -vp "$1" && pushd "$1"; }
 rmmkcd    () { rm -rfv "$1" && mkdir -vp "$1" && cd    "$1"; }
 rmmkpushd () { rm -rfv "$1" && mkdir -vp "$1" && pushd "$1"; }
 
-# Idiomatic 'ssh -t hostname screen -xR'
-stsxr() { ssh -t $* 'bash -ls -c "screen -xR"'; }
 
 # Permit the OS X-like 'open' to work on Linux for one or more files
 open() { for file in "$@"; do xdg-open "$file" & done; }
