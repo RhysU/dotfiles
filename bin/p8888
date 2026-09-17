@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Probe the route to 8.8.8.8, preferring mtr over ping
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h]
+
+Report reachability of 8.8.8.8.  Use mtr for a per-hop report when it is
+installed, otherwise fall back to five pings.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 0 ]] || { echo >&2 "${0##*/}: takes no arguments"; exit 1; }
+
+if command -v mtr >/dev/null 2>&1; then
+  exec mtr -rw -G 2 -m 20 -c 5 8.8.8.8
+fi
+exec ping -c 5 8.8.8.8
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   any argument  -> one-line error on stderr, exit 1
+#   mtr present   -> per-hop report, twenty hops, five cycles
+#   mtr absent    -> five pings instead
+#   no network    -> the underlying tool's own failure and exit status
