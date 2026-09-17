@@ -50,7 +50,6 @@ o()        { octave --silent --persist "$@" ; }
 p()        { parallel "$@" ; }
 s()        { screen "$@" ; }
 t()        { command time --verbose "$@" ; }
-tailfull() { command tail -n +1 -F "$@"; }
 tgl()      { pat="$1"; shift; tail -n 1 -f "$@" | grep --line-buffered "$pat"; }
 v()        { vim "$@" ; }
 
