@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Print a file on a freshly cleared screen
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [FILE...]
+
+Clear the screen, then print FILE, or standard input when given none.
+Pass -- before options meant for cat.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# Clear the terminal itself, so a redirected stdout still starts clean.
+clear 2>/dev/null > /dev/tty || true
+
+exec cat "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h             -> usage on stdout, exit 0
+#   -x             -> getopts diagnostic on stderr, exit 1
+#   (no args)      -> clears, then copies standard input
+#   one file       -> clears, then prints it
+#   -- -n file     -> -n reaches cat
+#   stdout to file -> screen still cleared, file holds only the content
+#   no tty at all  -> no clear, content still printed

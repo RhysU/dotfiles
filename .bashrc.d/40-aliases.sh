@@ -53,7 +53,6 @@ t()        { command time --verbose "$@" ; }
 v()        { vim "$@" ; }
 
 # Screen-handling aware variations on common commands
-Cat()     { clear > /dev/tty 2>/dev/null; cat "$@"; }  # Starts on new screen
 Head()    { head -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
 Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
 
