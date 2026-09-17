@@ -6,7 +6,7 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [BOOKMARK]
 
-Open Vim with NERDTree and Tagbar.  Given BOOKMARK, open the tree there.
+Open Vim with NERDTree and Tagbar, at BOOKMARK when given one.
 
 Options:
   -h    Show this help and exit

@@ -6,12 +6,11 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [TAIL_ARG...] [FILE...]
 
-Print the last lines of FILE, one screenful less the line the prompt
-will take.  Read standard input when given no FILE.
-Every argument reaches tail untouched.
+Print exactly one screenful from the end of FILE, or of standard input.
+Leave the last line for the prompt.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
@@ -28,4 +27,4 @@ exec tail -n $((lines - 1)) "$@"
 #   a long file   -> one screenful, prompt still visible
 #   a short file  -> the whole file
 #   -f file       -> -f reaches tail
-#   piped output  -> terminfo's line count, as the function also gave
+#   no TERM       -> twenty-four lines, nothing on stderr

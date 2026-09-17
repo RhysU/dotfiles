@@ -6,10 +6,9 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] COMMAND
 
-Resolve COMMAND on PATH and open the file it names, refusing anything
-file(1) does not call text.  The invoked name supplies the opener, so
-catwhich pages with cat and vimwhich edits with vim.  Symlink a new
-name to gain a new opener: 'ln -s catwhich lesswhich'.
+Open the file behind COMMAND, refusing anything that is not text.
+The invoked name picks the opener, so catwhich pages and vimwhich edits.
+Symlink a new name to gain a new opener: 'ln -s catwhich lesswhich'.
 
 Options:
   -h    Show this help and exit

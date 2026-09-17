@@ -6,19 +6,17 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] PROGRAM [ARG...]
 
-Run PROGRAM under libtool --mode=execute and valgrind, attaching gdb on
-demand.  Apply every .supp file in ~/.valgrind, read at each run rather
-than once at shell startup, which is what .valgrindrc cannot express.
-Every argument reaches valgrind untouched.
+Run PROGRAM under libtool and valgrind, attaching gdb on demand.
+Apply every .supp file in ~/.valgrind.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-# Collect suppressions per run, so a file added today counts today.
+# Collect suppressions per run.
 supps=()
 for supp in "$HOME"/.valgrind/*.supp; do
   [[ -e $supp ]] && supps+=(--suppressions="$supp")

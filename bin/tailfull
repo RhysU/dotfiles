@@ -6,11 +6,11 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [TAIL_ARG...] FILE...
 
-Print FILE whole, then follow it, tracking the name across a rename.
-Every argument reaches tail untouched.
+Follow FILE from its first line rather than its last.
+Track the name across a rename.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

@@ -6,11 +6,10 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] COMMAND [ARG...]
 
-Run COMMAND and report its peak resident set size in kilobytes.
-Every argument reaches COMMAND untouched.
+Report the maximum resident set size of COMMAND, in kilobytes.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
@@ -27,4 +26,5 @@ exec time -f "\nMaximum resident set size (Kb): %M" "$@"
 #   true                -> reports a size, exit 0
 #   false               -> reports a size, exit 1
 #   grep -h pattern     -> -h reaches grep, not us
-#   nonexistent command -> /usr/bin/time's own error, nonzero exit
+#   nonexistent command -> GNU time's own error, nonzero exit
+#   GNU time absent     -> exec fails naming time, exit 127

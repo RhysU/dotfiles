@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Rule off the terminal with a tall banner dated down the right margin
+# Draw a tall horizontal rule across the terminal, HR as in HTML
 set -euo pipefail
 
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [CHAR]
 
-Rule off the terminal with a tall banner of CHAR, defaulting to '#'.
-Stack one line per word of the current date, each word flush right.
+Draw a tall horizontal rule across the terminal, HR as in HTML.
+Rule with CHAR, defaulting to '#', one line per word of the date.
 
 Options:
   -h    Show this help and exit
@@ -27,7 +27,7 @@ shift $((OPTIND - 1))
 # Fall back to a classic terminal, since a failed tput leaves no width.
 cols=$(tput cols 2>/dev/null) || cols=80
 
-# Leave the date unquoted.  Word splitting drives the banner height, since
+# Leave the date unquoted.  Word splitting drives the rule's height, since
 # printf reuses a one-conversion format once per word it is handed.
 # shellcheck disable=SC2046
 printf "%${cols}s\n" $(date) | tr ' ' "${1:-#}"
@@ -36,7 +36,8 @@ printf "%${cols}s\n" $(date) | tr ' ' "${1:-#}"
 #   -h            -> usage on stdout, exit 0
 #   -x            -> getopts diagnostic on stderr, exit 1
 #   two args      -> one-line error on stderr, exit 1
-#   (no args)     -> banner of '#', one line per word of date
-#   '='           -> same banner drawn in '='
+#   (no args)     -> rule of '#', one line per word of date
+#   '='           -> same rule drawn in '='
 #   LC_ALL=C      -> six lines, the date's word count
-#   vim :r!HR     -> banner only, no trailing blank
+#   no TERM       -> eighty columns, nothing on stderr
+#   vim :r!HR     -> rule only, no trailing blank

@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# Run screen in a given directory
+# Run GNU Screen in a given directory, sat being short for Screen At
 set -euo pipefail
 
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] DIR [SCREEN_ARG...]
 
-Change to DIR, then run screen there.
-Every argument after DIR reaches screen untouched.
+Run GNU Screen in DIR, sat being short for Screen At.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

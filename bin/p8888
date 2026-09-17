@@ -6,8 +6,7 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h]
 
-Report reachability of 8.8.8.8.  Use mtr for a per-hop report when it is
-installed, otherwise fall back to five pings.
+Probe the route to 8.8.8.8, preferring mtr over ping.
 
 Options:
   -h    Show this help and exit

@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Clear the screen, then head a directory listing with the working directory
+# Reorient the screen, reo being short for reorient
 set -euo pipefail
 
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [LS_ARG...]
 
-Clear the screen, print the working directory in bold, then list.
-Every argument reaches ls untouched.
+Reorient the screen, reo being short for reorient.
+Clear it, print the working directory in bold, then list.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

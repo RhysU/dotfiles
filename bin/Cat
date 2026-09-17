@@ -6,11 +6,10 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [CAT_ARG...] [FILE...]
 
-Clear the screen, then print FILE, or standard input when given none.
-Every argument reaches cat untouched.
+Print FILE on a freshly cleared screen, or standard input when given none.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

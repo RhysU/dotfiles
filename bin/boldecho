@@ -6,10 +6,10 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [TEXT...]
 
-Print TEXT on stdout in bold, joined by single spaces.
+Print TEXT in bold, joined by single spaces.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

@@ -6,11 +6,11 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [GIT_ARG...]
 
-Clear the screen, list the working directory, echo the git command in
-bold, then run it.  Every argument reaches git untouched.
+Run git on a freshly cleared display with the command line echoed.
+The screen is reoriented by reo, short for reorient.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

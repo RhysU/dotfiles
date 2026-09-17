@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Attach to a screen session on a remote host, starting one if needed
+# Attach to GNU Screen on a remote host, starting a session if needed
 set -euo pipefail
 
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [SSH_ARG...] HOST
 
-Open a terminal on HOST and attach to its screen session, creating the
-session when none is running.  Every argument reaches ssh untouched.
+Attach to GNU Screen on HOST, starting a session if needed.
+The name is short for Start Screen Connection Remote.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
