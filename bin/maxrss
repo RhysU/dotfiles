@@ -18,8 +18,8 @@ EOF
 
 [[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing command"; exit 1; }
 
-# Spell out the path.  Bare 'time' is a bash keyword with no -f option.
-exec /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"
+# After exec, time is a plain word, so GNU time is found wherever PATH puts it.
+exec time -f "\nMaximum resident set size (Kb): %M" "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h                  -> usage on stdout, exit 0
