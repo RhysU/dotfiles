@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Start IPython with pylab already loaded
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [IPYTHON_ARG...]
+
+Start IPython under --pylab.  Every argument reaches ipython untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+exec ipython --pylab "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h              -> usage on stdout, exit 0
+#   (no args)       -> interactive IPython with pylab loaded
+#   -c 'print(1)'   -> -c reaches ipython
+#   a script name   -> runs it under pylab
+#   ipython absent  -> exec fails naming ipython, exit 127

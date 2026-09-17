@@ -65,8 +65,6 @@ smj()     { V=0 nice make -j"$(nproc-available)" "$@"; }
 smjl()    { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" "$@"; }
 smjlc()   { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" -C "$@"; }
 
-# Stop typing "ipython --pylab" all the time
-alias pylab="ipython --pylab"
 
 # Remove ANSI escape sequences from a file
 stresc () { 'sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"''"]"' "$@"; }
