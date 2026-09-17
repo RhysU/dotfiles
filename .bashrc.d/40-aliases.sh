@@ -73,13 +73,13 @@ Git()     ( reo . ; g="$(type -P git)"; boldecho "+ $g${*:+$(printf ' %q' "$@")}
 
 # Make-ish alias-like functions (so they may be invoked as commands)
 m()       { nice make "$@"; }
-mj()      { nice make -j${NPROC:-1} "$@"; }
-mjl()     { nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
-mjlc()    { nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
+mj()      { nice make -j"$(nproc-available)" "$@"; }
+mjl()     { local n; n=$(nproc-available); nice make -j"$n" -l"$n" "$@"; }
+mjlc()    { local n; n=$(nproc-available); nice make -j"$n" -l"$n" -C "$@"; }
 sm()      { V=0 nice make "$@"; }
-smj()     { V=0 nice make -j${NPROC:-1} "$@"; }
-smjl()    { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
-smjlc()   { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
+smj()     { V=0 nice make -j"$(nproc-available)" "$@"; }
+smjl()    { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" "$@"; }
+smjlc()   { local n; n=$(nproc-available); V=0 nice make -j"$n" -l"$n" -C "$@"; }
 
 # Stop typing "ipython --pylab" all the time
 alias pylab="ipython --pylab"
