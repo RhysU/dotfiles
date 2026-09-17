@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Open Vim with NERDTree and Tagbar, optionally at a bookmark
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [BOOKMARK]
+
+Open Vim with NERDTree and Tagbar.  Given BOOKMARK, open the tree there.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -le 1 ]] || { echo >&2 "${0##*/}: at most one bookmark"; exit 1; }
+
+exec vim -c "NERDTree${1+FromBookmark $1}" -c "Tagbar"
+
+# To properly test, confirm expected behavior against:
+#   -h              -> usage on stdout, exit 0
+#   -x              -> getopts diagnostic on stderr, exit 1
+#   two args        -> one-line error on stderr, exit 1
+#   (no args)       -> plain NERDTree alongside Tagbar
+#   a bookmark name -> tree opens at that bookmark
+#   unknown bookmark -> NERDTree's own complaint inside Vim

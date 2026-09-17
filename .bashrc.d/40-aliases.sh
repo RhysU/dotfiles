@@ -90,8 +90,6 @@ alias libtoolgdbtui="  libtool --mode=execute gdb -tui"
 alias libtoolvalgrind="libtool --mode=execute valgrind --db-command='gdb -tui -w %f %p' $(strpre --suppressions= $HOME/.valgrind/*.supp)"
 alias libtoolmpiexec=" libtool --mode=execute mpiexec"
 
-# Open Vim with NERDTree (possibly at some bookmark) and Tagbar
-NERD() { vim -c "NERDTree${1+FromBookmark $1}" -c "Tagbar"; }
 
 # Report maximum resident set size of a given command
 maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
