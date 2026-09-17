@@ -53,7 +53,6 @@ t()        { command time --verbose "$@" ; }
 v()        { vim "$@" ; }
 
 # Screen-handling aware variations on common commands
-Head()    { head -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
 Tail()    { tail -n $(($(tput lines) - 1)) "$@"; }     # Exactly one screenful
 
 # Run git on a freshly cleared display with the command line echoed
