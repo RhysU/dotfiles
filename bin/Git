@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Run git on a freshly cleared display with the command line echoed
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [GIT_ARG...]
+
+Clear the screen, list the working directory, echo the git command in
+bold, then run it.  Every argument reaches git untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+reo .
+git=$(type -P git)
+boldecho "+ $git${*:+$(printf ' %q' "$@")}"
+exec "$git" "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h              -> usage on stdout, exit 0
+#   (no args)       -> cleared screen, echoed path, git's own usage
+#   status          -> echoed command then its output
+#   --version       -> reaches git, not us
+#   -C dir status   -> -C reaches git
+#   an argument with a space -> quoted in the echo, intact for git
+#   git absent      -> type -P fails, nothing echoed
+#   failing git     -> git's exit status reaches the caller

@@ -54,8 +54,6 @@ v()        { vim "$@" ; }
 
 # Screen-handling aware variations on common commands
 
-# Run git on a freshly cleared display with the command line echoed
-Git()     ( reo . ; g="$(type -P git)"; boldecho "+ $g${*:+$(printf ' %q' "$@")}" ; "$g" "$@" )
 
 # Make-ish alias-like functions (so they may be invoked as commands)
 m()       { nice make "$@"; }
