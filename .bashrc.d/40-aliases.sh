@@ -48,7 +48,6 @@ h()        { history "$@" ; }
 okular()   { command okular >&/dev/null "$@"; }
 o()        { octave --silent --persist "$@" ; }
 p()        { parallel "$@" ; }
-smv()      { rsync -avz --remove-source-files "$@"; }
 s()        { screen "$@" ; }
 t()        { command time --verbose "$@" ; }
 tailfull() { command tail -n +1 -F "$@"; }

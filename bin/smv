@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Move files with rsync, so an interrupted transfer can resume
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] SOURCE... DEST
+
+Copy SOURCE to DEST with rsync, removing each source once it has landed.
+Pass -- before options meant for rsync.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -ge 2 ]] || { echo >&2 "${0##*/}: need a source and a destination"; exit 1; }
+
+exec rsync -avz --remove-source-files "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h               -> usage on stdout, exit 0
+#   -x               -> getopts diagnostic on stderr, exit 1
+#   fewer than two args -> one-line error on stderr, exit 1
+#   one file         -> copied, then the source removed
+#   a directory      -> files removed, empty directories left as rsync leaves them
+#   -- --dry-run src dst -> the flag reaches rsync, nothing removed
+#   missing source   -> rsync's own error, nonzero exit
