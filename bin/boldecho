@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Print the arguments in bold
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [TEXT...]
+
+Print TEXT on stdout in bold, joined by single spaces.
+Pass -- before TEXT that begins with a dash.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+printf '\033[1m%s\033[22m\n' "$*"
+
+# To properly test, confirm expected behavior against:
+#   -h            -> usage on stdout, exit 0
+#   -x            -> getopts diagnostic on stderr, exit 1
+#   (no args)     -> an empty bold line, as the function gave
+#   two words     -> both on one line, joined by a space
+#   -- -dashed    -> the dash reaches the output
+#   piped to cat  -> escapes still emitted, as the function did
