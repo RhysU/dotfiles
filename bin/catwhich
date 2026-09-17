@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Open the file behind a command, refusing anything that is not text
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] COMMAND
+
+Resolve COMMAND on PATH and open the file it names, refusing anything
+file(1) does not call text.  The invoked name supplies the opener, so
+catwhich pages with cat and vimwhich edits with vim.  Symlink a new
+name to gain a new opener: 'ln -s catwhich lesswhich'.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+opener="${0##*/}"
+opener="${opener%which}"
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 1 ]] || { echo >&2 "${0##*/}: exactly one command required"; exit 1; }
+
+where=$(command -v -- "$1") || { echo >&2 "${0##*/}: '$1' not found"; exit 1; }
+[[ -f "$where" ]] || { echo >&2 "${0##*/}: '$1' is not an external command"; exit 1; }
+
+mime=$(file --dereference --brief -- "$where")
+case "$mime" in
+  *text*) exec "$opener" "$where" ;;
+esac
+
+printf >&2 '%s: cowardly refusing to %s %s\n%s: %s\n' \
+  "${0##*/}" "$opener" "$where" "${0##*/}" "$mime"
+exit 1
+
+# To properly test, confirm expected behavior against:
+#   catwhich -h            -> usage naming catwhich, exit 0
+#   vimwhich -h            -> same usage naming vimwhich, exit 0
+#   fresh lesswhich link   -> pages with less, no edit to this file
+#   -x                     -> getopts diagnostic on stderr, exit 1
+#   (no args), two args    -> one-line error on stderr, exit 1
+#   catwhich on a script   -> contents on stdout, exit 0
+#   catwhich on a binary   -> refusal naming the type, exit 1
+#   catwhich on a builtin  -> not an external command, exit 1
+#   nonexistent command    -> not found, exit 1
+#   symlinked command      -> follows to the target's type
+#   link to a missing tool -> exec fails naming the opener, exit 127
