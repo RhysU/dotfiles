@@ -20,7 +20,7 @@ EOF
 
 dir=$1
 shift
-cd "$dir"
+cd -- "$dir"
 exec screen "$@"
 
 # To properly test, confirm expected behavior against:
@@ -30,3 +30,4 @@ exec screen "$@"
 #   dir -S name     -> -S reaches screen
 #   missing dir     -> cd's own error, nonzero exit, screen never starts
 #   dir with spaces -> works
+#   a dir named -L  -> entered, not read as an option to cd

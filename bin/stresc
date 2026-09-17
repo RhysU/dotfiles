@@ -16,7 +16,8 @@ EOF
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-exec sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]//g' "$@"
+# Take any run of numeric parameters, so truecolor sequences go too.
+exec sed -r 's/\x1B\[[0-9;]*[mK]//g' "$@"
 
 # To properly test, confirm expected behavior against:
 #   -h                 -> usage on stdout, exit 0
@@ -24,5 +25,6 @@ exec sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]//g' "$@"
 #   a file             -> strips escapes from it
 #   plain text         -> passes through unchanged
 #   ls --color output  -> colour gone, filenames intact
+#   truecolor 38;2;R;G;B -> stripped, unlike the two-parameter original
 #   -i file            -> -i reaches sed and edits in place
 #   missing file       -> sed's own error, nonzero exit
