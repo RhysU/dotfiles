@@ -92,9 +92,6 @@ alias libtoolmpiexec=" libtool --mode=execute mpiexec"
 
 
 
-# Emit on stdout how to quote stdin for bash
-# Lifted from https://news.ycombinator.com/item?id=24659282
-bashquote() { printf '%q\n' "$(cat)" ; }
 
 # Sometimes one wants to convert an alias into a function for subshells
 convert_alias_to_exported_function() {
