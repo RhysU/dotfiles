@@ -59,7 +59,7 @@ for src; do
 done
 exit 0
 
-# TESTED AGAINST THE FOLLOWING:
+# To properly test, confirm expected behavior against:
 #   "20250101 Foo 20260702"           -> skipped (multiple dates)
 #   "20250101 Foo 20260702.pdf"       -> skipped (multiple dates)
 #   "20260702"                        -> skipped (no non-trivial date suffix found)

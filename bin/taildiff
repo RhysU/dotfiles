@@ -109,7 +109,7 @@ while :; do
     last=$SECONDS
 done
 
-# Exercised against, in brief:
+# To properly test, confirm expected behavior against:
 #
 #   options   -h, -a, -e, -i, bad flag, bad interval, missing or
 #             non-regular FILE, absent inotifywait or git
