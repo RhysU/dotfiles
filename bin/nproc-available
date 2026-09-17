@@ -27,11 +27,15 @@ shift $((OPTIND - 1))
 [[ $# -eq 0 ]] || { echo >&2 "${0##*/}: takes no arguments"; exit 1; }
 
 # Count online CPUs, falling back as each source proves unavailable.
+# Capture rather than print, since grep -c emits a 0 before it fails.
 cpu_count() {
-  nproc 2>/dev/null && return
-  getconf _NPROCESSORS_ONLN 2>/dev/null && return
-  grep -c '^processor' /proc/cpuinfo 2>/dev/null && return
-  echo 1
+  local n
+  n=$(nproc 2>/dev/null) ||
+    n=$(getconf _NPROCESSORS_ONLN 2>/dev/null) ||
+    n=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null) ||
+    n=1
+  [[ $n =~ ^[1-9][0-9]*$ ]] || n=1
+  printf '%s\n' "$n"
 }
 
 # Print where the named cgroup filesystem is mounted, cpu controller only for v1.
