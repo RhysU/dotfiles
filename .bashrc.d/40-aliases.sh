@@ -46,11 +46,9 @@ sd() { conda deactivate "$@"; }
 benicer()  { renice +5 -p $BASHPID; }
 boldecho() { printf '\033[1m%s\033[22m\n' "$*"; }
 f78()      { fmt -w 78 "$@"; }
-g()        { grep "$@" ; }
 h()        { history "$@" ; }
 hr()       { printf "%$(tput cols)s\n"|tr " " "${1:-#}"; }
 HR()       { printf "%$(tput cols)s\n" $(date)|tr " " "${1:-}#"; }
-M()        { module "$@" ; }
 okular()   { command okular >&/dev/null "$@"; }
 o()        { octave --silent --persist "$@" ; }
 p8888()    { if command -v mtr >/dev/null 2>&1; then mtr -rw -G 2 -m 20 -c 5 8.8.8.8; else ping -c 5 8.8.8.8; fi; }
@@ -83,15 +81,6 @@ smj()     { V=0 nice make -j${NPROC:-1} "$@"; }
 smjl()    { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} "$@"; }
 smjlc()   { V=0 nice make -j${NPROC:-1} -l${NPROC:-1} -C "$@"; }
 
-# Recursively grep through files in parallel, e.g. chat logs.
-# From http://stackoverflow.com/questions/9066609/fastest-possible-grep
-# These days, however, Ag (aka "the silver searcher") or Ack are preferred
-parallelgrep() {
-   path="$1"
-   shift
-   find "$path" -type f | parallel -k -j150% -n 1000 -m grep -H "$@" {}
-}
-
 # Stop typing "ipython --pylab" all the time
 alias pylab="ipython --pylab"
 
@@ -115,7 +104,6 @@ strpre() { p=$1; shift; for s in "$@"; do echo -n "$p$s "; done }
 
 # Shortcuts for working with valgrind and/or libtool
 # Complication for valgrind invocation comes from limited .valgrindrc functionality
-alias libtoolcgdb="    libtool --mode=execute cgdb"
 alias libtoolddd="     libtool --mode=execute ddd"
 alias libtoolgdb="     libtool --mode=execute gdb"
 alias libtoolgdbtui="  libtool --mode=execute gdb -tui"
@@ -124,12 +112,6 @@ alias libtoolmpiexec=" libtool --mode=execute mpiexec"
 
 # Open Vim with NERDTree (possibly at some bookmark) and Tagbar
 NERD() { vim -c "NERDTree${1+FromBookmark $1}" -c "Tagbar"; }
-
-# Build C source in a very restrictive manner
-# Taken from the GNU GSL HACKING file
-makestrict () {
-    make "$@" CFLAGS="-ansi -pedantic -Werror -W -Wall -Wtraditional -Wconversion -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -fshort-enums -fno-common -Wmissing-prototypes -Wnested-externs -Dinline= -g -O4"
-}
 
 # Report maximum resident set size of a given command
 maxrss() { /usr/bin/time -f "\nMaximum resident set size (Kb): %M" "$@"; }
