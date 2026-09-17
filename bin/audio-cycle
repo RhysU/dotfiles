@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # audio-cycle: Cycle through pre-defined audio sink/source pairs
 #              so that both speakers and microphones change together
 #              Moves whichever half is present, so a missing microphone

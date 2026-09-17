@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Replace every line in the standard input with the URL to which it redirects
 set -euo pipefail
 while IFS= read -r line; do
