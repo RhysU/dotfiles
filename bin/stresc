@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Strip ANSI colour escapes from a file or from standard input
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [SED_ARG...] [FILE...]
+
+Remove SGR and erase-line escape sequences from FILE, or from standard
+input when given none.  Every argument reaches sed untouched.
+
+Options:
+  -h    Show this help and exit, when given first
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+exec sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]//g' "$@"
+
+# To properly test, confirm expected behavior against:
+#   -h                 -> usage on stdout, exit 0
+#   (no args)          -> strips escapes from standard input
+#   a file             -> strips escapes from it
+#   plain text         -> passes through unchanged
+#   ls --color output  -> colour gone, filenames intact
+#   -i file            -> -i reaches sed and edits in place
+#   missing file       -> sed's own error, nonzero exit
