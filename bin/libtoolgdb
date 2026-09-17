@@ -6,13 +6,12 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] PROGRAM [ARG...]
 
-Run PROGRAM under libtool --mode=execute.  The invoked name supplies the
-tool, so libtoolgdb runs gdb and libtoolddd runs ddd.  Symlink a new name
-to gain a new tool: 'ln -s libtoolgdb libtoolnm'.
-Every argument reaches the tool untouched.
+Run PROGRAM under libtool, so the tool sees the real binary.
+The invoked name picks the tool, so libtoolgdb runs gdb and libtoolddd ddd.
+Symlink a new name to gain a new tool: 'ln -s libtoolgdb libtoolnm'.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 
@@ -30,4 +29,5 @@ exec libtool --mode=execute "$tool" "$@"
 #   (no args)           -> the tool's own usage through libtool
 #   a libtool binary    -> the tool sees the real executable
 #   -q prog             -> the flag reaches the tool
+#   a name with no libtool prefix -> tries that name, exec says not found
 #   link to a missing tool -> exec fails naming it, exit 127

@@ -6,11 +6,11 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] PATTERN FILE...
 
-Follow FILE from its end and print only lines matching PATTERN.
-Output stays line buffered, so matches appear as they arrive.
+Follow FILE, showing only the lines matching PATTERN.
+The name is short for Tail Grep Lines.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

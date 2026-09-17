@@ -6,11 +6,11 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [RSYNC_ARG...] SOURCE... DEST
 
-Copy SOURCE to DEST with rsync, removing each source once it has landed.
-Every argument reaches rsync untouched.
+Move SOURCE to DEST with rsync, so an interrupted transfer can resume.
+Remove each source once it has landed.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

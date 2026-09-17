@@ -6,10 +6,8 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h]
 
-Print the number of CPUs this process may actually use.  Start from the
-online count, which respects affinity but not CFS quota, then clamp to
-the tightest quota on this process's cgroup or any ancestor, under both
-cgroup v2 and v1.  Never report less than one.
+Report usable CPUs, honoring CPU affinity and every cgroup CPU quota.
+Never report less than one.
 
 Options:
   -h    Show this help and exit

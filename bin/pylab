@@ -6,10 +6,10 @@ usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [IPYTHON_ARG...]
 
-Start IPython under --pylab.  Every argument reaches ipython untouched.
+Start IPython with pylab already loaded.
 
 Options:
-  -h    Show this help and exit, when given first
+  -h    Show this help and exit
 EOF
 }
 

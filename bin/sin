@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Run screen in each of several directories, in sorted order
+# Run GNU Screen in each directory, sin being short for Screen IN
 set -euo pipefail
 
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] DIR...
 
-Sort DIR the way a person reads numbers, so run2 comes before run10, then
-run screen in each in turn, waiting for each to exit before the next.
+Run GNU Screen in each DIR, sin being short for Screen IN.
+Take them in order, so run2 precedes run10, and wait for each to exit.
 
 Options:
   -h    Show this help and exit
