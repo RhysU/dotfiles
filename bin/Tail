@@ -8,6 +8,7 @@ Usage: ${0##*/} [-h] [TAIL_ARG...] [FILE...]
 
 Print exactly one screenful from the end of FILE, or of standard input.
 Leave the last line for the prompt.
+Paint it with vim on a terminal, coloured as view shows it, then exit.
 
 Options:
   -h    Show this help and exit
@@ -19,12 +20,41 @@ EOF
 # Fall back to a classic terminal, since a failed tput leaves -1 lines.
 lines=$(tput lines 2>/dev/null) || lines=24
 
+# Colour one named file on a terminal.  The slice keeps its basename,
+# since vim reads the syntax from the name and a stdin buffer carries none.
+# Emptying t_ti and t_te keeps vim off the alternate screen, so what it
+# paints survives its own exit and no keypress is owed.
+if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' EXIT
+  tail -n $((lines - 1)) -- "$1" > "$work/${1##*/}"
+  paint=(
+    vim -XR -u NONE -N                                  # no vimrc, no plugins
+    --cmd 'set t_ti= t_te='                             # off the alternate screen
+    --cmd 'set shortmess+=F'                            # no "7L, 134B" line
+    -c 'syntax on'                                      # also detects the filetype
+    -c 'set nonumber laststatus=0 noruler noshowcmd'
+    -c "let &fillchars = 'eob: '"                       # blanks below, not tildes
+    -c 'redraw' -c 'q'
+  )
+  "${paint[@]}" "$work/${1##*/}"
+  exit
+fi
+
 exec tail -n $((lines - 1)) "$@"
 
 # To properly test, confirm expected behavior against:
-#   -h            -> usage on stdout, exit 0
-#   (no args)     -> one screenful of standard input
-#   a long file   -> one screenful, prompt still visible
-#   a short file  -> the whole file
-#   -f file       -> -f reaches tail
-#   no TERM       -> twenty-four lines, nothing on stderr
+#   -h              -> usage on stdout, exit 0
+#   (no args)       -> one screenful of standard input
+#   a long file     -> one screenful, prompt still visible
+#   a short file    -> the whole file
+#   -f file         -> -f reaches tail
+#   no TERM         -> twenty-four lines, nothing on stderr
+#   one file on a tty -> coloured, prompt straight back, no keypress
+#   alternate screen  -> never entered, so the text stays after vim exits
+#   vim's file message, tildes -> suppressed, nothing but the content
+#   a file shorter than the screen -> blanks below it, as vim paints rows
+#   piped           -> plain, so Tail file | tail -1 still works
+#   two files       -> plain, headers as tail gives them
+#   slice name      -> the temp copy carries the basename, or syntax is lost
+#   temp dir        -> removed on exit, including when vim fails
