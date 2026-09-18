@@ -23,7 +23,9 @@ lines=$(tput lines 2>/dev/null) || lines=24
 # Colour one named file on a terminal.  The slice keeps its basename,
 # since vim reads the syntax from the name and a stdin buffer carries none.
 # Emptying t_ti and t_te keeps vim off the alternate screen, so what it
-# paints survives its own exit and no keypress is owed.
+# paints survives its own exit and no keypress is owed.  Emptying t_fe and
+# t_BE stops vim enabling focus and paste reporting: it quits without
+# entering its input loop, so a terminal's reply would reach the shell.
 if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
   work=$(mktemp -d)
   trap 'rm -rf "$work"' EXIT
@@ -31,6 +33,7 @@ if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
   paint=(
     vim -XR -u NONE -N                                  # no vimrc, no plugins
     --cmd 'set t_ti= t_te='                             # off the alternate screen
+    --cmd 'set t_fe= t_fd= t_BE= t_BD='                 # ask the terminal nothing
     --cmd 'set shortmess+=F'                            # no "7L, 134B" line
     -c 'syntax on'                                      # also detects the filetype
     -c 'set nonumber laststatus=0 noruler noshowcmd'
