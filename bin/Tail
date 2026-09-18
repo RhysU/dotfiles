@@ -65,3 +65,12 @@ exec tail -n $((lines - 1)) "$@"
 #   two files       -> plain, headers as tail gives them
 #   slice name      -> the temp copy carries the basename, or syntax is lost
 #   temp dir        -> removed on exit, including when vim fails
+#
+# Screen behaviour needs a real terminal, since a script(1) pty neither
+# answers vim's queries nor renders what it paints.  Use tmux:
+#   tmux new-session -d -s p -x 80 -y 24 'bash --norc'
+#   tmux send-keys -t p "PS1='P> '; clear" Enter
+#   tmux send-keys -t p 'Tail FILE' Enter
+#   tmux capture-pane -t p -p | grep -n .
+# The prompt should sit on the row directly below the last content line,
+# for a one-line file and for one filling the screen alike.
