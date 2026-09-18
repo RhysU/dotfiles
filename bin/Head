@@ -38,6 +38,10 @@ if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
     -c 'redraw' -c 'q'
   )
   "${paint[@]}" "$work/${1##*/}"
+  # Vim paints every row it owns and leaves the cursor on the last.  Put it
+  # back under the text and erase below, so the prompt follows the content.
+  # Count with grep, not wc, which misses a last line lacking its newline.
+  printf '\033[%d;1H\033[J' "$(( $(grep -c '' "$work/${1##*/}") + 1 ))"
   exit
 fi
 
