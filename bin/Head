@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Print exactly one screenful from the top of a file
+# Print exactly one screenful of a file, from its top or from its end
 set -euo pipefail
+
+# The invoked name picks the tool, so Head runs head and Tail runs tail.
+tool="${0##*/}"
+tool="${tool,,}"
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h] [HEAD_ARG...] [FILE...]
+Usage: ${0##*/} [-h] [${tool^^}_ARG...] [FILE...]
 
-Print exactly one screenful from the top of FILE, or of standard input.
+Print exactly one screenful of FILE through $tool, or of standard input.
 Leave the last line for the prompt.
-Paint it with vim on a terminal, coloured as view shows it, then exit.
+Colour it with vim on a terminal, as view does, then exit.
+Symlink a new name to gain a new tool: 'ln -s Head Tail'.
 
 Options:
   -h    Show this help and exit
@@ -29,7 +34,7 @@ lines=$(tput lines 2>/dev/null) || lines=24
 if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
   work=$(mktemp -d)
   trap 'rm -rf "$work"' EXIT
-  head -n $((lines - 1)) -- "$1" > "$work/${1##*/}"
+  "$tool" -n $((lines - 1)) -- "$1" > "$work/${1##*/}"
   paint=(
     vim -XR -u NONE -N                                  # no vimrc, no plugins
     --cmd 'set t_ti= t_te='                             # off the alternate screen
@@ -48,23 +53,24 @@ if [[ -t 1 && $# -eq 1 && -r ${1-} ]]; then
   exit
 fi
 
-exec head -n $((lines - 1)) "$@"
+exec "$tool" -n $((lines - 1)) "$@"
 
 # To properly test, confirm expected behavior against:
-#   -h              -> usage on stdout, exit 0
+#   Head -h, Tail -h -> usage naming the invoked one, exit 0
 #   (no args)       -> one screenful of standard input
 #   a long file     -> one screenful, prompt still visible
 #   a short file    -> the whole file
-#   -c 10 file      -> -c reaches head and wins over our -n
+#   Head -c 10 file -> -c reaches head and wins over our -n
+#   Tail -f file    -> -f reaches tail
 #   no TERM         -> twenty-four lines, nothing on stderr
 #   one file on a tty -> coloured, prompt straight back, no keypress
 #   alternate screen  -> never entered, so the text stays after vim exits
 #   vim's file message, tildes -> suppressed, nothing but the content
-#   a file shorter than the screen -> blanks below it, as vim paints rows
 #   piped           -> plain, so Head file | tail -3 still works
-#   two files       -> plain, headers as head gives them
+#   two files       -> plain, headers as head and tail give them
 #   slice name      -> the temp copy carries the basename, or syntax is lost
 #   temp dir        -> removed on exit, including when vim fails
+#   a link named neither -> exec fails naming the derived tool, exit 127
 #
 # Screen behaviour needs a real terminal, since a script(1) pty neither
 # answers vim's queries nor renders what it paints.  Use tmux:
