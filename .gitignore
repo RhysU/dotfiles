@@ -1,2 +1,3 @@
-.gitconfig.local
 .bashrc.d/*.local.sh
+.config/rclone/rclone.conf
+.gitconfig.local
