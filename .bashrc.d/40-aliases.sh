@@ -1,21 +1,3 @@
-# Maintain dotfiles within a bare git repository, adopted from
-# https://developer.atlassian.com/blog/2016/02/best-way-to-store-dotfiles-git-bare-repo/
-dotfiles() { command git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"; }
-dotfiles-install() {
-  (
-    set -ex
-    dotfiles init
-    dotfiles config --local status.showUntrackedFiles no
-    dotfiles remote add origin "git@github.com:RhysU/dotfiles.git"
-    dotfiles fetch
-    dotfiles checkout origin/master -ft
-    dotfiles submodule init
-    dotfiles submodule update
-  )
-}
-# Third:
-#   Fire up vim and run :BundleUpdate
-
 # Add color to basic commands when possible, even where GNU is spelled 'gls'
 function egrep() { command egrep --color=auto "$@"; }
 function fgrep() { command fgrep --color=auto "$@"; }
