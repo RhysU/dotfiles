@@ -13,8 +13,9 @@ Run git on the bare repository holding these dotfiles.
 The repository lives in ~/.dotfiles and its work tree is ~.
 
 Commands:
-  install [REPO]  Check out REPO into ~ on a fresh machine, then Vundle's plugins
-                  REPO defaults to $default_repo
+  install [REPO]  Check out REPO into ~ on a fresh machine,
+                  then Vundle's plugins with
+                  REPO defaulting to $default_repo
   add, commit, push, pull, ...
                   Any git subcommand, run on ~/.dotfiles
 
