@@ -135,17 +135,40 @@ if exists('+signcolumn')
     set signcolumn=yes
 endif
 
-" Keep swap and write-backup files off the edited file's filesystem
-" Mirror Neovim's XDG layout but drop '.' so FUSE mounts stay clean
-if !has('nvim')
-    let s:state = (empty($XDG_STATE_HOME) ? $HOME . '/.local/state' : $XDG_STATE_HOME) . '/vim'
-    call mkdir(s:state . '/swap', 'p', 0700)
-    call mkdir(s:state . '/backup', 'p', 0700)
-    " Fall back to bare names where NAME_MAX is short, as on ecryptfs
-    let &directory = s:state . '/swap//,' . s:state . '/swap'
-    let &backupdir = s:state . '/backup//,' . s:state . '/backup'
-endif
-" Rewrite in place so bind mounts, watchers, and FUSE keep the inode
+" List FUSE mount points, rereading so late mounts count
+" Decode the octal escapes /proc/self/mounts uses for spaces
+function! s:FuseMounts()
+    if !filereadable('/proc/self/mounts')
+        return []
+    endif
+    let fields = map(readfile('/proc/self/mounts'), {_, l -> split(l)})
+    call filter(fields, {_, f -> f[2] =~# '^fuse\(\.\|$\)'})
+    return map(fields, {_, f -> substitute(f[1], '\\\(\o\o\o\)',
+                \ '\=nr2char(str2nr(submatch(1), 8))', 'g')})
+endfunction
+
+function! s:OnFuse(file)
+    let path = resolve(fnamemodify(a:file, ':p'))
+    return !empty(filter(s:FuseMounts(), {_, m -> stridx(path, m . '/') == 0}))
+endfunction
+
+" Skip write backups on FUSE, trading a failed write's safety for no litter
+let s:backupskip = &backupskip
+function! s:FuseBackupskip()
+    let skips = map(s:FuseMounts(), {_, m -> escape(m, '\,') . '/*'})
+    let &backupskip = join(filter([s:backupskip] + skips, '!empty(v:val)'), ',')
+endfunction
+
+" Keep swap files off FUSE mounts, which choke on them and may be encrypted
+" Elsewhere keep sidecar swaps so concurrent editors still warn each other
+augroup vimrc_fuse
+    autocmd!
+    autocmd BufReadPre,BufNewFile *
+                \ if s:OnFuse(expand('<afile>')) | setlocal noswapfile | endif
+    autocmd BufWritePre * call s:FuseBackupskip()
+augroup END
+
+" Rewrite in place so bind mounts and file watchers keep the inode
 set backupcopy=yes
 
 " Some useful personal macros
