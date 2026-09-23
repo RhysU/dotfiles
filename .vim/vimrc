@@ -135,6 +135,19 @@ if exists('+signcolumn')
     set signcolumn=yes
 endif
 
+" Keep swap and write-backup files off the edited file's filesystem
+" Mirror Neovim's XDG layout but drop '.' so FUSE mounts stay clean
+if !has('nvim')
+    let s:state = (empty($XDG_STATE_HOME) ? $HOME . '/.local/state' : $XDG_STATE_HOME) . '/vim'
+    call mkdir(s:state . '/swap', 'p', 0700)
+    call mkdir(s:state . '/backup', 'p', 0700)
+    " Fall back to bare names where NAME_MAX is short, as on ecryptfs
+    let &directory = s:state . '/swap//,' . s:state . '/swap'
+    let &backupdir = s:state . '/backup//,' . s:state . '/backup'
+endif
+" Rewrite in place so bind mounts, watchers, and FUSE keep the inode
+set backupcopy=yes
+
 " Some useful personal macros
 noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\><CR>
 noremap =4 :set tabstop=4 shiftwidth=4 softtabstop=4<CR>
