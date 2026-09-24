@@ -7,7 +7,6 @@ Activision
 AdaBoost
 AdaptableGenerator
 adjoints
-Adjoints
 aerocapture
 aeroheating
 aerothermal
@@ -34,7 +33,6 @@ Altman
 Amitava
 Andrij
 anecdata
-Anecdata
 Anglin
 Anil
 Aniszczyk
@@ -73,17 +71,14 @@ Auditorum
 AUM
 AustinVentures
 autoconf
-Autoconf
 Autoconf's
 autocovariance
-Autocovariance
 Autocovariances
 autodetected
 automake
 automatable
 autoreconf
 autoregression
-autotools
 Autotools
 autotuned
 autotuning
@@ -152,9 +147,7 @@ bumpless
 Burkardt
 Burnet
 bytevector
-Bytevector
 bytevectors
-Bytevectors
 C99
 cabletow
 Califa
@@ -253,7 +246,6 @@ Demiurge's
 Demkowicz
 Demmel
 deregister
-Deregister
 deregistering
 deserialization
 Deserialize
@@ -267,7 +259,6 @@ diabatic
 dicts
 Dieterich
 diffusivities
-Diffusivities
 digamma
 dilatational
 Dilijan
@@ -321,7 +312,6 @@ Ellenberger
 Elsevier
 Endahl
 endian
-Endian
 Engquist
 ensembling
 enthalpy
@@ -444,7 +434,6 @@ heapq
 heatshield
 Heckendorn
 heightism
-Heightism
 heightism's
 heightist
 Heilmeier
@@ -473,7 +462,6 @@ Hundal
 Hunte
 Hurvich
 hyperparameter
-Hyperparameter
 hyperparameters
 hyperslab
 hypersonics
@@ -564,7 +552,6 @@ kwargs
 Kwok
 L2
 laminarescence
-Laminarescence
 laminarescent
 Langou
 Laodiceans
@@ -715,14 +702,11 @@ noncentral
 noncentrality
 nondealiased
 nondimensional
-Nondimensional
 nondimensionalization
 nondimensionalize
-Nondimensionalize
 nondimensionalized
 nondimensionalizes
 nondimensionalizing
-Nondimensionalizing
 nondimensionally
 nonevolution
 nonintrusive
@@ -731,7 +715,6 @@ Nonlinearity
 nonoscillatory
 nonreacting
 nonreflecting
-Nonreflecting
 nonstationarity
 nonsymmetric
 nontrivially
@@ -879,7 +862,6 @@ recomputations
 reconducted
 recordkeeping
 recurse
-Recurse
 Redmine
 Redux
 reentrancy
@@ -1025,7 +1007,6 @@ Stankovic
 Stankovics
 stateful
 stationarity
-Stationarity
 stderr
 STDERR
 stdin
@@ -1095,9 +1076,7 @@ Tecplot
 Temin
 templated
 templating
-Templating
 tensorially
-Tensorially
 terabyte
 Terwilleger
 test-eqv
@@ -1264,8 +1243,6 @@ equivariance
 equivariant
 equivariantly
 nondeterministic
-Counterintuitive
 counterintuitive
-Nerdsniping
 nerdsniping
 Kafkatrap
