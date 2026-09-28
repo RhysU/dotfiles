@@ -7,7 +7,7 @@ default_repo="git@github.com:RhysU/dotfiles.git"
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h] [install [REPO] | GIT_ARG...]
+Usage: ${0##*/} [-h] [install [REPO] | update | GIT_ARG...]
 
 Run git on the bare repository holding these dotfiles.
 The repository lives in ~/.dotfiles and its work tree is ~.
@@ -16,6 +16,7 @@ Commands:
   install [REPO]  Check out REPO into ~ on a fresh machine,
                   then Vundle's plugins with
                   REPO defaulting to $default_repo
+  update          Pull with rebase, then update submodules
   add, commit, push, pull, ...
                   Any git subcommand, run on ~/.dotfiles
 
@@ -60,6 +61,16 @@ install() (
   vim +BundleUpdate +qall
 )
 
+# Run in a subshell, confining set -x and cd to the update
+update() (
+  local self
+  self=$(realpath -- "$0")
+  cd "$HOME"
+  set -x
+  "$self" pull --rebase
+  "$self" submodule update --init --recursive
+)
+
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
 # Claim install, since git has no such subcommand
@@ -67,6 +78,14 @@ if [[ ${1-} = install ]]; then
   [[ ${2-} != -h ]] || { usage; exit 0; }
   [[ $# -le 2 ]] || { echo >&2 "${0##*/}: install takes at most one REPO"; exit 1; }
   install "${2-$default_repo}"
+  exit 0
+fi
+
+# Claim update, since git has no such subcommand
+if [[ ${1-} = update ]]; then
+  [[ ${2-} != -h ]] || { usage; exit 0; }
+  [[ $# -le 1 ]] || { echo >&2 "${0##*/}: update takes no arguments"; exit 1; }
+  update
   exit 0
 fi
 
@@ -95,3 +114,8 @@ command git "--git-dir=$HOME/.dotfiles" "--work-tree=$HOME" "$@"
 #   install twice   -> refuses over ~/.dotfiles, exit 1
 #   Vundle present  -> refuses over Vundle.vim, no ~/.dotfiles, exit 1
 #   trace           -> ends at vim, no "+ exit 0"
+#   update          -> pull and submodule steps echoed, exit 0
+#   update from /   -> works as from ~
+#   update a        -> one-line error on stderr, exit 1
+#   update -h       -> usage on stdout, exit 0
+#   failing pull    -> no submodule step, nonzero exit
