@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Search on a freshly cleared display with the command line echoed
+set -euo pipefail
+
+# The invoked name picks the tool, so Grep runs grep, EGrep egrep, Ag ag.
+tool="${0##*/}"
+tool="${tool,,}"
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] [${tool^^}_ARG...]
+
+Run $tool on a freshly cleared display with the command line echoed.
+The screen is reoriented by reo, short for reorient.
+Symlink a new name to gain a new tool: 'ln -s Grep Ag'.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+# Colour grep and egrep as the aliases do.  Ag colours a terminal unasked.
+case "$tool" in
+  grep|egrep) color=--color=auto ;;
+  *)          color= ;;
+esac
+
+reo .
+prog=$(type -P "$tool")
+set -- ${color:+"$color"} "$@"
+boldecho "+ $prog${*:+$(printf ' %q' "$@")}"
+exec "$prog" "$@"
+
+# To properly test, confirm expected behavior against:
+#   Grep -h, Ag -h  -> usage naming the invoked one, exit 0
+#   EGrep 'a|b'     -> egrep runs, alternation matches, --color=auto echoed
+#   Grep foo file   -> cleared screen, echoed command with --color=auto
+#   Ag foo          -> echoed command without --color=auto
+#   colour          -> present on a terminal, absent through a pipe
+#   an argument with a space -> quoted in the echo, intact for the tool
+#   -r, -i, --      -> reach the tool, not us
+#   no match        -> the tool's exit status 1 reaches the caller
+#   tool absent     -> type -P fails, nothing echoed
