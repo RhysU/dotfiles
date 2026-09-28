@@ -1,0 +1,6 @@
+[submodule "Stow/gplot"]
+	path = Stow/gplot
+	url = https://github.com/RhysU/gplot
+[submodule "Stow/c99sh"]
+	path = Stow/c99sh
+	url = https://github.com/RhysU/c99sh
