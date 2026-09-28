@@ -21,10 +21,10 @@ EOF
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
 
-# Colour grep and egrep as the aliases do, naming file and line of each
-# match.  Ag does all three on a terminal unasked.
+# Colour grep and egrep as the aliases do, numbering each match.
+# Ag does both on a terminal unasked.
 case "$tool" in
-  grep|egrep) set -- --color=auto --with-filename --line-number "$@" ;;
+  grep|egrep) set -- --color=auto --line-number "$@" ;;
 esac
 
 reo .
@@ -36,9 +36,9 @@ exec "$prog" "$@"
 #   Grep -h, Ag -h  -> usage naming the invoked one, exit 0
 #   EGrep 'a|b'     -> egrep runs, alternation matches, flags echoed
 #   Grep foo file   -> cleared screen, echoed command with --color=auto,
-#                      matches prefixed file:line: even for one file
+#                      matches prefixed line: for one file
 #   Grep -h foo     -> usage, not grep's --no-filename
-#   Grep foo -h     -> -h reaches grep, dropping the filename
+#   Grep foo -h a b -> -h reaches grep, dropping filenames
 #   Ag foo          -> echoed command without the grep flags
 #   colour          -> present on a terminal, absent through a pipe
 #   an argument with a space -> quoted in the echo, intact for the tool
