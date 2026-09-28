@@ -1,6 +1,5 @@
 # Add color to basic commands when possible, even where GNU is spelled 'gls'
 function egrep() { command egrep --color=auto "$@"; }
-function fgrep() { command fgrep --color=auto "$@"; }
 function grep()  { command grep  --color=auto "$@"; }
 if command -v gls >/dev/null 2>&1; then
     ls() { command gls --color=auto "$@"; }
@@ -10,7 +9,7 @@ fi
 
 # "H foo" searches history for "foo" ignoring other "H anything" entries
 # Additional magic present to remove duplicate commands when nonconsecutive
-H() { history | egrep -v '^ *[[:digit:]]+ +H +' | grep "$@" | sort -rk 2 | uniq -f 1 | sort; }
+H() { history | grep -Ev '^ *[[:digit:]]+ +H +' | grep "$@" | sort -rk 2 | uniq -f 1 | sort; }
 
 # I am tired of having view not colorize things
 view() { vim -XR "$@"; }
