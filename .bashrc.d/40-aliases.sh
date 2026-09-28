@@ -1,6 +1,6 @@
 # Add color to basic commands when possible, even where GNU is spelled 'gls'
-function egrep() { command egrep --color=auto "$@"; }
-function grep()  { command grep  --color=auto "$@"; }
+function egrep() { command grep --color=auto --extended-regexp "$@"; }
+function grep()  { command grep --color=auto "$@"; }
 if command -v gls >/dev/null 2>&1; then
     ls() { command gls --color=auto "$@"; }
 else
