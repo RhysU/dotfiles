@@ -1,9 +1,14 @@
 {
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  },
   "tui": "fullscreen",
+  "voice": {
+    "enabled": false,
+    "mode": "hold"
+  },
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "env": {
-    "DISABLE_AUTOUPDATER": "1"
-  }
+  "voiceEnabled": false
 }
