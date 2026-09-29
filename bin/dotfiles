@@ -68,8 +68,8 @@ update() (
   cd "$HOME"
   set -x
   "$self" pull --rebase
-  "$self" submodule update --init --recursive
-  "$self" submodule update --remote --recursive
+  "$self" submodule update --init   --recursive  # Exactly pinned version...
+  "$self" submodule update --remote --recursive  # ...possibly moving forward
 )
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
