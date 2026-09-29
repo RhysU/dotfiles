@@ -69,6 +69,7 @@ update() (
   set -x
   "$self" pull --rebase
   "$self" submodule update --init --recursive
+  "$self" submodule update --remote --recursive
 )
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
