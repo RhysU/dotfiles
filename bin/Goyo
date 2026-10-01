@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Open a file in Vim in Goyo's distraction-free mode
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] FILE
+
+Open FILE in Vim in Goyo's distraction-free mode.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+while getopts "h" OPT; do
+  case "$OPT" in
+    h) usage; exit 0 ;;
+    *) exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[[ $# -eq 1 ]] || { usage >&2; exit 1; }
+
+exec vim -c "Goyo" -- "$1"
+
+# To properly test, confirm expected behavior against:
+#   -h             -> usage on stdout, exit 0
+#   -x             -> getopts diagnostic on stderr, exit 1
+#   (no args)      -> usage on stderr, exit 1
+#   two args       -> usage on stderr, exit 1
+#   an extant file -> that file, centered and soft-wrapped
+#   a missing file -> new buffer under that name, likewise centered
+#   a file named -foo -> edited, not parsed as a flag
