@@ -146,8 +146,6 @@ noremap =d :set bg=dark<CR>
 noremap =D :set bg=light<CR>
 noremap =e :retab<CR>
 noremap =f !}fmt -w 78 -g 75 -c<CR>
-noremap =G :Goyo<CR>
-noremap =L :Limelight!!<CR>
 noremap == i 
 noremap =s !}sort<CR>
 noremap =u !}sort -u<CR>
@@ -225,10 +223,12 @@ endfunction
 " Toggle several useful settings at a few keystrokes
 " https://jeffdaly.wordpress.com/2008/05/06/vim-easily-toggle-cursorcolumn-and-cursorline/
 " http://vim.wikia.com/wiki/Highlight_current_line
+noremap <silent> <Leader>\| :set cursorcolumn!       <CR>:set cursorcolumn?<CR>
+noremap <silent> <Leader>g  :Goyo                    <CR>
+noremap <silent> <Leader>l  :Limelight!!             <CR>
 noremap <silent> <Leader>N  :call NERDTreePortrait() <CR>
 noremap <silent> <Leader>n  :NERDTreeToggle          <CR>
 noremap <silent> <Leader>p  :set paste!              <CR>:set paste?       <CR>
-noremap <silent> <Leader>\| :set cursorcolumn!       <CR>:set cursorcolumn?<CR>
 noremap <silent> <Leader>-  :set cursorline!         <CR>:set cursorline?  <CR>
 noremap <silent> <Leader>#  :set number!             <CR>:set number?      <CR>
 noremap <silent> <Leader>S  :set spell!              <CR>:set spell?       <CR>
