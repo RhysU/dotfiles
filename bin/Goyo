@@ -4,9 +4,12 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-Usage: ${0##*/} [-h] FILE
+Usage: ${0##*/} [-h] FILE [NEEDLE]
 
 Open FILE in Vim in Goyo's distraction-free mode.
+Given NEEDLE, a fixed string, open at its first matching line.
+Requires Vim plugin https://github.com/junegunn/goyo.vim.
+Requires Vim plugin https://github.com/bogado/file-line.
 
 Options:
   -h    Show this help and exit
@@ -21,15 +24,27 @@ while getopts "h" OPT; do
 done
 shift $((OPTIND - 1))
 
-[[ $# -eq 1 ]] || { usage >&2; exit 1; }
+[[ $# -eq 1 || $# -eq 2 ]] || { usage >&2; exit 1; }
+[[ $# -eq 1 ]] && exec vim -c "Goyo" -- "$1"
 
-exec vim -c "Goyo" -- "$1"
+[[ -f $1 ]] || { echo "${0##*/}: no such file $1" >&2; exit 1; }
+
+# Plugin bogado/file-line opens FILE:LINE at LINE.
+match=$(grep -n -m 1 -F -e "$2" -- "$1") || {
+  echo "${0##*/}: no match for '$2' in $1" >&2
+  exit 1
+}
+exec vim -c "Goyo" -- "$1:${match%%:*}"
 
 # To properly test, confirm expected behavior against:
 #   -h             -> usage on stdout, exit 0
 #   -x             -> getopts diagnostic on stderr, exit 1
 #   (no args)      -> usage on stderr, exit 1
-#   two args       -> usage on stderr, exit 1
+#   three args     -> usage on stderr, exit 1
 #   an extant file -> that file, centered and soft-wrapped
 #   a missing file -> new buffer under that name, likewise centered
 #   a file named -foo -> edited, not parsed as a flag
+#   a matching needle -> that file, opened at the first matching line
+#   a needle like -foo -> matched, not parsed as a flag
+#   an absent needle  -> no match diagnostic on stderr, exit 1
+#   a needle with a missing file -> no such file on stderr, exit 1
