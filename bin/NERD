@@ -7,6 +7,8 @@ usage() {
 Usage: ${0##*/} [-h] [BOOKMARK]
 
 Open Vim with NERDTree and Tagbar, at BOOKMARK when given one.
+Requires Vim plugin https://github.com/preservim/nerdtree.
+Requires Vim plugin https://github.com/preservim/tagbar.
 
 Options:
   -h    Show this help and exit
