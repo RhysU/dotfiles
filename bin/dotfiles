@@ -26,6 +26,7 @@ EOF
 }
 
 # Absolutize this script, since a relative $0 breaks after cd
+# Work around realpath, which some systems lack
 self_path() {
   [[ $0 = /* ]] && echo "$0" || echo "$PWD/$0"
 }
