@@ -7,7 +7,8 @@ default_repo="git@github.com:RhysU/dotfiles.git"
 
 # Absolutize this script, since a relative $0 breaks after cd
 # Work around realpath, which some systems lack
-[[ $0 = /* ]] && self=$0 || self=$PWD/$0
+self_abspath=$0
+[[ $0 = /* ]] || self_abspath=$PWD/$0
 
 usage() {
   cat <<EOF
@@ -53,12 +54,12 @@ install() (
   set -x
   # Ask the repository its default branch, proving it answers
   branch=$(default_branch "$url")
-  "$self" init
-  "$self" config --local status.showUntrackedFiles no
-  "$self" remote add origin "$url"
-  "$self" fetch
-  "$self" checkout "origin/$branch" -ft
-  "$self" submodule update --init --recursive
+  "$self_abspath" init
+  "$self_abspath" config --local status.showUntrackedFiles no
+  "$self_abspath" remote add origin "$url"
+  "$self_abspath" fetch
+  "$self_abspath" checkout "origin/$branch" -ft
+  "$self_abspath" submodule update --init --recursive
   command git clone https://github.com/VundleVim/Vundle.vim.git "$HOME/.vim/bundle/Vundle.vim"
   vim +BundleUpdate +qall
 )
@@ -67,9 +68,9 @@ install() (
 update() (
   cd "$HOME"
   set -x
-  "$self" pull --rebase
-  "$self" submodule update --init   --recursive  # Exactly pinned version...
-  "$self" submodule update --remote --recursive  # ...possibly moving forward
+  "$self_abspath" pull --rebase
+  "$self_abspath" submodule update --init   --recursive  # Exactly pinned version...
+  "$self_abspath" submodule update --remote --recursive  # ...possibly moving forward
 )
 
 [[ ${1-} != -h ]] || { usage; exit 0; }
