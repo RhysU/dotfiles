@@ -25,6 +25,11 @@ Options:
 EOF
 }
 
+# Absolutize this script, since a relative $0 breaks after cd
+self_path() {
+  [[ $0 = /* ]] && echo "$0" || echo "$PWD/$0"
+}
+
 default_branch() {
   local head ref
   # Guard explicitly, since set -e lapses inside the caller's $(...)
@@ -39,8 +44,7 @@ default_branch() {
 install() (
   # Assign apart from local, which would mask a failed $(...)
   local self branch url=$1
-  # Resolve this script first, since a relative $0 breaks after cd
-  self=$(realpath -- "$0")
+  self=$(self_path)
   # Enter the work tree, since git submodule refuses to run outside it
   cd "$HOME"
   # Refuse early, before anything lands in ~
@@ -64,7 +68,7 @@ install() (
 # Run in a subshell, confining set -x and cd to the update
 update() (
   local self
-  self=$(realpath -- "$0")
+  self=$(self_path)
   cd "$HOME"
   set -x
   "$self" pull --rebase
