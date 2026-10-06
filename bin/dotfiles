@@ -26,7 +26,7 @@ EOF
 }
 
 # Absolutize this script, since a relative $0 breaks after cd
-portable_realpath() {
+self_path() {
   [[ $0 = /* ]] && echo "$0" || echo "$PWD/$0"
 }
 
@@ -44,7 +44,7 @@ default_branch() {
 install() (
   # Assign apart from local, which would mask a failed $(...)
   local self branch url=$1
-  self=$(portable_realpath)
+  self=$(self_path)
   # Enter the work tree, since git submodule refuses to run outside it
   cd "$HOME"
   # Refuse early, before anything lands in ~
@@ -68,7 +68,7 @@ install() (
 # Run in a subshell, confining set -x and cd to the update
 update() (
   local self
-  self=$(portable_realpath)
+  self=$(self_path)
   cd "$HOME"
   set -x
   "$self" pull --rebase
