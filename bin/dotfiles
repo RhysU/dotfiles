@@ -5,6 +5,10 @@ set -euo pipefail
 
 default_repo="git@github.com:RhysU/dotfiles.git"
 
+# Absolutize this script, since a relative $0 breaks after cd
+# Work around realpath, which some systems lack
+[[ $0 = /* ]] && self=$0 || self=$PWD/$0
+
 usage() {
   cat <<EOF
 Usage: ${0##*/} [-h] [install [REPO] | update | GIT_ARG...]
@@ -25,12 +29,6 @@ Options:
 EOF
 }
 
-# Absolutize this script, since a relative $0 breaks after cd
-# Work around realpath, which some systems lack
-self_path() {
-  [[ $0 = /* ]] && echo "$0" || echo "$PWD/$0"
-}
-
 default_branch() {
   local head ref
   # Guard explicitly, since set -e lapses inside the caller's $(...)
@@ -44,8 +42,7 @@ default_branch() {
 # Run in a subshell, confining set -x and cd to the install
 install() (
   # Assign apart from local, which would mask a failed $(...)
-  local self branch url=$1
-  self=$(self_path)
+  local branch url=$1
   # Enter the work tree, since git submodule refuses to run outside it
   cd "$HOME"
   # Refuse early, before anything lands in ~
@@ -68,8 +65,6 @@ install() (
 
 # Run in a subshell, confining set -x and cd to the update
 update() (
-  local self
-  self=$(self_path)
   cd "$HOME"
   set -x
   "$self" pull --rebase
