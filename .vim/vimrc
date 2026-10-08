@@ -52,10 +52,11 @@ function! s:Gray(hex)
     return (str2nr(a:hex[1:2], 16) + str2nr(a:hex[3:4], 16) + str2nr(a:hex[5:6], 16)) / 3
 endfunction
 
-" Normal blended halfway to its background, landing on the xterm grey ramp
-function! s:ConcealGray()
+" Normal blended toward its foreground by n/d, landing on the xterm grey ramp
+function! s:BlendGray(n, d)
     let normal = hlget('Normal')[0]
-    let gray = (s:Gray(normal.guifg) + s:Gray(normal.guibg)) / 2
+    let bg = s:Gray(normal.guibg)
+    let gray = bg + (s:Gray(normal.guifg) - bg) * a:n / a:d
     return max([232, min([255, 232 + (gray - 8) / 10])])
 endfunction
 
@@ -68,7 +69,9 @@ augroup vimrc_highlights
     " Remember NonText because Goyo dims it and 'showbreak' draws in it
     autocmd ColorScheme * let s:nontext = hlget('NonText')
     " Hand Limelight a cterm colour because candy states Normal in GUI alone
-    autocmd ColorScheme * let g:limelight_conceal_ctermfg = s:ConcealGray()
+    autocmd ColorScheme * let g:limelight_conceal_ctermfg = s:BlendGray(1, 2)
+    " Tint illuminate's matches faintly rather than underline them
+    autocmd ColorScheme * execute 'highlight illuminatedWord cterm=NONE ctermbg=' . s:BlendGray(1, 6)
 augroup END
 colorscheme candy " vividchalk darkbone molokai nord
 
