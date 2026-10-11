@@ -69,6 +69,7 @@ update() (
   cd "$HOME"
   set -x
   "$self_abspath" pull --rebase
+  "$self_abspath" remote prune origin
   "$self_abspath" submodule update --init   --recursive  # Exactly pinned version...
   "$self_abspath" submodule update --remote --recursive  # ...possibly moving forward
 )
