@@ -227,6 +227,7 @@ endfunction
 " http://vim.wikia.com/wiki/Highlight_current_line
 noremap <silent> <Leader>\| :set cursorcolumn!       <CR>:set cursorcolumn?<CR>
 noremap <silent> <Leader>g  :Goyo                    <CR>
+noremap <silent> <Leader>h  :set hlsearch!           <CR>:set hlsearch?    <CR>
 noremap <silent> <Leader>l  :Limelight!!             <CR>
 noremap <silent> <Leader>N  :call NERDTreePortrait() <CR>
 noremap <silent> <Leader>n  :NERDTreeToggle          <CR>
