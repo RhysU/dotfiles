@@ -136,7 +136,7 @@ if exists('+signcolumn')
 endif
 
 " Some useful personal macros
-noremap =1 /\<\([wW]e\\|[Oo]urs?\\|[Uu]s\\|I\)\><CR>
+noremap =1 /\v\c<(i\|let's\|m(e\|ine\|y(self)=)\|our(s\|sel(f\|ves))=\|us\|we)><CR>
 noremap =4 :set tabstop=4 shiftwidth=4 softtabstop=4<CR>
 noremap =8 :set tabstop=8 shiftwidth=8 softtabstop=8<CR>
 noremap =b :%s/\s\+$//ge<CR>
