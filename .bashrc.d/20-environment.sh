@@ -7,7 +7,9 @@ shopt -s checkwinsize
 shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
-command -v lesspipe >/dev/null 2>&1 && eval "$(SHELL=/bin/sh lesspipe)"
+# Mimic eval "$(SHELL=/bin/sh lesspipe)" without running the script
+lp=$(type -P lesspipe) && export LESSOPEN="| $lp %s" LESSCLOSE="$lp %s %s"
+unset lp
 
 # Avoid some ulimit problems on systems where modifying it is permitted
 ulimit -s unlimited 2>/dev/null || true
