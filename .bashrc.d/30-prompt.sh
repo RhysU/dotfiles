@@ -2,7 +2,16 @@
 # Modified slightly from https://gist.github.com/828432
 # Detection based on http://unix.stackexchange.com/questions/9957/
 # Fixing TeX output width based on http://tex.stackexchange.com/questions/83600/
-if command -v tput >/dev/null 2>&1 && tput setaf 1 >&/dev/null; then
+# Glob common terminals per dircolors -p, asking tput only about the rest
+prompt_with_color()
+{
+    case ${TERM:-dumb} in
+        dumb)                               return 1 ;;
+        *color*|linux|screen*|tmux*|xterm*) return 0 ;;
+    esac
+    tput setaf 1 >&/dev/null
+}
+if prompt_with_color; then
     prompt_color_reset='\[\e[0m\]'
     prompt_color_git_clean='\[\e[0;37m\]'
     prompt_color_git_staged='\[\e[0;32m\]'
@@ -15,6 +24,7 @@ else
     prompt_color_git_unstaged=
     prompt_color_error_status=
 fi
+unset -f prompt_with_color
 
 # Function to assemble the Git part of the prompt.
 # Modified slightly from https://gist.github.com/828432
