@@ -24,8 +24,9 @@ time=$(type -P time)
 script=$(type -P script)
 printf -v args ' %q' "$@"
 printf -v cmd '%q --verbose --%s' "$time" "$args"
+host=$(uname -n)
 printf -v now '%(%s)T' -1
-printf -v file 'typescript-%s-%s-%03X' "${HOSTNAME%%.*}" "$now" $((RANDOM % 4096))
+printf -v file 'typescript-%s-%s-%03X' "${host%%.*}" "$now" $((RANDOM % 4096))
 
 printf '+%s\n' "$args" >"$file"
 printf '\n' >>"$file"
@@ -41,5 +42,6 @@ SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
 #   an argument with a space -> quoted in the header, intact for the command
 #   SHELL=/bin/sh       -> $'...' arguments still reach the command intact
 #   GNU time absent     -> type -P fails, no file written
-#   script absent       -> type -P fails, no file written
+#   HOSTNAME=a/b        -> ignored, the kernel's hostname names the file
+#   script absent      -> type -P fails, no file written
 #   file already exists -> noclobber refuses, file untouched, exit 1
