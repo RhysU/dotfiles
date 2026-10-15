@@ -39,7 +39,7 @@ printf '+%s\n' "$args" >"$file"
 printf '\n' >>"$file"
 
 # Pin script's shell to bash, which understands the quoting of printf %q.
-SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
+SHELL=$BASH exec "$script" --append --return --command "$cmd" -- "$file"
 
 # To properly test, confirm expected behavior against:
 #   -h                  -> usage on stdout, exit 0
