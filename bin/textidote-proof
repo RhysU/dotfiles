@@ -238,6 +238,13 @@ if no_text && ! run --read-all; then
   exit 2
 fi
 
+# Fail when TeXtidote skipped a file it could not find, as it does for
+# \input{README} by seeking only README.tex, rather than pass it as clean
+if grep -q 'not found (skipping)$' "$tmp/stderr"; then
+  echo >&2 "${0##*/}: TeXtidote skipped a missing file"
+  exit 2
+fi
+
 # Count warnings before writing, so every failure leaves OUTPUT untouched
 count=$(warnings)
 readonly count
@@ -274,7 +281,8 @@ exit 0
 #   body of blanks or comments -> second run with --read-all
 #   clean on a fragment       -> one run with --read-all
 #   clean, \input-only body   -> one run, no --read-all
-#   clean on missing INPUT    -> TeXtidote's not found, exit 0
+#   clean on missing INPUT    -> TeXtidote's not found, exit 2
+#   \input of a missing file  -> exit 2, OUTPUT untouched
 #   empty INPUT               -> clean exits 0, the reports exit 2
 #   INPUT named --foo.tex     -> passed as ./--foo.tex
 #   OUTPUT /dev/null or FIFO  -> written through, never replaced
