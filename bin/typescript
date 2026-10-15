@@ -28,7 +28,8 @@ printf -v file 'typescript-%s-%s-%03X' "${HOSTNAME%%.*}" "$now" $((RANDOM % 4096
 
 printf '+%s\n' "$args" >"$file"
 printf '\n' >>"$file"
-exec script --quiet --append --return --command "$cmd" -- "$file"
+# Pin script's shell to bash, which understands the quoting of printf %q.
+SHELL=$BASH exec script --quiet --append --return --command "$cmd" -- "$file"
 
 # To properly test, confirm expected behavior against:
 #   -h                  -> usage on stdout, exit 0
@@ -37,4 +38,5 @@ exec script --quiet --append --return --command "$cmd" -- "$file"
 #   false               -> recorded, exit 1
 #   grep -h pattern     -> -h reaches grep, not us
 #   an argument with a space -> quoted in the header, intact for the command
+#   SHELL=/bin/sh       -> $'...' arguments still reach the command intact
 #   GNU time absent     -> type -P fails, no file written
