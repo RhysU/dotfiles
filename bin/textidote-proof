@@ -1,0 +1,251 @@
+#!/usr/bin/env bash
+# Proof a TeX file with TeXtidote, one subcommand per kind of output
+set -euo pipefail
+
+# Defaults, each settable by the long option of the same name, then
+# made read-only.  An empty value means none, so DICT defaults to auto.
+LANG_CODE=en                     # de
+DICT=auto                        # ~/words.add
+IGNORE=                          # sh:001,lt:en:EN_QUOTES
+REMOVE_ENVIRONMENTS=             # tikzpicture,tabular
+REMOVE_MACROS=                   # todo,marginpar
+REPLACE=                         # replacements.tsv
+STRICT=false                     # true
+
+# Capture usage before parsing, so it shows defaults, not options given
+usage=$(cat <<EOF
+Usage: ${0##*/} [OPTION]... SUBCOMMAND INPUT [OUTPUT]
+
+Proof the TeX file INPUT with TeXtidote, which bundles LanguageTool.
+Check a standalone document from \\begin{document} onward and a
+fragment lacking one throughout.  Write OUTPUT, or standard output when
+OUTPUT is - or absent.
+
+Subcommands, named for TeXtidote's --clean and --output methods:
+  clean       Strip markup, leaving prose
+  plain       Plain report
+  html        HTML report
+  json        JSON report, in LanguageTool's match format
+  clickable   One line per issue, as file:line:col: message
+  singleline  One line per issue, as file(LlineCcol-LlineCcol): message
+
+Options, where an empty value means none:
+  --lang LANG           Check language LANG, or only TeXtidote's own
+                        rules when empty.  Default $LANG_CODE
+  --dict FILE           Accept the words in FILE, one per line, as Vim's
+                        zg writes them.  Default $DICT, the first
+                        LANG.utf-8.add, LANG sans any _REGION, in
+                        ~/.vim/spell, ~/.config/vim/spell, or
+                        \${XDG_DATA_HOME:-~/.local/share}/nvim/site/spell
+  --ignore RULES        Ignore comma-separated rule IDs, which plain
+                        prints last in each warning, as [lt:en:EN_QUOTES].
+                        Default ${IGNORE:-none}
+  --remove-environments ENVS
+                        Drop each comma-separated environment, every line
+                        from \\begin{ENV} through \\end{ENV}.
+                        Default ${REMOVE_ENVIRONMENTS:-none}
+  --remove-macros MACS  Drop each comma-separated macro \\MAC with its
+                        first argument, otherwise checked as prose.
+                        Default ${REMOVE_MACROS:-none}
+  --replace FILE        Apply TeXtidote replacement patterns from FILE.
+                        Default ${REPLACE:-none}
+  --strict              Exit 1 when warnings are found.  Default off
+  -h, --help            Show this help and exit
+
+Exit 0 on success.  Exit 1 on misuse, a missing prerequisite, or
+warnings under --strict.  Exit 2 when TeXtidote or writing OUTPUT
+fails.
+EOF
+)
+readonly usage
+
+die() {
+  echo >&2 "${0##*/}: $*"
+  exit 1
+}
+
+# Append option $1 and value $2 to opts
+append_opts_when_nonempty() {
+  if [[ -n $2 ]]; then
+    opts+=("$1" "$2")
+  fi
+}
+
+# Print the first Vim or Neovim spellfile for LANG_CODE, if any, searching
+# Vim's old and XDG homes, then Neovim's
+default_dict() {
+  local dir
+  for dir in ~/.vim/spell ~/.config/vim/spell \
+      "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/spell"; do
+    if [[ -f $dir/${LANG_CODE%%_*}.utf-8.add ]]; then
+      echo "$dir/${LANG_CODE%%_*}.utf-8.add"
+      return
+    fi
+  done
+}
+
+# Run TeXtidote in a subshell, confining set -x to trace its invocation
+textidote_traced() (
+  set -x
+  textidote "$@"
+)
+
+# Run TeXtidote into $tmp/stdout, adding options $@ to opts.  Tee stderr,
+# keeping the trace and TeXtidote's chatter visible and its count
+# readable from $tmp/stderr.
+run() {
+  textidote_traced "${opts[@]}" "$@" "$input" \
+    2>&1 >"$tmp/stdout" | tee "$tmp/stderr" >&2
+}
+
+# Print the warning count from stderr, or 0 when cleaning.  Read stderr,
+# since --ci zeroes the exit code.
+warnings() {
+  local count
+  if [[ $sub = clean ]]; then
+    echo 0
+    return
+  fi
+  count=$(sed -n 's/^Found \([0-9][0-9]*\) warning(s)$/\1/p' "$tmp/stderr")
+  if [[ -z $count ]]; then
+    echo >&2 "${0##*/}: TeXtidote reported no warning count"
+    exit 2
+  fi
+  echo "$count"
+}
+
+# Succeed when TeXtidote found no text, as for a fragment without
+# --read-all.  Cleaning never says so.
+no_text() {
+  grep -q 'Did you omit --read-all?' "$tmp/stderr"
+}
+
+# Succeed when INPUT lacks an uncommented \begin{document}, by
+# TeXtidote's own pattern
+fragment() {
+  ! grep -qs '^[^%]*\\begin[[:space:]]*{[[:space:]]*document' "$input"
+}
+
+# Split --opt=VAL into --opt VAL, so one arm serves both spellings
+args=()
+while (($#)); do
+  case $1 in
+    --)                    shift; args+=("$@"); break ;;
+    --?*=*)                set -- "${1%%=*}" "${1#*=}" "${@:2}" ;;
+    --lang)                LANG_CODE=$2;           shift 2 ;;
+    --dict)                DICT=$2;                shift 2 ;;
+    --ignore)              IGNORE=$2;              shift 2 ;;
+    --remove-environments) REMOVE_ENVIRONMENTS=$2; shift 2 ;;
+    --remove-macros)       REMOVE_MACROS=$2;       shift 2 ;;
+    --replace)             REPLACE=$2;             shift 2 ;;
+    --strict)              STRICT=true;            shift ;;
+    -h|--help)             echo "$usage"; exit 0 ;;
+    -?*)                   die "unknown option '$1'" ;;
+    *)                     args+=("$1");           shift ;;
+  esac
+done
+set -- "${args[@]}"
+
+if (($# < 2 || $# > 3)); then
+  echo >&2 "$usage"
+  exit 1
+fi
+readonly sub=$1
+input=$2
+readonly output=${3--}
+
+# Start opts with TeXtidote's output, rejecting unknown subcommands
+case $sub in
+  clean)                                opts=(--clean) ;;
+  plain|html|json|clickable|singleline) opts=(--output "$sub") ;;
+  *)                                    die "unknown subcommand '$sub'" ;;
+esac
+
+if ! command -v textidote >/dev/null; then
+  die "textidote not found; download textidote_*_all.deb from" \
+      "https://github.com/sylvainhalle/textidote/releases" \
+      "then run 'sudo apt install ./textidote_*_all.deb'"
+fi
+
+if [[ $DICT = auto ]]; then
+  DICT=$(default_dict)
+fi
+readonly LANG_CODE DICT IGNORE REMOVE_ENVIRONMENTS REMOVE_MACROS REPLACE STRICT
+if [[ -z $LANG_CODE ]]; then
+  echo >&2 "${0##*/}: warning: empty --lang skips grammar and spelling"
+fi
+
+# Keep TeXtidote from parsing a leading dash as an option
+if [[ $input = -* ]]; then
+  input=./$input
+fi
+readonly input
+
+tmp=$(mktemp -d)
+readonly tmp
+trap 'rm -rf "$tmp"' EXIT
+
+# --clean ignores --check, --dict, and --ignore, so one list serves both
+opts+=(--no-config --type tex --ci)
+if [[ $output != - || ! -t 1 ]]; then
+  opts+=(--no-color)
+fi
+append_opts_when_nonempty --check         "$LANG_CODE"
+append_opts_when_nonempty --dict          "$DICT"
+append_opts_when_nonempty --ignore        "$IGNORE"
+append_opts_when_nonempty --remove        "$REMOVE_ENVIRONMENTS"
+append_opts_when_nonempty --remove-macros "$REMOVE_MACROS"
+append_opts_when_nonempty --replace       "$REPLACE"
+if [[ $sub = clean ]] && fragment; then
+  opts+=(--read-all)
+fi
+readonly opts
+
+# Fail unless the first run succeeds or found no text.  Then, given no
+# text, retry once with --read-all.  Cleaning took --read-all up front.
+if ! run && ! no_text; then
+  exit 2
+fi
+if no_text && ! run --read-all; then
+  exit 2
+fi
+
+# Count warnings before writing, so every failure leaves OUTPUT untouched
+count=$(warnings)
+readonly count
+
+# Write through cat, never mv, so a FIFO or /dev/null as OUTPUT
+# survives rather than being replaced by a regular file
+if [[ $output = - ]]; then
+  cat "$tmp/stdout"
+elif ! cat "$tmp/stdout" >"$output"; then
+  exit 2
+fi
+
+if $STRICT && ((count > 0)); then
+  exit 1
+fi
+exit 0
+
+# To properly test, confirm expected behavior against:
+#   -h after other options    -> usage showing defaults, exit 0
+#   bad subcommand or option  -> one-line error, exit 1
+#   --=x                      -> one-line error, exit 1
+#   --lang without a value    -> bash's unbound variable, exit 1
+#   INPUT missing             -> TeXtidote's not found, exit 2
+#   OUTPUT unwritable         -> bash's error after the run, exit 2
+#   --lang= (empty)           -> warning, no --check, TeXtidote's rules only
+#   standalone INPUT          -> one run, no --read-all
+#   fragment INPUT            -> second run with --read-all
+#   body of blanks or comments -> second run with --read-all
+#   clean on a fragment       -> one run with --read-all
+#   clean, \input-only body   -> one run, no --read-all
+#   clean on missing INPUT    -> TeXtidote's not found, exit 0
+#   empty INPUT               -> clean exits 0, the reports exit 2
+#   INPUT named --foo.tex     -> passed as ./--foo.tex
+#   OUTPUT /dev/null or FIFO  -> written through, never replaced
+#   TeXtidote fails           -> exit 2, OUTPUT untouched
+#   no warning count          -> exit 2, OUTPUT untouched
+#   N warnings                -> exit 0; with --strict exit 1 when N > 0
+#   --dict unset              -> ~/.vim, ~/.config/vim, then Neovim's
+#   --dict= or --ignore=      -> option not passed
