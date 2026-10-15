@@ -9,7 +9,6 @@ Usage: ${0##*/} [-h] COMMAND [ARG...]
 Record COMMAND under script(1) and GNU time into a fresh typescript.
 Name it typescript-HOST-SECONDS-HEX, with six random hex digits.
 Head it with the command line and one blank line.
-Fail when the quoted command exceeds what Linux passes as one argument.
 
 Options:
   -h    Show this help and exit
@@ -38,6 +37,7 @@ printf -v file 'typescript-%s-%s-%06X' "${host%%.*}" "$now" "$hex"
 
 printf '+%s\n' "$args" >"$file"
 printf '\n' >>"$file"
+
 # Pin script's shell to bash, which understands the quoting of printf %q.
 SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
 
