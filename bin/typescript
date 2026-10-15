@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Record a command and its resource usage into a fresh typescript
-set -euo pipefail
+set -Ceuo pipefail
 
 usage() {
   cat <<EOF
@@ -40,3 +40,4 @@ SHELL=$BASH exec script --quiet --append --return --command "$cmd" -- "$file"
 #   an argument with a space -> quoted in the header, intact for the command
 #   SHELL=/bin/sh       -> $'...' arguments still reach the command intact
 #   GNU time absent     -> type -P fails, no file written
+#   file already exists -> noclobber refuses, file untouched, exit 1
