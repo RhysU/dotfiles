@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# Create a skeletal bash script following the pattern used throughout bin
+set -euo pipefail
+
+name=${0##*/}
+
+die() { printf >&2 '%s: %s\n' "$name" "$*"; exit 1; }
+
+usage() {
+  cat <<EOF
+Usage: $name [-h] PATH [SUMMARY...]
+
+Create a skeletal bash script at PATH, mode 755, refusing to overwrite.
+SUMMARY, an imperative one-liner, fills the header comment and usage.
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+[[ $# -ge 1 ]] || { usage >&2; exit 1; }
+
+# Prefix a leading dash, so the editor sees a path rather than an option.
+path=$1
+[[ $path != -* ]] || path=./$path
+readonly path
+shift
+readonly summary="${*:-Summarize this script imperatively}"
+
+# Refuse anything present, since noclobber happily writes into devices.
+[[ ! -e $path && ! -L $path ]] || die "'$path' exists"
+# Refuse a newline, which would turn the summary's tail into code.
+[[ $summary != *$'\n'* ]] || die "summary spans lines"
+# Refuse EOF, which would end the skeleton's usage early.
+[[ $summary != EOF ]] || die "summary is EOF"
+
+# Escape the summary for the skeleton's unquoted usage here document.
+escaped=${summary//\\/\\\\}
+escaped=${escaped//\$/\\\$}
+escaped=${escaped//\`/\\\`}
+readonly escaped
+
+# Refuse an existing file via noclobber, which checks and creates atomically.
+set -o noclobber
+cat > "$path" <<SKELETON
+#!/usr/bin/env bash
+# ${summary}
+set -euo pipefail
+
+keep=0
+name=\${0##*/}
+output=-
+verbose=0
+
+die() {
+  printf >&2 '%s: %s\n' "\$name" "\$*"
+  exit 1
+}
+
+usage() {
+  cat <<EOF
+Usage: \$name [OPTION...] ARG...
+
+${escaped}
+
+Options:
+  -h         Show this help and exit
+  -k         Keep the temporary directory
+  -o FILE    Write output to FILE, defaulting to standard output
+  -v         Be verbose, more so when repeated
+  -x         Trace commands
+EOF
+}
+
+verbose() {
+  if (( verbose )); then
+    printf >&2 '%s: %s\n' "\$name" "\$*"
+  fi
+}
+
+while getopts ":hko:vx" OPT; do
+  case "\$OPT" in
+    h) usage; exit 0 ;;
+    k) keep=1 ;;
+    o) output=\$OPTARG ;;
+    v) (( ++verbose )) ;;
+    x) set -x ;;
+    :) die "-\$OPTARG requires a value" ;;
+    *) die "unknown option -\$OPTARG" ;;
+  esac
+done
+shift \$((OPTIND - 1))
+
+if [[ \$# -lt 1 ]]; then
+  die "missing argument"
+fi
+
+# Redirect only when asked, since reopening /dev/stdout truncates files.
+if [[ \$output != - ]]; then
+  exec > "\$output"
+fi
+
+tmpdir=\$(mktemp -d)
+if (( keep )); then
+  verbose "Keeping \$tmpdir"
+else
+  verbose "Temporary \$tmpdir"
+  trap 'rm -rf -- "\$tmpdir"' EXIT
+fi
+
+verbose "Running..."
+while (( \$# )); do
+  verbose "Processing \$1"
+  shift
+done
+die "Unimplemented"
+SKELETON
+chmod 755 -- "$path"
+
+printf >&2 '%s: Opening %s\n' "$name" "$path"
+# Leave EDITOR unquoted, so a value like 'code -w' splits into its arguments.
+# shellcheck disable=SC2086
+exec ${EDITOR:-vi} "$path"
+
+# To properly test, confirm expected behavior against:
+#   -h               -> usage on stdout, exit 0, no file created
+#   (no args)        -> usage on stderr, exit 1
+#   new path         -> mode 755 skeleton, placeholder summary, opened
+#   path and words   -> words fill the header and usage
+#   EDITOR unset     -> opened in vi
+#   EDITOR='code -w' -> opened in code, waiting
+#   existing path    -> exists on stderr, file untouched, exit 1
+#   /dev/null        -> exists on stderr, mode untouched, exit 1
+#   dangling symlink -> exists on stderr, target not created, exit 1
+#   -dash            -> ./-dash created and opened
+#   missing dir      -> redirection error, nonzero exit
+#   $HOME, `date`    -> appear verbatim in skeleton usage
+#   backslash        -> appears verbatim in skeleton usage
+#   two-line summary -> spans lines on stderr, exit 1
+#   summary EOF      -> summary is EOF on stderr, exit 1
+#   skeleton -h      -> its usage on stdout, exit 0
+#   skeleton -z      -> unknown option on stderr, exit 1
+#   skeleton -o      -> requires a value on stderr, exit 1
+#   skeleton > file  -> earlier writes to file survive
+#   skeleton -o FILE -> stdout lands in FILE
+#   skeleton no args -> missing argument on stderr, exit 1
+#   skeleton an arg  -> Unimplemented on stderr, exit 1, no temporary left
+#   skeleton -v a b  -> temporary path, Running..., each arg, Unimplemented
+#   skeleton -k arg  -> temporary directory left behind
+#   skeleton -kv arg -> Keeping and its path in place of Temporary
+#   skeleton         -> shellcheck clean, no annotations
+#   skeleton -x arg  -> commands traced on stderr
