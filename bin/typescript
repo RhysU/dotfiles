@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Record a command and its resource usage into a fresh typescript
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [-h] COMMAND [ARG...]
+
+Record COMMAND under script(1) and GNU time into a fresh typescript.
+Name it typescript-HOST-SECONDS-HEX, with three random hex digits.
+Head it with the command line and one blank line.
+
+Options:
+  -h    Show this help and exit
+EOF
+}
+
+[[ ${1-} != -h ]] || { usage; exit 0; }
+
+[[ $# -ge 1 ]] || { echo >&2 "${0##*/}: missing command"; exit 1; }
+
+# Resolve GNU time here, since the shell under script reads time as a keyword.
+time=$(type -P time)
+printf -v args ' %q' "$@"
+printf -v cmd '%q --verbose --%s' "$time" "$args"
+printf -v now '%(%s)T' -1
+printf -v file 'typescript-%s-%s-%03X' "${HOSTNAME%%.*}" "$now" $((RANDOM % 4096))
+
+printf '+%s\n' "$args" >"$file"
+printf '\n' >>"$file"
+exec script --quiet --append --return --command "$cmd" -- "$file"
+
+# To properly test, confirm expected behavior against:
+#   -h                  -> usage on stdout, exit 0
+#   (no args)           -> one-line error on stderr, exit 1
+#   echo HI             -> file holds '+ echo HI', a blank line, HI, then time
+#   false               -> recorded, exit 1
+#   grep -h pattern     -> -h reaches grep, not us
+#   an argument with a space -> quoted in the header, intact for the command
+#   GNU time absent     -> type -P fails, no file written
