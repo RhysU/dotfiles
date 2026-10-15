@@ -1,3 +1,4 @@
 .bashrc.d/*.local.sh
+.bin/textidote
 .config/rclone/rclone.conf
 .gitconfig.local
