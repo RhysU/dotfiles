@@ -23,7 +23,7 @@ EOF
 time=$(type -P time)
 script=$(type -P script)
 printf -v args ' %q' "$@"
-printf -v cmd '%q --verbose --%s' "$time" "$args"
+printf -v cmd 'SHELL=%q exec %q --verbose --%s' "${SHELL-}" "$time" "$args"
 host=$(uname -n)
 printf -v now '%(%s)T' -1
 printf -v file 'typescript-%s-%s-%03X' "${host%%.*}" "$now" $((RANDOM % 4096))
@@ -41,6 +41,7 @@ SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
 #   grep -h pattern     -> -h reaches grep, not us
 #   an argument with a space -> quoted in the header, intact for the command
 #   SHELL=/bin/sh       -> $'...' arguments still reach the command intact
+#   SHELL=/bin/zsh      -> the command sees /bin/zsh, not bash
 #   GNU time absent     -> type -P fails, no file written
 #   HOSTNAME=a/b        -> ignored, the kernel's hostname names the file
 #   script absent      -> type -P fails, no file written
