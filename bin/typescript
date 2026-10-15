@@ -8,7 +8,7 @@ Usage: ${0##*/} [-h] COMMAND [ARG...]
 
 Record COMMAND under script(1) and GNU time into a fresh typescript.
 Name it typescript-HOST-SECONDS-HEX, with six random hex digits.
-Head it with the command line, the date, and one blank line.
+Head it with the command line and one blank line.
 Fail when the quoted command exceeds what Linux passes as one argument.
 
 Options:
@@ -37,8 +37,6 @@ hex=$(( (RANDOM << 15 | RANDOM) & 0xFFFFFF ))
 printf -v file 'typescript-%s-%s-%06X' "${host%%.*}" "$now" "$hex"
 
 printf '+%s\n' "$args" >"$file"
-# Match date's default format at the instant naming the file.
-printf '%(%a %b %e %H:%M:%S %Z %Y)T\n' "$now" >>"$file"
 printf '\n' >>"$file"
 # Pin script's shell to bash, which understands the quoting of printf %q.
 SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
@@ -46,7 +44,7 @@ SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
 # To properly test, confirm expected behavior against:
 #   -h                  -> usage on stdout, exit 0
 #   (no args)           -> one-line error on stderr, exit 1
-#   echo HI             -> file holds '+ echo HI', the date, a blank line, HI, then time
+#   echo HI             -> file holds '+ echo HI', a blank line, HI, then time
 #   false               -> recorded, exit 1
 #   grep -h pattern     -> -h reaches grep, not us
 #   an argument with a space -> quoted in the header, intact for the command
