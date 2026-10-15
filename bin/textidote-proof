@@ -12,9 +12,13 @@ REMOVE_MACROS=                   # todo,marginpar
 REPLACE=                         # replacements.tsv
 STRICT=false                     # true
 
+# TeXtidote's newest release, as one self-contained jar
+readonly JAR_URL=https://github.com/sylvainhalle/textidote/releases/latest/download/textidote.jar
+
 # Capture usage before parsing, so it shows defaults, not options given
 usage=$(cat <<EOF
 Usage: ${0##*/} [OPTION]... SUBCOMMAND INPUT [OUTPUT]
+       ${0##*/} install DESTINATION
 
 Proof the TeX file INPUT with TeXtidote, which bundles LanguageTool.
 Check a standalone document from \\begin{document} onward and a
@@ -28,6 +32,9 @@ Subcommands, named for TeXtidote's --clean and --output methods:
   json        JSON report, in LanguageTool's match format
   clickable   One line per issue, as file:line:col: message
   singleline  One line per issue, as file(LlineCcol-LlineCcol): message
+
+Install TeXtidote's latest release, needing only Java, as the single
+executable file DESTINATION, which must not exist.  Put it on PATH.
 
 Options, where an empty value means none:
   --lang LANG           Check language LANG, or only TeXtidote's own
@@ -54,7 +61,7 @@ Options, where an empty value means none:
 
 Exit 0 on success.  Exit 1 on misuse, a missing prerequisite, or
 warnings under --strict.  Exit 2 when TeXtidote or writing OUTPUT
-fails.
+fails.  A failed install exits with its failing step's status.
 EOF
 )
 readonly usage
@@ -83,6 +90,23 @@ default_dict() {
     fi
   done
 }
+
+# Write DESTINATION as a sh stub prepended to the release jar.  Java
+# finds a jar's index from its end, ignoring the stub, so the file runs
+# itself.  Move it to DESTINATION, which mv -n refuses to clobber, then
+# verify it there.  Run in a subshell, confining set -x to the install.
+# Inherit set -euo pipefail, so a failing step exits with its status.
+install_textidote() (
+  set -x
+  echo '#!/bin/sh' >"$tmp/textidote"
+  # Leave $0 and $@ for the stub to expand when it runs
+  # shellcheck disable=SC2016
+  echo 'exec java -jar "$0" "$@"' >>"$tmp/textidote"
+  curl -fL "$JAR_URL" >>"$tmp/textidote"
+  chmod 755 "$tmp/textidote"
+  mv -n -T -- "$tmp/textidote" "$1"
+  "$1" --version
+)
 
 # Run TeXtidote in a subshell, confining set -x to trace its invocation
 textidote_traced() (
@@ -154,6 +178,19 @@ readonly sub=$1
 input=$2
 readonly output=${3--}
 
+tmp=$(mktemp -d)
+readonly tmp
+trap 'rm -rf "$tmp"' EXIT
+
+if [[ $sub = install ]]; then
+  if (($# != 2)); then
+    echo >&2 "$usage"
+    exit 1
+  fi
+  install_textidote "$input"
+  exit 0
+fi
+
 # Start opts with TeXtidote's output, rejecting unknown subcommands
 case $sub in
   clean)                                opts=(--clean) ;;
@@ -162,7 +199,8 @@ case $sub in
 esac
 
 if ! command -v textidote >/dev/null; then
-  die "textidote not found; download textidote_*_all.deb from" \
+  die "textidote not found; run '${0##*/} install DESTINATION'" \
+      "with DESTINATION on PATH, or download textidote_*_all.deb from" \
       "https://github.com/sylvainhalle/textidote/releases" \
       "then run 'sudo apt install ./textidote_*_all.deb'"
 fi
@@ -180,10 +218,6 @@ if [[ $input = -* ]]; then
   input=./$input
 fi
 readonly input
-
-tmp=$(mktemp -d)
-readonly tmp
-trap 'rm -rf "$tmp"' EXIT
 
 # --clean ignores --check, --dict, and --ignore, so one list serves both
 opts+=(--no-config --type tex --ci)
@@ -229,6 +263,12 @@ exit 0
 
 # To properly test, confirm expected behavior against:
 #   -h after other options    -> usage showing defaults, exit 0
+#   install NEW               -> NEW written, then its --version run
+#   install EXISTING          -> mv's not replacing, exit 1, file kept
+#   install, download fails   -> curl's status, nothing written
+#   install, no java          -> NEW written, its --version fails, exit 127
+#   install, missing dir      -> mv's error, exit 1, temp dir gone
+#   install with 0 or 2 args  -> usage on stderr, exit 1
 #   bad subcommand or option  -> one-line error, exit 1
 #   --=x                      -> one-line error, exit 1
 #   --lang without a value    -> bash's unbound variable, exit 1
