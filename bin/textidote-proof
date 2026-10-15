@@ -94,10 +94,11 @@ default_dict() {
 # Inherit set -euo pipefail, so a failing step exits with its status.
 install_textidote() (
   set -x
-  echo '#!/bin/sh' >"$tmp/textidote"
-  # Leave $0 and $@ for the stub to expand when it runs
-  # shellcheck disable=SC2016
-  echo 'exec java -jar "$0" "$@"' >>"$tmp/textidote"
+  cat >"$tmp/textidote" <<'STUB'
+#!/bin/sh
+# Lift newer Java's XML entity cap, which LanguageTool's grammar.xml exceeds
+exec java -Djdk.xml.totalEntitySizeLimit=0 -jar "$0" "$@"
+STUB
   curl -fL "$JAR_URL" >>"$tmp/textidote"
   chmod 755 "$tmp/textidote"
   mv -n -T -- "$tmp/textidote" "$1"
@@ -268,6 +269,7 @@ exit 0
 #   install EXISTING          -> mv's not replacing, exit 1, file kept
 #   install, download fails   -> curl's status, nothing written
 #   install, no java          -> NEW written, its --version fails, exit 127
+#   install, then plain on Java 25 -> LanguageTool loads, no entity cap
 #   install, missing dir      -> mv's error, exit 1, temp dir gone
 #   install with 0 or 2 args  -> usage on stderr, exit 1
 #   bad subcommand or option  -> one-line error, exit 1
