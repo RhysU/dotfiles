@@ -4,9 +4,9 @@ set -euo pipefail
 
 # Defaults, each settable by the long option of the same name, then
 # made read-only.  An empty value means none, so DICT defaults to auto.
-LANG_CODE=en                     # de
 DICT=auto                        # ~/words.add
 IGNORE=                          # sh:001,lt:en:EN_QUOTES
+LANG_CODE=en                     # de
 REMOVE_ENVIRONMENTS=             # tikzpicture,tabular
 REMOVE_MACROS=                   # todo,marginpar
 REPLACE=                         # replacements.tsv
@@ -22,23 +22,18 @@ Usage: ${0##*/} [OPTION]... SUBCOMMAND INPUT [OUTPUT]
 
 Proof the TeX file INPUT with TeXtidote, which bundles LanguageTool.
 Check a standalone document from \\begin{document} onward and a
-fragment lacking one throughout.  Write OUTPUT, or standard output when
-OUTPUT is - or absent.
+fragment lacking one throughout.  OUTPUT defaults to stdout.
 
-Subcommands, named for TeXtidote's --clean and --output methods:
+Subcommands, all but install named for TeXtidote's --clean and --output:
   clean       Strip markup, leaving prose
-  plain       Plain report
-  html        HTML report
-  json        JSON report, in LanguageTool's match format
   clickable   One line per issue, as file:line:col: message
+  html        HTML report
+  install     Install TeXtidote's latest release as new file DESTINATION
+  json        JSON report, in LanguageTool's match format
+  plain       Plain report
   singleline  One line per issue, as file(LlineCcol-LlineCcol): message
 
-Install TeXtidote's latest release, needing only Java, as the single
-executable file DESTINATION, which must not exist.  Put it on PATH.
-
 Options, where an empty value means none:
-  --lang LANG           Check language LANG, or only TeXtidote's own
-                        rules when empty.  Default $LANG_CODE
   --dict FILE           Accept the words in FILE, one per line, as Vim's
                         zg writes them.  Default $DICT, the first
                         LANG.utf-8.add, LANG sans any _REGION, in
@@ -47,6 +42,8 @@ Options, where an empty value means none:
   --ignore RULES        Ignore comma-separated rule IDs, which plain
                         prints last in each warning, as [lt:en:EN_QUOTES].
                         Default ${IGNORE:-none}
+  --lang LANG           Check language LANG, or only TeXtidote's own
+                        rules when empty.  Default $LANG_CODE
   --remove-environments ENVS
                         Drop each comma-separated environment, every line
                         from \\begin{ENV} through \\end{ENV}.
@@ -59,9 +56,8 @@ Options, where an empty value means none:
   --strict              Exit 1 when warnings are found.  Default off
   -h, --help            Show this help and exit
 
-Exit 0 on success.  Exit 1 on misuse, a missing prerequisite, or
-warnings under --strict.  Exit 2 when TeXtidote or writing OUTPUT
-fails.  A failed install exits with its failing step's status.
+Exit 0 on success, 1 on misuse or warnings under --strict, and 2 when
+TeXtidote or writing OUTPUT fails.
 EOF
 )
 readonly usage
@@ -156,9 +152,9 @@ while (($#)); do
   case $1 in
     --)                    shift; args+=("$@"); break ;;
     --?*=*)                set -- "${1%%=*}" "${1#*=}" "${@:2}" ;;
-    --lang)                LANG_CODE=$2;           shift 2 ;;
     --dict)                DICT=$2;                shift 2 ;;
     --ignore)              IGNORE=$2;              shift 2 ;;
+    --lang)                LANG_CODE=$2;           shift 2 ;;
     --remove-environments) REMOVE_ENVIRONMENTS=$2; shift 2 ;;
     --remove-macros)       REMOVE_MACROS=$2;       shift 2 ;;
     --replace)             REPLACE=$2;             shift 2 ;;
@@ -169,6 +165,10 @@ while (($#)); do
   esac
 done
 set -- "${args[@]}"
+if [[ $DICT = auto ]]; then
+  DICT=$(default_dict)
+fi
+readonly DICT IGNORE LANG_CODE REMOVE_ENVIRONMENTS REMOVE_MACROS REPLACE STRICT
 
 if (($# < 2 || $# > 3)); then
   echo >&2 "$usage"
@@ -194,21 +194,15 @@ fi
 # Start opts with TeXtidote's output, rejecting unknown subcommands
 case $sub in
   clean)                                opts=(--clean) ;;
-  plain|html|json|clickable|singleline) opts=(--output "$sub") ;;
+  clickable|html|json|plain|singleline) opts=(--output "$sub") ;;
   *)                                    die "unknown subcommand '$sub'" ;;
 esac
 
 if ! command -v textidote >/dev/null; then
   die "textidote not found; run '${0##*/} install DESTINATION'" \
-      "with DESTINATION on PATH, or download textidote_*_all.deb from" \
-      "https://github.com/sylvainhalle/textidote/releases" \
-      "then run 'sudo apt install ./textidote_*_all.deb'"
+      "with DESTINATION on PATH"
 fi
 
-if [[ $DICT = auto ]]; then
-  DICT=$(default_dict)
-fi
-readonly LANG_CODE DICT IGNORE REMOVE_ENVIRONMENTS REMOVE_MACROS REPLACE STRICT
 if [[ -z $LANG_CODE ]]; then
   echo >&2 "${0##*/}: warning: empty --lang skips grammar and spelling"
 fi
