@@ -7,7 +7,7 @@ usage() {
 Usage: ${0##*/} [-h] COMMAND [ARG...]
 
 Record COMMAND under script(1) and GNU time into a fresh typescript.
-Name it typescript-HOST-SECONDS-HEX, with three random hex digits.
+Name it typescript-HOST-SECONDS-HEX, with six random hex digits.
 Head it with the command line and one blank line.
 Fail when the quoted command exceeds what Linux passes as one argument.
 
@@ -32,7 +32,9 @@ size=$(LC_ALL=C; echo "${#cmd}")
 
 host=$(uname -n)
 printf -v now '%(%s)T' -1
-printf -v file 'typescript-%s-%s-%03X' "${host%%.*}" "$now" $((RANDOM % 4096))
+# Draw RANDOM twice, since each draw gives only 15 of the 24 bits.
+hex=$(( (RANDOM << 15 | RANDOM) & 0xFFFFFF ))
+printf -v file 'typescript-%s-%s-%06X' "${host%%.*}" "$now" "$hex"
 
 printf '+%s\n' "$args" >"$file"
 printf '\n' >>"$file"
