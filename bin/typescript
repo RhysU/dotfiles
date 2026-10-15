@@ -9,6 +9,7 @@ Usage: ${0##*/} [-h] COMMAND [ARG...]
 Record COMMAND under script(1) and GNU time into a fresh typescript.
 Name it typescript-HOST-SECONDS-HEX, with three random hex digits.
 Head it with the command line and one blank line.
+Fail when the quoted command exceeds what Linux passes as one argument.
 
 Options:
   -h    Show this help and exit
@@ -24,6 +25,11 @@ time=$(type -P time)
 script=$(type -P script)
 printf -v args ' %q' "$@"
 printf -v cmd 'SHELL=%q exec %q --verbose --%s' "${SHELL-}" "$time" "$args"
+
+# Linux caps each argument, here the whole command, below 32 pages.
+size=$(LC_ALL=C; echo "${#cmd}")
+(( size < 32 * $(getconf PAGESIZE) )) || { echo >&2 "${0##*/}: command too long"; exit 1; }
+
 host=$(uname -n)
 printf -v now '%(%s)T' -1
 printf -v file 'typescript-%s-%s-%03X' "${host%%.*}" "$now" $((RANDOM % 4096))
@@ -45,4 +51,6 @@ SHELL=$BASH exec "$script" --quiet --append --return --command "$cmd" -- "$file"
 #   GNU time absent     -> type -P fails, no file written
 #   HOSTNAME=a/b        -> ignored, the kernel's hostname names the file
 #   script absent      -> type -P fails, no file written
+#   32k small arguments -> one-line error on stderr, exit 1, no file written
+#   multibyte arguments -> counted in bytes, not characters
 #   file already exists -> noclobber refuses, file untouched, exit 1
