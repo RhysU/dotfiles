@@ -51,8 +51,9 @@ Options, where an empty value means none:
   --remove-macros MACS  Drop each comma-separated macro \\MAC with its
                         first argument, otherwise checked as prose.
                         Default ${REMOVE_MACROS:-none}
-  --replace FILE        Apply TeXtidote replacement patterns from FILE.
-                        Default ${REPLACE:-none}
+  --replace FILE        Apply TeXtidote replacement patterns from FILE,
+                        after a built-in one padding each footnote's
+                        opening brace.  Default ${REPLACE:-none}
   --strict              Exit 1 when warnings are found.  Default off
   -h, --help            Show this help and exit
 
@@ -224,7 +225,17 @@ append_opts_when_nonempty --dict          "$DICT"
 append_opts_when_nonempty --ignore        "$IGNORE"
 append_opts_when_nonempty --remove        "$REMOVE_ENVIRONMENTS"
 append_opts_when_nonempty --remove-macros "$REMOVE_MACROS"
-append_opts_when_nonempty --replace       "$REPLACE"
+
+# Pad each footnote's opening brace with a space.  TeXtidote strips a
+# footnote line by line, so one spanning lines left "ends.\footnote{The"
+# as "ends.The".  Avoid a backslash in the replacement, which TeXtidote
+# drops.  Append any --replace FILE, since TeXtidote takes only one.
+printf '%s\t%s\n' '(\\footnote(text)?(\[[^]]*\])?\{)' "\$1 " >"$tmp/replace"
+if [[ -n $REPLACE ]]; then
+  cat -- "$REPLACE" >>"$tmp/replace"
+fi
+opts+=(--replace "$tmp/replace")
+
 if [[ $sub = clean ]] && fragment; then
   opts+=(--read-all)
 fi
@@ -293,3 +304,5 @@ exit 0
 #   N warnings                -> exit 0; with --strict exit 1 when N > 0
 #   --dict unset              -> ~/.vim, ~/.config/vim, then Neovim's
 #   --dict= or --ignore=      -> option not passed
+#   multi-line \footnote{    -> no space-after-period at its opening
+#   --replace FILE            -> FILE's rules after the footnote rule
