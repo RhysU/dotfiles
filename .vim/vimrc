@@ -271,6 +271,7 @@ let g:ale_cpp_cc_executable = 'g++'
 let g:ale_linters = {'sh': ['shell', 'shellcheck']}
 let g:ale_tex_chktex_options = '-I -n38'
 let g:goyo_height = '90%'
+let g:goyo_width = 80 + (exists('+signcolumn') && &signcolumn !=# 'no' ? 2 : 0)
 let g:Illuminate_caseInsensitiveRegex = 1
 let g:signify_vcs_list = [ 'git', 'svn' ]
 let g:slime_default_config  = {"sessionname": $STY, "windowname": "0"}
