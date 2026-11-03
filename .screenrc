@@ -37,6 +37,8 @@ multiuser on
 nonblock on
 shell $SHELL
 startup_message off
+# Screen 4.x has no 24-bit color.  Stop apps emitting ESC[38;2;r;g;b
+unsetenv COLORTERM
 vbell_msg "Bell on %t (%n)"
 vbell off
 
