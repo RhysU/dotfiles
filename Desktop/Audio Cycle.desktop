@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=/home/rhys/bin/audio-cycle
+Name=Audio Cycle
+Comment=Cycle speaker and microphone pairs
+Icon=audio-headset
