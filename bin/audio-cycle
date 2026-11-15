@@ -24,7 +24,7 @@ entries=(
     "circe|Bose-Bose|bluez_output.BC:87:FA:C8:60:03|bluez_input.BC:87:FA:C8:60:03|a2dp-sink-sbc_xq"
 )
 
-notify() { notify-send -t 2500 "Audio Cycle" "$1" 2>/dev/null; echo "$1"; }
+notify() { notify-send -t 1500 "Audio Cycle" "$1" 2>/dev/null; echo "$1"; }
 
 # Card owning a sink or source, by naming convention
 #   alsa_output.DEVICE.PROFILE -> alsa_card.DEVICE
