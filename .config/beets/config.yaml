@@ -1,6 +1,6 @@
 library: /home/rhys/BeetLibrary.db
 directory: /home/rhys/BeetLibrary
-plugins: bpd chroma duplicates edit fetchart fromfilename inline lyrics lastgenre mbsync web
+plugins: bpd chroma duplicates edit fetchart fromfilename inline lastgenre lyrics mbsync play web
 
 art_filename: albumart
 chroma:
@@ -17,6 +17,8 @@ item_fields:
     multidisc: 1 if disctotal > 1 else 0
 lyrics:
     auto: no
+play:
+    command: sh -c 'echo "mpg123 keys -- s pause  f next  b restart  , . seek  h help  q quit"; exec mpg123 -C "$@"' mpg123
 paths:
     default: $albumartist/$album/%if{$multidisc,$disc-}$track $title
     singleton: Singletons/$artist - $title
