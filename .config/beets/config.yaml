@@ -1,6 +1,6 @@
 library: /home/rhys/BeetLibrary.db
 directory: /home/rhys/BeetLibrary
-plugins: bpd chroma duplicates edit fetchart fromfilename inline lastgenre lyrics mbsync play web
+plugins: bpd chroma duplicates edit fetchart fromfilename inline lastgenre lyrics mbsync musicbrainz play web
 
 art_filename: albumart
 chroma:
