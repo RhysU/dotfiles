@@ -1,13 +1,10 @@
 library: /home/rhys/BeetLibrary.db
 directory: /home/rhys/BeetLibrary
-plugins: bpd chroma duplicates edit fetchart fromfilename lyrics lastgenre mbsync web
+plugins: bpd chroma duplicates edit fetchart fromfilename inline lyrics lastgenre mbsync web
 
 art_filename: albumart
 chroma:
     auto: yes
-ignore:
-  .
-  ..
 import:
     autotag: yes
     copy: yes
@@ -16,13 +13,15 @@ import:
     log: beetslog.txt
     verbose: no
     write: yes
+item_fields:
+    multidisc: 1 if disctotal > 1 else 0
 lyrics:
     auto: no
 paths:
-    default: $albumartist/$album/$track $title
+    default: $albumartist/$album/%if{$multidisc,$disc-}$track $title
     singleton: Singletons/$artist - $title
-    comp: Compilation/$album/$track $title
-    albumtype:soundtrack: Soundtracks/$album/$track $title
+    comp: Compilation/$album/%if{$multidisc,$disc-}$track $title
+    albumtype:soundtrack: Soundtracks/$album/%if{$multidisc,$disc-}$track $title
 threaded: yes
 per_disc_numbering: yes
 ui:
