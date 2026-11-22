@@ -8,7 +8,7 @@ chroma:
 import:
     autotag: yes
     copy: yes
-    duplicate_action: remove
+    duplicate_action: merge
     languages: en
     log: beetslog.txt
     verbose: no
