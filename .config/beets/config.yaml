@@ -19,6 +19,7 @@ lyrics:
     auto: no
 play:
     command: sh -c 'echo "mpg123 keys -- s pause  f next  b restart  , . seek  h help  q quit"; exec mpg123 -C "$@"' mpg123
+    raw: yes
 paths:
     default: $albumartist/$album/%if{$multidisc,$disc-}$track $title
     singleton: Singletons/$artist - $title
