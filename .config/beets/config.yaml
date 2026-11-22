@@ -17,6 +17,10 @@ item_fields:
     multidisc: 1 if disctotal > 1 else 0
 lyrics:
     auto: no
+match:
+    preferred:
+        countries: ['US', 'XW']
+        media: ['CD', 'Digital Media']
 play:
     command: sh -c 'echo "mpg123 keys -- s pause  f next  b restart  , . seek  h help  q quit"; exec mpg123 -C "$@"' mpg123
     raw: yes
